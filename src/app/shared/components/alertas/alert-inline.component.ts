@@ -18,7 +18,7 @@ import { CircleAlert, InfoIcon, LucideAngularModule, TriangleAlert } from "lucid
       <!-- Título + mensaje -->
       <div class="flex-1">
         <h3 class="font-semibold" [ngClass]="current.title">{{ title }}</h3>
-        <p class="text-gray-700 mt-1 text-sm">
+        <p class="text-gray-700 dark:text-gray-200 mt-1 text-sm">
           {{ message }}
         </p>
       </div>
@@ -54,8 +54,8 @@ export class AlertInlineComponent implements OnChanges {
 
   styles = {
     warning:  {
-      wrapper: 'border border-orange-200 bg-orange-50',
-      title:   'text-orange-600',
+      wrapper: 'border border-orange-200 bg-orange-50  dark:border-amber-400 dark:bg-amber-950',
+      title:   'text-orange-600 dark:text-amber-300',
       icon:    'text-orange-500',
     },
     danger: {

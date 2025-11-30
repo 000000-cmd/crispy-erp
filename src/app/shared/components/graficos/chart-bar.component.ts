@@ -6,8 +6,10 @@ import { UniversalTransition } from 'echarts/features';
 import { CanvasRenderer } from 'echarts/renderers';
 
 // Registrar los componentes que vamos a usar
-echarts.use([GridComponent, BarChart,  CanvasRenderer, UniversalTransition]);
+echarts.use([GridComponent, BarChart, CanvasRenderer, UniversalTransition]);
+
 type EChartsOption = echarts.ComposeOption<GridComponentOption | BarSeriesOption>;
+
 @Component({
   selector: 'chart-bar',
   template: `<div #chartContainer style="width: 100%; height: 400px;"></div>`,
@@ -15,29 +17,80 @@ type EChartsOption = echarts.ComposeOption<GridComponentOption | BarSeriesOption
 export class ChartBarComponent implements AfterViewInit {
   @ViewChild('chartContainer') chartContainer!: ElementRef;
 
-    ngAfterViewInit(): void {
-        const chartDom = this.chartContainer.nativeElement;
-        const myChart = echarts.init(chartDom);
+  private myChart!: echarts.ECharts;
+  private option!: EChartsOption;
 
-        const option: EChartsOption = {
-        xAxis: {
-            type: 'category',
-            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  ngAfterViewInit(): void {
+    this.computeOption();
+    this.buildChart();
+
+    window.addEventListener('resize', () => this.myChart?.resize());
+
+    // 🔥 Detecta cambios en la clase "dark"
+    const observer = new MutationObserver(() => {
+      this.computeOption();
+      this.buildChart();
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+  }
+
+
+  /** 🔥 Calcula colores según modo claro/oscuro */
+  private computeOption() {
+    const isDark = document.documentElement.classList.contains('dark');
+
+    const guideLineColor = isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb';
+
+    this.option = {
+      backgroundColor: 'transparent',
+
+      xAxis: {
+        type: 'category',
+        data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        splitLine: {
+          show: true,
+          lineStyle: { color: guideLineColor }
         },
-        yAxis: {
-            type: 'value'
+        axisLabel: { color: isDark ? '#fff' : '#000' }
+      },
+
+      yAxis: {
+        type: 'value',
+        splitLine: {
+          show: true,
+          lineStyle: { color: guideLineColor }
         },
-        series: [
-            {
-            data: [820, 932, 901, 934, 1290, 1330, 1320],
-            type: 'bar'
-            }
-        ]
-        };
+        axisLabel: { color: isDark ? '#fff' : '#000' }
+      },
 
-        myChart.setOption(option);
+      series: [
+        {
+          data: [820, 932, 901, 934, 1290, 1330, 1320],
+          type: 'bar',
+          itemStyle: {
+            color: isDark ? '#3b82f6' : '#2563eb'   // puedes cambiar si quieres
+          }
+        }
+      ]
+    };
+  }
 
-        // Para que se ajuste si se redimensiona la ventana
-        window.addEventListener('resize', () => myChart.resize());
+
+  /** 🔥 Reconstruye completamente el gráfico */
+  private buildChart() {
+    const chartDom = this.chartContainer.nativeElement;
+
+    if (this.myChart) {
+      this.myChart.dispose();
     }
+
+    const isDark = document.documentElement.classList.contains('dark');
+
+    this.myChart = echarts.init(chartDom, isDark ? 'dark' : undefined);
+    this.myChart.setOption(this.option);
+  }
 }
