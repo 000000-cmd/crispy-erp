@@ -1,1 +1,38 @@
 /* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+/*@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+/*Aca se declaran clases globales */
+
+
+:root {
+  --primary-color: oklch(53.18% 0.28 296.97);
+
+  --hover-bg-light: RGB(243, 244, 246);
+
+  --bg-light: #f1f1f1;
+  --bg-dark: #101828;
+  /*F9FAFB*/
+  --foreground-light: white;
+  --foreground-dark:#1E2939;
+
+
+
+}
+
+
+.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+
+html.dark {
+  --text-color: #e4e4e7;
+  --background-color: var(--bg-dark)
+}
+/*Desactiva hover cuando está activo */
+.active:hover {
+  background-color: var(--primary-color) !important;
+}

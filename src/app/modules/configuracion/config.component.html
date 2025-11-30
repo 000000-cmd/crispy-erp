@@ -1,0 +1,18 @@
+<div class=" flex items-center justify-between mb-5">
+
+    <h3>Configuración del sistema</h3>
+
+</div>
+<div class="">
+
+    <tabs
+    [tabs]="columnTabs"
+    [(selected)]="currentTab"
+    (selectedChange)="handleTabChange($event)"
+    ></tabs>
+</div>
+
+<div class="mt-5">
+    <router-outlet/>
+</div>
+

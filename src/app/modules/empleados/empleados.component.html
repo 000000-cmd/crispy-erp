@@ -1,0 +1,42 @@
+<div class=" flex items-center justify-between mb-5">
+
+    <h3>Panel de control</h3>
+
+</div>
+
+
+<ui-container>
+    <div class="flex flex-col">
+        
+        <select-clean
+        label="Selecciona al empleado"
+        [options]="ServicioList"
+        />
+    </div>
+
+</ui-container>
+
+
+
+<div class="cards mt-5 grid grid-cols-4 gap-4 h-32">
+
+    <card-stat
+    label="Ana López"
+    />
+        <card-stat
+    label="Total Servicios"
+    />
+            <card-stat
+    label="Total Servicios"
+    />
+            <card-stat
+    label="Total Servicios"
+    />
+</div>
+
+<div class="mt-5">
+<tabla-grid 
+    [rowData]="productos"
+      [headers]="headers"
+      height="500px"
+/></div>

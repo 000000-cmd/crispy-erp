@@ -1,0 +1,34 @@
+
+<ui-container label="Configuración de Deducciones"> 
+
+    <div class="flex flex-col gap-3">
+        <div class="w-120 flex gap-3 items-end   ">
+
+            <input-clean
+            label="Porcentaje de Deducción General (%)"
+            tooltipText="Este porcentaje se aplica sobre las comisiones para cubrir impuestos, seguros, etc."
+            variant="filled"
+            widthInput="w-10"
+            />
+            <div class="flex gap-3 items-center mb-2">
+            <p>%</p>
+
+            <pill [label]="porcentajeActual"/>
+            </div>  
+
+
+        </div>
+
+
+        <alert-callout type="info" title="Ejemplo de cálculo:">
+            Si un empleado genera $100 en servicios con una comisión del 60%,
+            recibirá $60 de comisión. Con una deducción del 10%, el pago neto será de $54.00.
+        </alert-callout>
+
+        <div class=" w-52 flex p-3 gap-2 font-bold  bg-(--primary-color) border border-gray-200 rounded-lg hover:bg-(--primary-color)/80 transition-colors duration-200 cursor-pointer items-center text-white">
+                <lucide-angular [name]="saveIcon" class="w-6 h-6  text-white"></lucide-angular>
+                <p>Agregar Producto</p>
+        </div>
+    </div>
+
+</ui-container>

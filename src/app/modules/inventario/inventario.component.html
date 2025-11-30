@@ -1,0 +1,26 @@
+
+    <div class=" flex items-center justify-between mb-5">
+
+        <h3>Gestión de inventario</h3>
+        <div class=" w-52 flex p-3 gap-2 font-bold  bg-(--primary-color) border border-gray-200 rounded-lg hover:bg-(--primary-color)/80 transition-colors duration-200 cursor-pointer items-center text-white">
+            <lucide-angular [name]="plusIcon" class="w-6 h-6  text-white"></lucide-angular>
+            <p>Agregar Producto</p>
+        </div>
+    </div>
+
+        <alert-inline></alert-inline>
+
+    <ui-container class="p-5">
+      
+
+            <p>Inventario Actual</p>
+
+            <div class="py-10">
+            <tabla-inventario></tabla-inventario>
+            </div>
+
+      
+    </ui-container>
+
+
+

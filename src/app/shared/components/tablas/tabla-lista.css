@@ -1,0 +1,22 @@
+:host ::ng-deep .table-list-gradient .ag-row {
+  border: none !important;
+  position: absolute;
+  overflow: visible !important;
+}
+
+:host ::ng-deep .table-list-gradient .ag-row:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+
+  background: linear-gradient(
+    to right,
+    rgba(150, 150, 200, 0),
+    rgba(150, 150, 200, 0.5),
+    rgba(150, 150, 200, 0)
+  );
+  pointer-events: none;
+}
