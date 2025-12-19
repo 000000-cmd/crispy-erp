@@ -18,12 +18,12 @@ export class SidebarComponent {
 
 
   readonly links = [
-    { label: 'Estadísticas',  path: '/estadistica', icon: ChartColumn },
-    { label: 'Inventario',    path: '/inventario',  icon: Package },
-    { label: 'Citas',     path: '/citas',           icon: Calendar },
-    { label: 'Empleados', path: '/empleados',       icon: Users },
-    { label: 'Nómina',    path: '/nomina',          icon: DollarSign},
-    { label: 'Configuración', path: '/config',      icon: Settings },
+    { label: 'Estadísticas',  path: '/tenant/estadistica', icon: ChartColumn },
+    { label: 'Inventario',    path: '/tenant/inventario',  icon: Package },
+    { label: 'Citas',         path: '/tenant/citas',           icon: Calendar },
+    { label: 'Empleados',     path: '/tenant/empleados',       icon: Users },
+    { label: 'Nómina',        path: '/tenant/nomina',          icon: DollarSign},
+    { label: 'Configuración', path: '/tenant/config',      icon: Settings },
 
   ];
 

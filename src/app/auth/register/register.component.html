@@ -1,0 +1,35 @@
+<div class="flex justify-center">
+    <ui-container minWidth="450px">
+        <div class=" text-center mb-2">
+            <h1>Registrate</h1>
+            <p>Completa este formulario para poder acceder al sistema</p>
+        </div>
+        <div class="flex flex-col gap-3">
+
+                <div class="flex flex-col gap-5">
+                    <div class="grid grid-cols-2 gap-4 ">
+                        <input-clean label="Primer nombre"     placeholder="Juan " [iconInput]="userIcon" />
+                        <input-clean label="Segundo nombre"     placeholder="Jose" [iconInput]="userIcon" />
+                        <input-clean label="Primer Apellido"     placeholder="Perez" [iconInput]="userIcon" />
+                        <input-clean label="Segundo Apellido"     placeholder="Guimenez" [iconInput]="userIcon" />
+                    </div>
+                    <input-clean label="Correo electrónico"         placeholder="tu@correo.com" [iconInput]="emailIcon" />
+                                        <datepicker label="Fecha de nacimiento"/>
+                    <input-clean label="Contraseña" type="password" placeholder="••••••" [iconInput]="passswordIcon" />
+
+                    <select-clean label="Tipo de documento"/>
+                    <input-clean label="Número de documento"     placeholder="Juan Perez" [iconInput]="userIcon" />              
+                    
+                </div>
+
+                
+                    <button-clean label="Crea tu cuenta" [icon]="loginIcon"/>
+                
+                <div class="flex justify-center">
+                    <span> ¿Ya tienes cuenta? <text-link>Inicia sesión</text-link></span>
+                    
+                </div>
+        </div>
+    </ui-container>
+
+</div>

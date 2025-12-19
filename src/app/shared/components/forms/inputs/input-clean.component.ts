@@ -53,7 +53,7 @@ import { CommonModule } from '@angular/common';
           [ngClass]="{
             'pl-9': iconInput,
             
-            ' bg-white dark:bg-[#364153] border-2 border-slate-600 backdrop-blur-sm hover:bg-white dark:hover:bg-[#303a4b] focus:border-(--primary-color)':
+            ' bg-white dark:bg-[#364153] border-2 border-slate-400 backdrop-blur-sm hover:bg-white dark:hover:bg-[#303a4b] focus:border-(--primary-color)':
               variant === 'outlined',
 
             

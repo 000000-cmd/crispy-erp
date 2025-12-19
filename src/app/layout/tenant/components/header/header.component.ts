@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { PillComponent } from '../../shared/components/ui/pill.component';
+import { PillComponent } from '../../../../shared/components/ui/pill.component';
 import { LucideAngularModule, Moon, Sun } from 'lucide-angular';
-import { ThemeService } from '../../shared/theme.service';
+import { ThemeService } from '../../../../shared/theme.service';
 
 @Component({
   selector: 'header-erp',
