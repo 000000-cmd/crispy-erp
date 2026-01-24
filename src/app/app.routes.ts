@@ -69,7 +69,9 @@ export const routes: Routes = [
   },
   {
     path:'sys',
-    component:SysLayoutComponent
+    loadChildren: ()=>
+      import('./moon/moon.routes')
+          .then(m=>m.MOON_ROUTES)
   }
 
     

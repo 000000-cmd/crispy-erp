@@ -1,0 +1,44 @@
+[
+  {
+    "key": "estadisticas",
+    "label": "Estadísticas",
+    "icon": "ChartColumn",
+    "path": "/sys/estadistica"
+  },
+  {
+    "key": "inventario",
+    "label": "Inventario",
+    "icon": "Package",
+    "childrens": [
+      {
+        "key": "inventario_productos",
+        "label": "Productos",
+        "icon": "Package",
+        "path": "/sys/inventario/productos"
+      },
+      {
+        "key": "inventario_categorias",
+        "label": "Categorías",
+        "icon": "Package",
+        "path": "/sys/inventario/categorias"
+      }
+    ]
+  },
+  {
+    "key": "config",
+    "label": "Configuración",
+    "icon": "Settings",
+    "childrens": [
+      {
+        "key": "config_monedas",
+        "label": "Monedas",
+        "icon": "DollarSign"
+      },
+      {
+        "key": "config_impuestos",
+        "label": "Impuestos",
+        "icon": "Percent"
+      }
+    ]
+  }
+]
