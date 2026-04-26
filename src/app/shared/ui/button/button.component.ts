@@ -1,0 +1,55 @@
+import { Component, computed, input, output } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { LucideAngularModule } from 'lucide-angular';
+
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'subtle';
+export type ButtonSize = 'sm' | 'md' | 'lg';
+
+@Component({
+  selector: 'app-button',
+  standalone: true,
+  imports: [CommonModule, LucideAngularModule],
+  template: `
+    <button
+      [type]="type()"
+      [disabled]="disabled() || loading()"
+      [class]="classes()"
+      (click)="onClick.emit($event)"
+    >
+      @if (icon() && !loading()) {
+        <lucide-icon [img]="icon()" [size]="iconSize()" class="shrink-0"></lucide-icon>
+      }
+      @if (loading()) {
+        <span class="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+      }
+      <ng-content />
+    </button>
+  `,
+})
+export class ButtonComponent {
+  readonly variant = input<ButtonVariant>('primary');
+  readonly size = input<ButtonSize>('md');
+  readonly type = input<'button' | 'submit' | 'reset'>('button');
+  readonly disabled = input<boolean>(false);
+  readonly loading = input<boolean>(false);
+  readonly icon = input<any>(null);
+  readonly block = input<boolean>(false);
+
+  readonly onClick = output<MouseEvent>();
+
+  readonly iconSize = computed(() => (this.size() === 'sm' ? 14 : this.size() === 'lg' ? 18 : 16));
+
+  readonly classes = computed(() => {
+    const base = 'inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40';
+    const size = this.size() === 'sm' ? 'h-8 px-3 text-xs' : this.size() === 'lg' ? 'h-11 px-5 text-sm' : 'h-9 px-4 text-sm';
+    const variant = {
+      primary:  'bg-primary-500 text-white hover:bg-primary-600',
+      secondary:'bg-surface border border-border text-text hover:bg-surface-hover',
+      ghost:    'text-text hover:bg-surface-hover',
+      danger:   'bg-rose-600 text-white hover:bg-rose-700',
+      subtle:   'bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-200',
+    }[this.variant()];
+    const w = this.block() ? 'w-full' : '';
+    return `${base} ${size} ${variant} ${w}`;
+  });
+}

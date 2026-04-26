@@ -1,5 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: "https://rifasyaback-production.up.railway.app",
-  appName: "Crispy"
+  // Apuntar al gateway publico (HTTPS recomendado en produccion).
+  apiUrl: 'https://rifasyaback-production.up.railway.app',
+  appName: 'ERP Moda',
 };

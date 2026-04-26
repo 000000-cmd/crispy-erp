@@ -1,38 +1,77 @@
-/* You can add global styles to this file, and also import other style files */
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
-/*@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
-/*Aca se declaran clases globales */
 
+@theme {
+  --font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --color-primary-50:  var(--p-50);
+  --color-primary-100: var(--p-100);
+  --color-primary-200: var(--p-200);
+  --color-primary-300: var(--p-300);
+  --color-primary-400: var(--p-400);
+  --color-primary-500: var(--p-500);
+  --color-primary-600: var(--p-600);
+  --color-primary-700: var(--p-700);
+  --color-primary-800: var(--p-800);
+  --color-primary-900: var(--p-900);
+
+  --color-surface:        var(--s-surface);
+  --color-surface-muted:  var(--s-surface-muted);
+  --color-surface-hover:  var(--s-surface-hover);
+  --color-border:         var(--s-border);
+  --color-border-strong:  var(--s-border-strong);
+  --color-text:           var(--s-text);
+  --color-text-muted:     var(--s-text-muted);
+  --color-text-soft:      var(--s-text-soft);
+  --color-bg:             var(--s-bg);
+}
 
 :root {
-  --primary-color: oklch(53.18% 0.28 296.97);
+  /* Default palette: terracotta. ThemeService overrides at runtime. */
+  --p-50:  oklch(97% 0.015 30);
+  --p-100: oklch(93% 0.035 30);
+  --p-200: oklch(85% 0.07 30);
+  --p-300: oklch(76% 0.10 30);
+  --p-400: oklch(68% 0.12 30);
+  --p-500: oklch(58% 0.14 30);
+  --p-600: oklch(50% 0.13 30);
+  --p-700: oklch(42% 0.11 30);
+  --p-800: oklch(34% 0.09 30);
+  --p-900: oklch(26% 0.07 30);
 
-  --hover-bg-light: RGB(243, 244, 246);
-
-  --bg-light: #f1f1f1;
-  --bg-dark: #101828;
-  /*F9FAFB*/
-  --foreground-light: white;
-  --foreground-dark:#1E2939;
-
-
-
+  --s-bg:            #fafaf8;
+  --s-surface:       #ffffff;
+  --s-surface-muted: #f5f4f0;
+  --s-surface-hover: #f0efe9;
+  --s-border:        #e6e4dd;
+  --s-border-strong: #d6d3c8;
+  --s-text:          #1c1917;
+  --s-text-muted:    #57534e;
+  --s-text-soft:     #a8a29e;
 }
-
-
-.active {
-  background-color: var(--primary-color);
-  color: white;
-}
-
 
 html.dark {
-  --text-color: #e4e4e7;
-  --background-color: var(--bg-dark)
+  --s-bg:            #0f0f10;
+  --s-surface:       #1a1a1c;
+  --s-surface-muted: #232325;
+  --s-surface-hover: #2a2a2d;
+  --s-border:        #2e2e32;
+  --s-border-strong: #3d3d42;
+  --s-text:          #f4f4f5;
+  --s-text-muted:    #a1a1aa;
+  --s-text-soft:     #71717a;
 }
-/*Desactiva hover cuando está activo */
-.active:hover {
-  background-color: var(--primary-color) !important;
+
+html, body { height: 100%; }
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-border-strong); }

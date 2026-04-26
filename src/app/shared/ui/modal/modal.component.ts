@@ -1,0 +1,44 @@
+import { CommonModule } from '@angular/common';
+import { Component, computed, input, output } from '@angular/core';
+
+@Component({
+  selector: 'app-modal',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    @if (open()) {
+      <div class="fixed inset-0 z-[80] flex items-center justify-center p-4" (click)="onClose.emit()">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+        <div
+          class="relative bg-surface border border-border rounded-xl shadow-xl flex flex-col max-h-[90vh]"
+          [class]="sizeClass()"
+          (click)="$event.stopPropagation()"
+        >
+          @if (title()) {
+            <header class="px-5 py-4 border-b border-border flex items-center justify-between">
+              <h3 class="text-base font-semibold text-text">{{ title() }}</h3>
+              <button class="text-text-soft hover:text-text" (click)="onClose.emit()">×</button>
+            </header>
+          }
+          <div class="px-5 py-4 overflow-auto flex-1">
+            <ng-content />
+          </div>
+          <ng-content select="[modalFooter]" />
+        </div>
+      </div>
+    }
+  `,
+})
+export class ModalComponent {
+  readonly open = input<boolean>(false);
+  readonly title = input<string>('');
+  readonly size = input<'sm' | 'md' | 'lg' | 'xl'>('md');
+  readonly onClose = output<void>();
+
+  readonly sizeClass = computed(() => ({
+    sm: 'w-full max-w-md',
+    md: 'w-full max-w-xl',
+    lg: 'w-full max-w-3xl',
+    xl: 'w-full max-w-5xl',
+  }[this.size()]));
+}

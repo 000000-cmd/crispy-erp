@@ -1,0 +1,115 @@
+import { CommonModule } from '@angular/common';
+import { Component, computed, inject } from '@angular/core';
+import { LucideAngularModule, Users, Calendar, Wallet, TrendingUp, Download, Plus, ArrowUp, ArrowDown } from 'lucide-angular';
+import { CardComponent } from '../../../shared/ui/card/card.component';
+import { ButtonComponent } from '../../../shared/ui/button/button.component';
+import { AuthService } from '../../../core/auth/auth.service';
+
+interface Stat { label: string; value: string; delta: string; up: boolean; icon: any; }
+
+@Component({
+  selector: 'app-tenant-dashboard',
+  standalone: true,
+  imports: [CommonModule, LucideAngularModule, CardComponent, ButtonComponent],
+  template: `
+    <div class="space-y-6">
+      <header class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-semibold text-text tracking-tight">Hola, {{ greeting() }}</h1>
+          <p class="text-sm text-text-muted mt-1">Resumen operativo · Estudio Lumen</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <app-button variant="secondary" size="sm" [icon]="downloadIcon">Exportar</app-button>
+          <app-button size="sm" [icon]="plusIcon">Nueva cita</app-button>
+        </div>
+      </header>
+
+      <!-- Stat cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        @for (s of stats; track s.label) {
+          <app-card>
+            <div class="flex items-start gap-3">
+              <span class="h-10 w-10 rounded-lg bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 inline-flex items-center justify-center shrink-0">
+                <lucide-icon [img]="s.icon" [size]="18"></lucide-icon>
+              </span>
+              <div class="min-w-0">
+                <p class="text-xs text-text-muted">{{ s.label }}</p>
+                <p class="text-2xl font-semibold text-text mt-0.5 tracking-tight">{{ s.value }}</p>
+                <p class="text-[11px] mt-1 inline-flex items-center gap-1"
+                   [class.text-emerald-600]="s.up" [class.text-rose-600]="!s.up">
+                  <lucide-icon [img]="s.up ? upIcon : downIcon" [size]="11"></lucide-icon>
+                  {{ s.delta }}
+                </p>
+              </div>
+            </div>
+          </app-card>
+        }
+      </div>
+
+      <!-- Two column layout -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <app-card title="Tráfico semanal" subtitle="Cortes por día" class="lg:col-span-2">
+          <div class="h-56 grid grid-cols-7 gap-2 items-end">
+            @for (d of week; track d.label; let i = $index) {
+              <div class="flex flex-col items-center gap-2">
+                <div class="w-full bg-primary-500/80 rounded-md transition-all hover:bg-primary-600"
+                     [style.height.%]="(d.value / 50) * 100"></div>
+                <span class="text-[10px] text-text-muted uppercase">{{ d.label }}</span>
+              </div>
+            }
+          </div>
+        </app-card>
+
+        <app-card title="Mix de servicios" subtitle="Últimos 30 días">
+          <div class="space-y-3">
+            @for (m of mix; track m.label) {
+              <div>
+                <div class="flex items-center justify-between text-xs mb-1">
+                  <span class="text-text">{{ m.label }}</span>
+                  <span class="text-text-muted tabular-nums">{{ m.count }} · {{ m.pct }}%</span>
+                </div>
+                <div class="h-1.5 rounded-full bg-surface-muted overflow-hidden">
+                  <div class="h-full bg-primary-500 rounded-full" [style.width.%]="m.pct"></div>
+                </div>
+              </div>
+            }
+          </div>
+        </app-card>
+      </div>
+
+      <app-card title="Próximas citas" subtitle="Hoy">
+        <p class="text-sm text-text-muted">Cuando conectemos /citas verás la agenda real aquí.</p>
+      </app-card>
+    </div>
+  `,
+})
+export class TenantDashboardPage {
+  private readonly auth = inject(AuthService);
+  readonly greeting = computed(() => this.auth.user()?.fullName?.split(' ')[0] ?? '');
+
+  protected readonly downloadIcon = Download;
+  protected readonly plusIcon = Plus;
+  protected readonly upIcon = ArrowUp;
+  protected readonly downIcon = ArrowDown;
+
+  readonly stats: Stat[] = [
+    { label: 'Clientes hoy',    value: '34',     delta: '12.4% vs. semana pasada', up: true,  icon: Users },
+    { label: 'Clientes semana', value: '218',    delta: '12.4% vs. semana pasada', up: true,  icon: Calendar },
+    { label: 'Ingresos semana', value: '$4,820', delta: '8.1% vs. semana pasada',  up: true,  icon: Wallet },
+    { label: 'Ticket promedio', value: '$22.11', delta: '1.2% vs. semana pasada',  up: false, icon: TrendingUp },
+  ];
+
+  readonly week = [
+    { label: 'Lun', value: 18 }, { label: 'Mar', value: 22 }, { label: 'Mié', value: 28 },
+    { label: 'Jue', value: 31 }, { label: 'Vie', value: 42 }, { label: 'Sáb', value: 38 },
+    { label: 'Dom', value: 14 },
+  ];
+
+  readonly mix = [
+    { label: 'Corte clásico', count: 92, pct: 42 },
+    { label: 'Corte + barba', count: 61, pct: 28 },
+    { label: 'Tinte',         count: 31, pct: 14 },
+    { label: 'Tratamiento',   count: 22, pct: 10 },
+    { label: 'Otros',         count: 12, pct: 6  },
+  ];
+}

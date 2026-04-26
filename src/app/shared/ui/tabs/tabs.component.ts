@@ -1,0 +1,32 @@
+import { CommonModule } from '@angular/common';
+import { Component, input, model } from '@angular/core';
+
+export interface TabItem { id: string; label: string; }
+
+@Component({
+  selector: 'app-tabs',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <div class="flex items-center gap-1 border-b border-border">
+      @for (t of tabs(); track t.id) {
+        <button
+          class="relative px-3 py-2 text-sm transition-colors"
+          [class.text-primary-600]="active() === t.id"
+          [class.text-text-muted]="active() !== t.id"
+          [class.hover:text-text]="active() !== t.id"
+          (click)="active.set(t.id)"
+        >
+          {{ t.label }}
+          @if (active() === t.id) {
+            <span class="absolute left-0 right-0 -bottom-px h-0.5 bg-primary-500"></span>
+          }
+        </button>
+      }
+    </div>
+  `,
+})
+export class TabsComponent {
+  readonly tabs = input.required<TabItem[]>();
+  readonly active = model<string>('');
+}

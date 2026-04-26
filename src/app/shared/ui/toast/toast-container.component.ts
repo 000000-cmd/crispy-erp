@@ -1,0 +1,28 @@
+import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ToastService } from './toast.service';
+
+@Component({
+  selector: 'app-toast-container',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <div class="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 w-80">
+      @for (t of toast.toasts(); track t.id) {
+        <div
+          class="flex items-start gap-3 rounded-lg border px-4 py-3 shadow-sm bg-surface text-text"
+          [class.border-emerald-500]="t.kind === 'success'"
+          [class.border-amber-500]="t.kind === 'warning'"
+          [class.border-rose-500]="t.kind === 'error'"
+          [class.border-border]="t.kind === 'info'"
+        >
+          <span class="mt-0.5 text-sm flex-1">{{ t.message }}</span>
+          <button class="text-text-soft hover:text-text text-xs" (click)="toast.dismiss(t.id)">×</button>
+        </div>
+      }
+    </div>
+  `,
+})
+export class ToastContainerComponent {
+  protected readonly toast = inject(ToastService);
+}
