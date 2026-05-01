@@ -1,6 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../../core/http/api.service';
+import { MICROSERVICES, ms } from '../../../core/http/microservices';
+
+const path = (p: string) => ms(MICROSERVICES.SYSTEM, p);
 
 export interface Constant {
   id: string;
@@ -15,8 +18,8 @@ export interface Constant {
 @Injectable({ providedIn: 'root' })
 export class ConstantsApi {
   private readonly api = inject(ApiService);
-  list(): Observable<Constant[]> { return this.api.get('constants'); }
-  create(p: Partial<Constant>): Observable<Constant> { return this.api.post('constants', p); }
-  update(id: string, p: Partial<Constant>): Observable<Constant> { return this.api.put(`constants/${id}`, p); }
-  remove(id: string): Observable<void> { return this.api.delete(`constants/${id}`); }
+  list(): Observable<Constant[]> { return this.api.get(path('constants')); }
+  create(p: Partial<Constant>): Observable<Constant> { return this.api.post(path('constants'), p); }
+  update(id: string, p: Partial<Constant>): Observable<Constant> { return this.api.put(path(`constants/${id}`), p); }
+  remove(id: string): Observable<void> { return this.api.delete(path(`constants/${id}`)); }
 }

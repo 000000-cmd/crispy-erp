@@ -3,17 +3,19 @@ import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from '../shell/sidebar.component';
 import { TopbarComponent } from '../shell/topbar.component';
 import { BreadcrumbsComponent } from '../shell/breadcrumbs.component';
+import { NavLoadingBarComponent } from '../shell/nav-loading-bar.component';
 import { ADMIN_NAV } from './admin-nav';
 import { MenuService } from '../../core/menu/menu.service';
 
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, TopbarComponent, BreadcrumbsComponent],
+  imports: [RouterOutlet, SidebarComponent, TopbarComponent, BreadcrumbsComponent, NavLoadingBarComponent],
   template: `
     <div class="flex h-screen overflow-hidden bg-bg text-text">
       <app-sidebar brand="ERP Moda" subtitle="Admin sistema" [sections]="sections()" />
-      <div class="flex-1 flex flex-col min-w-0">
+      <div class="flex-1 flex flex-col min-w-0 relative">
+        <app-nav-loading-bar />
         <app-topbar><app-breadcrumbs /></app-topbar>
         <main class="flex-1 overflow-auto">
           <div class="max-w-[1400px] mx-auto p-6 lg:p-8">

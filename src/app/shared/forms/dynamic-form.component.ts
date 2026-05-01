@@ -17,6 +17,7 @@ import { CheckboxGroupFieldComponent } from './fields/checkbox-group-field.compo
 import { CheckboxFieldComponent } from './fields/checkbox-field.component';
 import { SwitchFieldComponent } from './fields/switch-field.component';
 import { FileFieldComponent } from './fields/file-field.component';
+import { FieldLabelComponent } from './fields/field-label.component';
 
 @Component({
   selector: 'app-dynamic-form',
@@ -25,29 +26,35 @@ import { FileFieldComponent } from './fields/file-field.component';
     CommonModule, ReactiveFormsModule, ButtonComponent, TPipe,
     TextFieldComponent, SelectFieldComponent, RadioFieldComponent,
     CheckboxGroupFieldComponent, CheckboxFieldComponent, SwitchFieldComponent, FileFieldComponent,
+    FieldLabelComponent,
   ],
   template: `
     <form [formGroup]="form" (ngSubmit)="submit()" (focusout)="onFocusOut($event)" class="grid gap-4" [style.gridTemplateColumns]="gridCols()">
       @for (f of visibleFields(); track f.key) {
         <div [attr.data-field]="f.key" [style.gridColumn]="span(f)">
           @if (showLabel(f)) {
-            <label class="block text-xs font-medium text-text-muted mb-1.5">
-              {{ f.label }}
-              @if (isRequired(f)) { <span class="text-rose-500">*</span> }
-            </label>
+            <df-field-label
+              [forId]="f.key"
+              [label]="f.label || ''"
+              [required]="isRequired(f)"
+              [icon]="f.icon"
+              [tooltip]="f.tooltip"
+              [tooltipVariant]="f.tooltipVariant ?? 'info'"
+              [control]="form.get(f.key)"
+            />
           }
 
           @switch (f.type) {
-            @case ('select')        { <df-select-field [field]="f" [control]="form.get(f.key)!" [options]="optionsFor(f)" /> }
-            @case ('multiselect')   { <df-select-field [field]="f" [control]="form.get(f.key)!" [options]="optionsFor(f)" /> }
-            @case ('radio')         { <df-radio-field  [field]="f" [control]="form.get(f.key)!" [options]="optionsFor(f)" /> }
-            @case ('checkbox-group'){ <df-checkbox-group-field [field]="f" [control]="form.get(f.key)!" [options]="optionsFor(f)" /> }
-            @case ('checkbox')      { <df-checkbox-field [field]="f" [control]="form.get(f.key)!" /> }
-            @case ('switch')        { <df-switch-field [field]="f" [control]="form.get(f.key)!" /> }
-            @case ('file')          { <df-file-field [field]="f" [control]="form.get(f.key)!" /> }
+            @case ('select')        { <df-select-field [field]="f" [control]="form.get(f.key)!" [options]="optionsFor(f)" [hint]="hintFor(f)" /> }
+            @case ('multiselect')   { <df-select-field [field]="f" [control]="form.get(f.key)!" [options]="optionsFor(f)" [hint]="hintFor(f)" /> }
+            @case ('radio')         { <df-radio-field  [field]="f" [control]="form.get(f.key)!" [options]="optionsFor(f)" [hint]="hintFor(f)" /> }
+            @case ('checkbox-group'){ <df-checkbox-group-field [field]="f" [control]="form.get(f.key)!" [options]="optionsFor(f)" [hint]="hintFor(f)" /> }
+            @case ('checkbox')      { <df-checkbox-field [field]="f" [control]="form.get(f.key)!" [hint]="hintFor(f)" /> }
+            @case ('switch')        { <df-switch-field [field]="f" [control]="form.get(f.key)!" [hint]="hintFor(f)" /> }
+            @case ('file')          { <df-file-field [field]="f" [control]="form.get(f.key)!" [hint]="hintFor(f)" /> }
             @case ('hidden')        { }
             @case ('custom')        { <ng-container *ngComponentOutlet="f.customComponent!; inputs: { field: f, control: form.get(f.key)! }"></ng-container> }
-            @default                { <df-text-field [field]="f" [control]="form.get(f.key)!" /> }
+            @default                { <df-text-field [field]="f" [control]="form.get(f.key)!" [hint]="hintFor(f)" /> }
           }
         </div>
       }
@@ -75,6 +82,7 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
   private readonly injector = inject(EnvironmentInjector);
   private readonly subs: Subscription[] = [];
   private readonly resolvedOptions = signal<Record<string, Option[]>>({});
+  private readonly resolvedHints = signal<Record<string, string>>({});
 
   readonly visibleFields = signal<FieldConfig[]>([]);
 
@@ -90,12 +98,14 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
       this.recomputeVisibility();
       this.recomputeDisabled();
       this.recomputeRequired();
+      this.recomputeHints();
       this.valueChange.emit(v as any);
     }));
 
     this.recomputeVisibility();
     this.recomputeDisabled();
     this.recomputeRequired();
+    this.recomputeHints();
 
     for (const f of this.schema().fields) {
       this.resolveOptions(f);
@@ -133,6 +143,15 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
 
   optionsFor(f: FieldConfig): Option[] {
     return this.resolvedOptions()[f.key] ?? (Array.isArray(f.options) ? f.options : []);
+  }
+
+  /**
+   * Hint resuelto para el campo. Si `hint` es funcion, se evaluo en la ultima
+   * recomputacion (ngOnInit + cada valueChanges). Si es string, se devuelve tal
+   * cual. Cadena vacia/null/undefined deja al field sin hint.
+   */
+  hintFor(f: FieldConfig): string {
+    return this.resolvedHints()[f.key] ?? '';
   }
 
   submit() {
@@ -203,6 +222,22 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
       if (should && c.enabled) c.disable({ emitEvent: false });
       else if (!should && c.disabled && (f.visibleWhen?.(this.form) ?? true)) c.enable({ emitEvent: false });
     }
+  }
+
+  private recomputeHints() {
+    const next: Record<string, string> = {};
+    for (const f of this.schema().fields) {
+      const h = f.hint;
+      if (typeof h === 'function') {
+        const ctrl = this.form.get(f.key);
+        if (!ctrl) continue;
+        const out = h({ form: this.form, control: ctrl, value: ctrl.value });
+        if (out) next[f.key] = out;
+      } else if (typeof h === 'string' && h.length > 0) {
+        next[f.key] = h;
+      }
+    }
+    this.resolvedHints.set(next);
   }
 
   private recomputeRequired() {

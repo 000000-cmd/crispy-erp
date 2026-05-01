@@ -5,6 +5,18 @@ import { FieldConfig } from '../core/types';
 import { firstErrorMessage } from '../core/validators';
 import { TPipe } from '../../pipes/t.pipe';
 
+/**
+ * Campo de texto/textarea/email/password/etc. del dynamic-form.
+ *
+ * Las clases del input cambian de borde segun el estado de validacion una vez
+ * el usuario ha tocado o modificado el control:
+ *   - rojo (`border-rose-500`) si invalido
+ *   - verde (`border-emerald-500`) si valido
+ *   - default + focus ring del primary mientras esta limpio
+ *
+ * `transition-all` da la sensacion de fluidez vista en rifasya. El label con
+ * icono/tooltip/badge lo dibuja `df-field-label` desde el dynamic-form.
+ */
 @Component({
   selector: 'df-text-field',
   standalone: true,
@@ -29,14 +41,16 @@ import { TPipe } from '../../pipes/t.pipe';
     }
     @if (showError()) {
       <p class="text-[11px] text-rose-600 mt-1">{{ errorMsg().key | t : errorMsg().params }}</p>
-    } @else if (field().hint) {
-      <p class="text-[11px] text-text-muted mt-1">{{ field().hint }}</p>
+    } @else if (hint()) {
+      <p class="text-[11px] text-text-muted mt-1">{{ hint() }}</p>
     }
   `,
 })
 export class TextFieldComponent {
   readonly field = input.required<FieldConfig>();
   readonly control = input.required<AbstractControl>();
+  /** Hint ya resuelto por el dynamic-form (string vacio si no aplica). */
+  readonly hint = input<string>('');
   readonly ctrl = computed(() => this.control() as any);
 
   readonly htmlType = computed(() => {
@@ -53,14 +67,27 @@ export class TextFieldComponent {
   });
 
   readonly inputClass = computed(() => {
-    const base = 'w-full rounded-md border bg-surface text-text placeholder:text-text-soft px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30';
-    const errored = this.showError() ? 'border-rose-500' : 'border-border focus:border-primary-500';
-    return `${base} ${errored}`;
+    const base =
+      'w-full rounded-md border bg-surface text-text placeholder:text-text-soft px-3 py-2 text-sm ' +
+      'transition-all duration-200 outline-none ' +
+      'focus:ring-2 focus:ring-primary-500/30';
+    return `${base} ${this.borderClass()}`;
+  });
+
+  readonly borderClass = computed(() => {
+    if (this.showError()) return 'border-rose-500 focus:border-rose-500';
+    if (this.showValid()) return 'border-emerald-500 focus:border-emerald-500';
+    return 'border-border focus:border-primary-500';
   });
 
   readonly showError = computed(() => {
     const c = this.control();
     return !!c.errors && (c.touched || c.dirty);
+  });
+
+  readonly showValid = computed(() => {
+    const c = this.control();
+    return !c.errors && c.valid && (c.touched || c.dirty);
   });
 
   readonly errorMsg = computed(() => {

@@ -2,8 +2,10 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, map, tap } from 'rxjs';
 import { ApiService } from '../http/api.service';
+import { MICROSERVICES, ms } from '../http/microservices';
 import { AuthUser, LoginRequest, LoginResponse, UserKind, UserResponse } from './auth.types';
 import { TokenStorage } from './token.storage';
+
 
 /**
  * Roles que identifican a un usuario como administrador del sistema (no
@@ -26,7 +28,7 @@ export class AuthService {
   readonly hasRole = (role: string) => (this._user()?.roles ?? []).includes(role);
 
   login(req: LoginRequest): Observable<AuthUser> {
-    return this.api.post<LoginResponse>('auth/login', req).pipe(
+    return this.api.post<LoginResponse>(ms(MICROSERVICES.AUTH, 'login'), req).pipe(
       tap(res => {
         this.storage.setAccess(res.tokens.accessToken);
         if (res.tokens.refreshToken) this.storage.setRefresh(res.tokens.refreshToken);
@@ -39,7 +41,7 @@ export class AuthService {
   }
 
   refreshMe(): Observable<AuthUser> {
-    return this.api.get<UserResponse>('users/me').pipe(
+    return this.api.get<UserResponse>(ms(MICROSERVICES.AUTH, 'users/me')).pipe(
       map(u => this.toAuthUser(u)),
       tap(u => { this.storage.setUser(u); this._user.set(u); }),
     );
@@ -48,7 +50,7 @@ export class AuthService {
   logout(): void {
     // Best-effort: notificar al back; el storage se limpia siempre.
     const refreshToken = this.storage.getRefresh() ?? undefined;
-    this.api.post('auth/logout', { refreshToken }).subscribe({
+    this.api.post(ms(MICROSERVICES.AUTH, 'logout'), { refreshToken }).subscribe({
       next: () => this.finishLogout(),
       error: () => this.finishLogout(),
     });

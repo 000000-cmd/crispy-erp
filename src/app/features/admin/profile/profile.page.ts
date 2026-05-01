@@ -7,6 +7,7 @@ import { ThemeService } from '../../../core/theme/theme.service';
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ApiService } from '../../../core/http/api.service';
+import { MICROSERVICES, ms } from '../../../core/http/microservices';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 
 @Component({
@@ -112,7 +113,7 @@ export class AdminProfilePage {
 
   changePassword(v: any) {
     this.saving.set(true);
-    this.api.post('users/me/change-password', { currentPassword: v.currentPassword, newPassword: v.newPassword }).subscribe({
+    this.api.post(ms(MICROSERVICES.AUTH, 'users/me/change-password'), { currentPassword: v.currentPassword, newPassword: v.newPassword }).subscribe({
       next: () => { this.toast.success('Contraseña actualizada'); this.saving.set(false); },
       error: () => this.saving.set(false),
     });

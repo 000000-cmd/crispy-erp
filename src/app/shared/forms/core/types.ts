@@ -53,12 +53,25 @@ export interface FieldHooks {
 
 export type FieldWidth = 'full' | 'half' | 'third' | 'quarter' | number;
 
+/**
+ * Hint dinamico: recibe el form, el control y el valor actual, y devuelve la
+ * cadena a mostrar (o null/undefined para ocultar). Se evalua junto con las
+ * recomputaciones de visibilidad/required, asi que reacciona a cualquier
+ * cambio del form.
+ */
+export type HintFn = (ctx: {
+  form: FormGroup;
+  control: AbstractControl;
+  value: any;
+}) => string | null | undefined;
+
 export interface BaseFieldConfig {
   key: string;
   type: FieldType;
   label?: string;
   placeholder?: string;
-  hint?: string;
+  /** Texto de ayuda. Estatico (string) o derivado del estado del form (funcion). */
+  hint?: string | HintFn;
   defaultValue?: any;
   disabled?: boolean;
   readonly?: boolean;
@@ -74,6 +87,20 @@ export interface BaseFieldConfig {
   options?: OptionsSource;
   /** Multi-selection toggle for checkbox-group / radio (default false for radio, true for checkbox-group) */
   multiple?: boolean;
+
+  // ---- Decoradores opcionales del label ----
+  /** Nombre de icono Lucide (kebab-case) que se renderiza junto al label. Ver `icon-resolver`. */
+  icon?: string;
+  /** Texto del tooltip mostrado al hacer hover en un signo de pregunta junto al label. */
+  tooltip?: string;
+  /** Variante visual del tooltip. */
+  tooltipVariant?: 'info' | 'warning' | 'error';
+  /**
+   * Mascara estilo `ngx-mask` (ej. `'0000-0000'`). Solo se aplica si la dependencia
+   * `ngx-mask` esta instalada y registrada en la app — sin ella el campo se renderiza
+   * sin mascara y se ignora silenciosamente.
+   */
+  mask?: string;
 }
 
 export interface FormSchema {

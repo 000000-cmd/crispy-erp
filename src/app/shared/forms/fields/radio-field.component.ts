@@ -28,6 +28,8 @@ import { TPipe } from '../../pipes/t.pipe';
     </div>
     @if (showError()) {
       <p class="text-[11px] text-rose-600 mt-1">{{ errorMsg().key | t : errorMsg().params }}</p>
+    } @else if (hint()) {
+      <p class="text-[11px] text-text-muted mt-1">{{ hint() }}</p>
     }
   `,
 })
@@ -35,6 +37,8 @@ export class RadioFieldComponent {
   readonly field = input.required<FieldConfig>();
   readonly control = input.required<AbstractControl>();
   readonly options = input<Option[]>([]);
+  /** Hint resuelto por el dynamic-form. */
+  readonly hint = input<string>('');
   readonly ctrl = computed(() => this.control() as any);
 
   readonly showError = computed(() => {

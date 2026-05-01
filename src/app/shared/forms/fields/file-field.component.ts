@@ -12,11 +12,16 @@ import { FieldConfig } from '../core/types';
       (change)="onPick($event)"
       class="block w-full text-sm text-text file:mr-3 file:px-3 file:py-1.5 file:rounded-md file:border-0 file:bg-primary-500 file:text-white file:cursor-pointer hover:file:bg-primary-600"
     />
+    @if (hint()) {
+      <p class="text-[11px] text-text-muted mt-1">{{ hint() }}</p>
+    }
   `,
 })
 export class FileFieldComponent {
   readonly field = input.required<FieldConfig>();
   readonly control = input.required<AbstractControl>();
+  /** Hint resuelto por el dynamic-form. */
+  readonly hint = input<string>('');
   readonly ctrl = computed(() => this.control() as any);
 
   onPick(e: Event) {
