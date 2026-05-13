@@ -7,22 +7,41 @@ const path = (p: string) => ms(MICROSERVICES.AUTH, p);
 
 export interface AdminUser {
   id: string;
+  username: string;
   email: string;
-  fullName?: string;
+  firstName: string;
+  lastName: string;
+  fullName?: string;          // computed por back
+  profilePhoto?: string | null;
+  theme?: string;
+  languageCode?: string;
   enabled: boolean;
-  roles: { id: string; code: string; name: string }[];
+  visible?: boolean;
+  roleCodes?: string[];
+  // back devuelve roleCodes en /users/me; en listas viene como array de objetos
+  roles?: { id: string; code: string; name: string }[];
 }
 
 export interface CreateUserPayload {
+  username: string;
   email: string;
-  fullName?: string;
   password: string;
+  firstName: string;
+  lastName: string;
+  profilePhoto?: string | null;
+  theme?: string;
+  languageCode?: string;
   roleIds?: string[];
 }
 
 export interface UpdateUserPayload {
-  fullName?: string;
-  enabled?: boolean;
+  username?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  profilePhoto?: string | null;
+  theme?: string;
+  languageCode?: string;
 }
 
 @Injectable({ providedIn: 'root' })

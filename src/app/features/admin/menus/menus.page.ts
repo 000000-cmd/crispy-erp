@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Plus, Pencil, Trash2, Shield, ChevronDown, ChevronRight, CornerDownRight } from 'lucide-angular';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
-import { ModalComponent } from '../../../shared/ui/modal/modal.component';
+import { CheckboxComponent } from '../../../shared/ui/checkbox/checkbox.component';
+import { DrawerComponent } from '../../../shared/ui/drawer/drawer.component';
 import { EmptyComponent } from '../../../shared/ui/empty/empty.component';
 import { SpinnerComponent } from '../../../shared/ui/spinner/spinner.component';
 import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
@@ -17,7 +18,7 @@ import { Role, RolesApi } from '../roles/roles.api';
 @Component({
   selector: 'app-admin-menus',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, ModalComponent, EmptyComponent, SpinnerComponent, DynamicFormComponent],
+  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, CheckboxComponent, DrawerComponent, EmptyComponent, SpinnerComponent, DynamicFormComponent],
   template: `
     <div class="space-y-5">
       <header class="flex items-end justify-between gap-3">
@@ -99,15 +100,31 @@ import { Role, RolesApi } from '../roles/roles.api';
         </li>
       </ng-template>
 
-      <!-- Create / edit modal -->
-      <app-modal [open]="!!editing()" [title]="modalTitle()" size="lg" (onClose)="closeEditor()">
+      <!-- Create / edit drawer -->
+      <app-drawer
+        [open]="!!editing()"
+        [title]="modalTitle()"
+        size="lg"
+        [showActions]="true"
+        [dirty]="dirty()"
+        [saving]="saving()"
+        (save)="submitForm()"
+        (onClose)="closeEditor()"
+      >
         @if (editing()) {
-          <app-dynamic-form [schema]="schema()" [model]="editing()!" [submitting]="saving()" (submitValue)="onSubmit($event)" />
+          <app-dynamic-form
+            #dynForm
+            [schema]="schema()"
+            [model]="editing()!"
+            [submitting]="saving()"
+            (submitValue)="onSubmit($event)"
+            (dirtyChange)="dirty.set($event)"
+          />
         }
-      </app-modal>
+      </app-drawer>
 
       <!-- Roles assignment modal -->
-      <app-modal [open]="!!rolesFor()" [title]="rolesFor()?.name + ' · roles'" size="md" (onClose)="closeRoles()">
+      <app-drawer [open]="!!rolesFor()" [title]="rolesFor()?.name + ' · roles'" size="md" (onClose)="closeRoles()">
         @if (rolesFor()) {
           @if (loadingRoles()) {
             <div class="py-10 text-center"><app-spinner [size]="24" /></div>
@@ -116,9 +133,12 @@ import { Role, RolesApi } from '../roles/roles.api';
               <p class="text-xs text-text-muted">Marca los roles que verán este menú.</p>
               @for (r of allRoles(); track r.id) {
                 <label class="flex items-start gap-2 p-2.5 rounded-md border border-border hover:bg-surface-hover cursor-pointer">
-                  <input type="checkbox" class="mt-0.5 accent-primary-500"
-                         [checked]="selectedRoles().has(r.id)"
-                         (change)="toggleRole(r.id, $any($event.target).checked)" />
+                  <span class="mt-0.5">
+                    <app-checkbox
+                      [checked]="selectedRoles().has(r.id)"
+                      (checkedChange)="toggleRole(r.id, $event)"
+                    />
+                  </span>
                   <span class="min-w-0">
                     <span class="block text-sm font-medium text-text">{{ r.name }}</span>
                     <span class="block text-[11px] text-text-muted font-mono">{{ r.code }}</span>
@@ -129,12 +149,12 @@ import { Role, RolesApi } from '../roles/roles.api';
           }
         }
         @if (rolesFor()) {
-          <div modalFooter class="px-5 py-3 border-t border-border flex justify-end gap-2 bg-surface-muted">
+          <div drawerFooter class="px-5 py-3 border-t border-border flex justify-end gap-2 bg-surface-muted">
             <app-button variant="ghost" (onClick)="closeRoles()">Cancelar</app-button>
             <app-button [loading]="savingRoles()" (onClick)="saveRoles()">Guardar</app-button>
           </div>
         }
-      </app-modal>
+      </app-drawer>
     </div>
   `,
 })
@@ -160,6 +180,10 @@ export class AdminMenusPage {
   // Editor
   readonly editing = signal<(Partial<MenuNode> & { _mode?: 'create' | 'edit' }) | null>(null);
   readonly saving = signal(false);
+  readonly dirty = signal(false);
+
+  readonly dynForm = viewChild<DynamicFormComponent>('dynForm');
+  submitForm() { this.dynForm()?.submit(); }
   readonly modalTitle = computed(() => this.editing()?._mode === 'create' ? 'Nuevo menú' : 'Editar menú');
 
   readonly schema = computed<FormSchema>(() => {
@@ -169,6 +193,7 @@ export class AdminMenusPage {
       .map(n => ({ value: n.id, label: `${n.name} (${n.code})` }));
     return {
       cols: 12,
+      submit: { show: false },
       fields: [
         { key: 'code', type: 'text', label: 'Código', width: 'half',
           validators: ['required', { kind: 'pattern', value: /^[A-Z0-9_]+$/, message: 'Solo mayúsculas, números y _' }] },
@@ -210,14 +235,16 @@ export class AdminMenusPage {
   openCreate(parent: MenuNode | null) {
     const siblings = parent ? parent.children : this.tree();
     const nextOrder = (siblings?.length ?? 0) + 1;
+    this.dirty.set(false);
     this.editing.set({ _mode: 'create', parentId: parent?.id ?? null, displayOrder: nextOrder, enabled: true });
   }
 
   openEdit(n: MenuNode) {
+    this.dirty.set(false);
     this.editing.set({ _mode: 'edit', ...n });
   }
 
-  closeEditor() { this.editing.set(null); }
+  closeEditor() { this.editing.set(null); this.dirty.set(false); }
 
   onSubmit(v: any) {
     const e = this.editing();

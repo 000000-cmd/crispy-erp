@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { LucideAngularModule, Plus, Pencil, Trash2 } from 'lucide-angular';
 import { switchMap, tap } from 'rxjs';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
-import { ModalComponent } from '../../../shared/ui/modal/modal.component';
+import { DrawerComponent } from '../../../shared/ui/drawer/drawer.component';
 import { ColumnDef, DataTableComponent, RowAction } from '../../../shared/table/data-table.component';
 import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
@@ -15,7 +15,7 @@ import { buildUserSchema } from './user-form';
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, ButtonComponent, ModalComponent, DataTableComponent, DynamicFormComponent],
+  imports: [CommonModule, LucideAngularModule, ButtonComponent, DrawerComponent, DataTableComponent, DynamicFormComponent],
   template: `
     <div class="space-y-5">
       <header class="flex items-end justify-between gap-3">
@@ -33,21 +33,27 @@ import { buildUserSchema } from './user-form';
         [loading]="loading()"
       />
 
-      <app-modal
+      <app-drawer
         [open]="!!editing()"
         [title]="editing()?.id ? 'Editar usuario' : 'Nuevo usuario'"
         size="lg"
+        [showActions]="true"
+        [dirty]="dirty()"
+        [saving]="saving()"
+        (save)="submitForm()"
         (onClose)="close()"
       >
         @if (schema()) {
           <app-dynamic-form
+            #dynForm
             [schema]="schema()!"
             [model]="editing()!"
             [submitting]="saving()"
             (submitValue)="onSubmit($event)"
+            (dirtyChange)="dirty.set($event)"
           />
         }
-      </app-modal>
+      </app-drawer>
     </div>
   `,
 })
@@ -63,17 +69,23 @@ export class AdminUsersPage {
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly editing = signal<Partial<AdminUser> | null>(null);
+  readonly dirty = signal(false);
+
+  readonly dynForm = viewChild<DynamicFormComponent>('dynForm');
+  submitForm() { this.dynForm()?.submit(); }
 
   readonly schema = computed(() => {
     const e = this.editing();
     if (!e) return null;
-    return buildUserSchema(this.rolesApi, e.id ? 'edit' : 'create');
+    const s = buildUserSchema(this.rolesApi, e.id ? 'edit' : 'create');
+    return { ...s, submit: { ...(s.submit ?? {}), show: false } };
   });
 
   readonly columns: ColumnDef<AdminUser>[] = [
-    { key: 'fullName', label: 'Nombre', format: r => r.fullName || '—' },
+    { key: 'username', label: 'Usuario', width: '160px' },
+    { key: 'fullName' as any, label: 'Nombre', format: r => r.fullName || `${r.firstName ?? ''} ${r.lastName ?? ''}`.trim() || '—' },
     { key: 'email',    label: 'Correo' },
-    { key: 'roles' as any, label: 'Roles', format: r => r.roles?.map(x => x.name).join(', ') || '—' },
+    { key: 'roles' as any, label: 'Roles', format: r => r.roles?.map(x => x.name).join(', ') || r.roleCodes?.join(', ') || '—' },
     { key: 'enabled' as any, label: 'Estado', align: 'center', format: r => r.enabled ? 'Activo' : 'Inactivo' },
   ];
 
@@ -93,17 +105,19 @@ export class AdminUsersPage {
   }
 
   openCreate() {
-    this.editing.set({ enabled: true, roles: [] } as any);
+    this.dirty.set(false);
+    this.editing.set({ theme: 'light', languageCode: 'es-CO', roles: [] } as any);
   }
 
   openEdit(u: AdminUser) {
+    this.dirty.set(false);
     this.editing.set({
       ...u,
       roleIds: u.roles?.map(r => r.id) ?? [],
     } as any);
   }
 
-  close() { this.editing.set(null); }
+  close() { this.editing.set(null); this.dirty.set(false); }
 
   onSubmit(value: any) {
     const editing = this.editing();
@@ -112,13 +126,25 @@ export class AdminUsersPage {
 
     if (!editing.id) {
       this.api.create({
-        email: value.email, fullName: value.fullName, password: value.password, roleIds: value.roleIds ?? [],
+        username: value.username,
+        email: value.email,
+        password: value.password,
+        firstName: value.firstName,
+        lastName: value.lastName,
+        theme: value.theme,
+        languageCode: value.languageCode,
+        roleIds: value.roleIds ?? [],
       }).subscribe({
         next: () => { this.toast.success('Usuario creado'); this.saving.set(false); this.close(); this.refresh(); },
         error: () => this.saving.set(false),
       });
     } else {
-      this.api.update(editing.id, { fullName: value.fullName, enabled: value.enabled }).pipe(
+      this.api.update(editing.id, {
+        firstName: value.firstName,
+        lastName: value.lastName,
+        theme: value.theme,
+        languageCode: value.languageCode,
+      }).pipe(
         switchMap(() => this.api.assignRoles(editing.id!, value.roleIds ?? [])),
         tap(() => this.toast.success('Cambios guardados')),
       ).subscribe({

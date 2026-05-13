@@ -75,3 +75,45 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 5px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-border-strong); }
+
+/* UX defaults */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+a[href] {
+  cursor: pointer;
+}
+button:disabled, [role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+input, select, textarea, button {
+  transition: border-color .15s ease, background-color .15s ease, color .15s ease, box-shadow .15s ease;
+}
+
+/* Routed page enter animation.
+   IMPORTANTE: usar SOLO opacity (no transform) en el contenedor de pagina,
+   porque cualquier ancestro con `transform` se vuelve containing block para
+   sus descendientes con `position: fixed` (drawers, modales, toasts) y los
+   atrapa dentro del area de contenido en vez de la viewport. */
+@keyframes app-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+router-outlet + * {
+  display: block;
+  animation: app-fade-in .2s ease-out both;
+}
+
+/* Animacion enter para listas/cards. Esta SI usa transform, asi que NO
+   ponerla en wrappers que contengan drawers/modales. */
+@keyframes app-fade-in-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.anim-in { animation: app-fade-in-up .25s ease-out both; }
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  router-outlet + *, .anim-in { animation: none !important; }
+  *, *::before, *::after { transition-duration: 0ms !important; }
+}

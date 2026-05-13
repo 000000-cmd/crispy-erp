@@ -61,7 +61,7 @@ import { FieldLabelComponent } from './fields/field-label.component';
 
       @if (showSubmit()) {
         <div [style.gridColumn]="'span ' + (schema().cols ?? 12)">
-          <app-button type="submit" [loading]="submitting()" [disabled]="form.invalid">
+          <app-button type="submit" [loading]="submitting()">
             {{ schema().submit?.label || ('common.save' | t) }}
           </app-button>
         </div>
@@ -76,6 +76,8 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
 
   readonly submitValue = output<Record<string, any>>();
   readonly valueChange = output<Record<string, any>>();
+  /** Emite cada vez que cambia form.dirty. Util para confirm de descarte. */
+  readonly dirtyChange = output<boolean>();
 
   readonly form = new FormGroup({});
 
@@ -94,12 +96,17 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.buildForm();
 
+    let lastDirty = this.form.dirty;
     this.subs.push(this.form.valueChanges.subscribe(v => {
       this.recomputeVisibility();
       this.recomputeDisabled();
       this.recomputeRequired();
       this.recomputeHints();
       this.valueChange.emit(v as any);
+      if (this.form.dirty !== lastDirty) {
+        lastDirty = this.form.dirty;
+        this.dirtyChange.emit(lastDirty);
+      }
     }));
 
     this.recomputeVisibility();
@@ -136,9 +143,15 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
   }
 
   isRequired(f: FieldConfig): boolean {
-    const c = this.form.get(f.key);
-    if (!c) return false;
-    return c.hasValidator(Validators.required) || (f.requiredWhen ? f.requiredWhen(this.form) : false);
+    // OJO: hasValidator(Validators.required) NO detecta nuestros validators
+    // porque buildValidators los envuelve en messaged() y la referencia cambia.
+    // Mejor mirar el schema directamente.
+    const fromSchema = (f.validators || []).some(v =>
+      v === 'required' ||
+      (typeof v === 'object' && v !== null && 'kind' in v && (v as any).kind === 'required')
+    );
+    if (fromSchema) return true;
+    return f.requiredWhen ? f.requiredWhen(this.form) : false;
   }
 
   optionsFor(f: FieldConfig): Option[] {

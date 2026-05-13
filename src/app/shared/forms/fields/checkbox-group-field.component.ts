@@ -1,27 +1,29 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, input } from '@angular/core';
 import { AbstractControl, ReactiveFormsModule } from '@angular/forms';
+import { CheckboxComponent } from '../../ui/checkbox/checkbox.component';
 import { FieldConfig, Option } from '../core/types';
 import { firstErrorMessage } from '../core/validators';
+import { controlTick } from '../core/control-tick';
 import { TPipe } from '../../pipes/t.pipe';
 
+/**
+ * Grupo de checkboxes (multi-seleccion o single via field.multiple=false).
+ * Usa el CheckboxComponent compartido para alinear con el design system.
+ */
 @Component({
   selector: 'df-checkbox-group-field',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TPipe],
+  imports: [CommonModule, ReactiveFormsModule, CheckboxComponent, TPipe],
   template: `
     <div class="flex flex-wrap gap-x-5 gap-y-2 py-1">
       @for (o of options(); track o.value) {
-        <label class="inline-flex items-center gap-2 text-sm cursor-pointer">
-          <input
-            type="checkbox"
-            [checked]="isChecked(o)"
-            (change)="toggle(o, $event)"
-            [disabled]="o.disabled || false"
-            class="accent-primary-500"
-          />
-          <span>{{ o.label }}</span>
-        </label>
+        <app-checkbox
+          [checked]="isChecked(o)"
+          [disabled]="o.disabled || false"
+          [label]="o.label"
+          (checkedChange)="toggle(o, $event)"
+        />
       }
     </div>
     @if (showError()) {
@@ -35,7 +37,6 @@ export class CheckboxGroupFieldComponent {
   readonly field = input.required<FieldConfig>();
   readonly control = input.required<AbstractControl>();
   readonly options = input<Option[]>([]);
-  /** Hint resuelto por el dynamic-form. */
   readonly hint = input<string>('');
   readonly ctrl = computed(() => this.control() as any);
 
@@ -45,8 +46,7 @@ export class CheckboxGroupFieldComponent {
     return Array.isArray(v) && v.includes(o.value);
   }
 
-  toggle(o: Option, ev: Event) {
-    const checked = (ev.target as HTMLInputElement).checked;
+  toggle(o: Option, checked: boolean) {
     if (this.field().multiple === false) {
       this.ctrl().setValue(checked ? o.value : null);
     } else {
@@ -60,11 +60,16 @@ export class CheckboxGroupFieldComponent {
     this.ctrl().markAsTouched();
   }
 
+  /** Reactividad sobre touched/dirty/errors. */
+  private readonly _tick = controlTick(this.control);
+
   readonly showError = computed(() => {
+    this._tick();
     const c = this.control();
     return !!c.errors && (c.touched || c.dirty);
   });
   readonly errorMsg = computed(() => {
+    this._tick();
     const e = firstErrorMessage(this.control());
     return { key: e?.message ?? '', params: e?.params };
   });

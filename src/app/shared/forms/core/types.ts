@@ -87,6 +87,12 @@ export interface BaseFieldConfig {
   options?: OptionsSource;
   /** Multi-selection toggle for checkbox-group / radio (default false for radio, true for checkbox-group) */
   multiple?: boolean;
+  /** Para select/multiselect: muestra un input de busqueda dentro del panel. */
+  searchable?: boolean;
+  /** Placeholder del input de busqueda en selects searchable. */
+  searchPlaceholder?: string;
+  /** Para multiselect: muestra un checkbox "Seleccionar todos" en el header del panel. */
+  selectAll?: boolean;
 
   // ---- Decoradores opcionales del label ----
   /** Nombre de icono Lucide (kebab-case) que se renderiza junto al label. Ver `icon-resolver`. */

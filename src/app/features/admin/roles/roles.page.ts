@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Plus, Pencil, Trash2, ShieldCheck } from 'lucide-angular';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
-import { ModalComponent } from '../../../shared/ui/modal/modal.component';
+import { CheckboxComponent } from '../../../shared/ui/checkbox/checkbox.component';
+import { DrawerComponent } from '../../../shared/ui/drawer/drawer.component';
 import { ColumnDef, DataTableComponent, RowAction } from '../../../shared/table/data-table.component';
 import { DynamicFormComponent } from '../../../shared/forms/dynamic-form.component';
 import { FormSchema } from '../../../shared/forms/core/types';
@@ -16,7 +17,7 @@ import { Permission, PermissionsApi } from '../permissions/permissions.api';
 @Component({
   selector: 'app-admin-roles',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, ModalComponent, DataTableComponent, DynamicFormComponent, SpinnerComponent],
+  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, CheckboxComponent, DrawerComponent, DataTableComponent, DynamicFormComponent, SpinnerComponent],
   template: `
     <div class="space-y-5">
       <header class="flex items-end justify-between gap-3">
@@ -29,15 +30,31 @@ import { Permission, PermissionsApi } from '../permissions/permissions.api';
 
       <app-data-table [columns]="columns" [rows]="items()" [actions]="actions" [loading]="loading()" />
 
-      <!-- Edit/create modal -->
-      <app-modal [open]="!!editing()" [title]="editing()?.id ? 'Editar rol' : 'Nuevo rol'" size="md" (onClose)="close()">
+      <!-- Edit/create drawer -->
+      <app-drawer
+        [open]="!!editing()"
+        [title]="editing()?.id ? 'Editar rol' : 'Nuevo rol'"
+        size="md"
+        [showActions]="true"
+        [dirty]="dirty()"
+        [saving]="saving()"
+        (save)="submitForm()"
+        (onClose)="close()"
+      >
         @if (editing()) {
-          <app-dynamic-form [schema]="schema" [model]="editing()!" [submitting]="saving()" (submitValue)="onSubmit($event)" />
+          <app-dynamic-form
+            #dynForm
+            [schema]="schema"
+            [model]="editing()!"
+            [submitting]="saving()"
+            (submitValue)="onSubmit($event)"
+            (dirtyChange)="dirty.set($event)"
+          />
         }
-      </app-modal>
+      </app-drawer>
 
       <!-- Permissions assignment modal -->
-      <app-modal [open]="!!permsFor()" [title]="permsFor()?.name + ' · permisos'" size="lg" (onClose)="closePerms()">
+      <app-drawer [open]="!!permsFor()" [title]="permsFor()?.name + ' · permisos'" size="lg" (onClose)="closePerms()">
         @if (permsFor()) {
           @if (loadingPerms()) {
             <div class="py-10 text-center"><app-spinner [size]="24" /></div>
@@ -47,9 +64,12 @@ import { Permission, PermissionsApi } from '../permissions/permissions.api';
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-1">
                 @for (p of allPerms(); track p.id) {
                   <label class="flex items-start gap-2 p-2.5 rounded-md border border-border hover:bg-surface-hover cursor-pointer">
-                    <input type="checkbox" class="mt-0.5 accent-primary-500"
-                           [checked]="selected().has(p.id)"
-                           (change)="toggle(p.id, $any($event.target).checked)" />
+                    <span class="mt-0.5">
+                      <app-checkbox
+                        [checked]="selected().has(p.id)"
+                        (checkedChange)="toggle(p.id, $event)"
+                      />
+                    </span>
                     <span class="min-w-0">
                       <span class="block text-sm font-medium text-text">{{ p.name }}</span>
                       <span class="block text-[11px] text-text-muted font-mono">{{ p.code }}</span>
@@ -64,12 +84,12 @@ import { Permission, PermissionsApi } from '../permissions/permissions.api';
           }
         }
         @if (permsFor()) {
-          <div modalFooter class="px-5 py-3 border-t border-border flex justify-end gap-2 bg-surface-muted">
+          <div drawerFooter class="px-5 py-3 border-t border-border flex justify-end gap-2 bg-surface-muted">
             <app-button variant="ghost" (onClick)="closePerms()">Cancelar</app-button>
             <app-button [loading]="savingPerms()" (onClick)="savePerms()">Guardar permisos</app-button>
           </div>
         }
-      </app-modal>
+      </app-drawer>
     </div>
   `,
 })
@@ -85,6 +105,10 @@ export class AdminRolesPage {
   readonly loading = signal(false);
   readonly editing = signal<Partial<Role> | null>(null);
   readonly saving = signal(false);
+  readonly dirty = signal(false);
+
+  readonly dynForm = viewChild<DynamicFormComponent>('dynForm');
+  submitForm() { this.dynForm()?.submit(); }
 
   // Permissions assignment
   readonly permsFor = signal<Role | null>(null);
@@ -114,6 +138,7 @@ export class AdminRolesPage {
       { key: 'name', type: 'text', label: 'Nombre', width: 'half', validators: ['required'] },
       { key: 'description', type: 'textarea', label: 'Descripción', width: 'full' },
     ],
+    submit: { show: false },
   };
 
   constructor() { this.refresh(); }
@@ -126,8 +151,8 @@ export class AdminRolesPage {
     });
   }
 
-  open(r: Role | null) { this.editing.set(r ? { ...r } : {}); }
-  close() { this.editing.set(null); }
+  open(r: Role | null) { this.dirty.set(false); this.editing.set(r ? { ...r } : {}); }
+  close() { this.editing.set(null); this.dirty.set(false); }
 
   onSubmit(v: any) {
     const e = this.editing();

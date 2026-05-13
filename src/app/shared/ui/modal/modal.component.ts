@@ -7,7 +7,7 @@ import { Component, computed, input, output } from '@angular/core';
   imports: [CommonModule],
   template: `
     @if (open()) {
-      <div class="fixed inset-0 z-[80] flex items-center justify-center p-4" (click)="onClose.emit()">
+      <div class="fixed inset-0 z-[300] flex items-center justify-center p-4" (click)="onClose.emit()">
         <div class="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
         <div
           class="relative bg-surface border border-border rounded-xl shadow-xl flex flex-col max-h-[90vh]"

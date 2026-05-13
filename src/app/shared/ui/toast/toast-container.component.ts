@@ -7,7 +7,7 @@ import { ToastService } from './toast.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 w-80">
+    <div class="fixed bottom-4 right-4 z-[400] flex flex-col gap-2 w-80">
       @for (t of toast.toasts(); track t.id) {
         <div
           class="flex items-start gap-3 rounded-lg border px-4 py-3 shadow-sm bg-surface text-text"

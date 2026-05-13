@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Plus, Trash2, ListTree } from 'lucide-angular';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
-import { ModalComponent } from '../../../shared/ui/modal/modal.component';
+import { DrawerComponent } from '../../../shared/ui/drawer/drawer.component';
 import { SwitchComponent } from '../../../shared/ui/switch/switch.component';
 import { EmptyComponent } from '../../../shared/ui/empty/empty.component';
 import { SpinnerComponent } from '../../../shared/ui/spinner/spinner.component';
@@ -16,7 +16,7 @@ import { SystemList, SystemListItem, SystemListsApi } from './system-lists.api';
 @Component({
   selector: 'app-admin-system-lists',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, ModalComponent, SwitchComponent, EmptyComponent, SpinnerComponent, DynamicFormComponent],
+  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, DrawerComponent, SwitchComponent, EmptyComponent, SpinnerComponent, DynamicFormComponent],
   template: `
     <div class="space-y-5">
       <header>
@@ -116,15 +116,25 @@ import { SystemList, SystemListItem, SystemListsApi } from './system-lists.api';
         </section>
       </div>
 
-      <app-modal [open]="itemModalOpen()" [title]="'Nuevo item'" size="md" (onClose)="itemModalOpen.set(false)">
+      <app-drawer
+        [open]="itemModalOpen()"
+        [title]="'Nuevo item'"
+        size="md"
+        [showActions]="true"
+        [dirty]="dirty()"
+        (save)="submitForm()"
+        (onClose)="closeItemDrawer()"
+      >
         @if (itemModalOpen() && selected()) {
           <app-dynamic-form
+            #dynForm
             [schema]="itemSchema"
             [model]="{ enabled: true }"
             (submitValue)="createItem($event)"
+            (dirtyChange)="dirty.set($event)"
           />
         }
-      </app-modal>
+      </app-drawer>
     </div>
   `,
 })
@@ -143,6 +153,12 @@ export class AdminSystemListsPage {
   readonly loadingLists = signal(false);
   readonly loadingItems = signal(false);
   readonly itemModalOpen = signal(false);
+  readonly dirty = signal(false);
+
+  readonly dynForm = viewChild<DynamicFormComponent>('dynForm');
+  submitForm() { this.dynForm()?.submit(); }
+
+  closeItemDrawer() { this.itemModalOpen.set(false); this.dirty.set(false); }
 
   readonly selected = computed(() => this.lists().find(l => l.id === this.selectedId()) ?? null);
 
@@ -152,9 +168,9 @@ export class AdminSystemListsPage {
       { key: 'code', type: 'text', label: 'Código',  width: 'half', validators: ['required', { kind: 'pattern', value: /^[A-Z0-9_]+$/, message: 'Solo mayúsculas, números y _' }] },
       { key: 'name', type: 'text', label: 'Nombre', width: 'half', validators: ['required'] },
       { key: 'description', type: 'textarea', label: 'Descripción', width: 'full' },
-      { key: 'enabled', type: 'switch', label: 'Habilitado', width: 'full', defaultValue: true },
+      { key: 'displayOrder', type: 'number', label: 'Orden', width: 'half', defaultValue: 1, validators: ['required'] },
     ],
-    submit: { label: 'Crear item' },
+    submit: { show: false },
   };
 
   constructor() { this.loadLists(); }
@@ -194,13 +210,13 @@ export class AdminSystemListsPage {
     });
   }
 
-  openItem(_: null) { this.itemModalOpen.set(true); }
+  openItem(_: null) { this.dirty.set(false); this.itemModalOpen.set(true); }
 
   createItem(value: any) {
     const id = this.selectedId();
     if (!id) return;
     this.api.createItem(id, value).subscribe({
-      next: () => { this.toast.success('Item creado'); this.itemModalOpen.set(false); this.loadItems(); },
+      next: () => { this.toast.success('Item creado'); this.closeItemDrawer(); this.loadItems(); },
     });
   }
 

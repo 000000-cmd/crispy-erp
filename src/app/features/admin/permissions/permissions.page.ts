@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { LucideAngularModule, Plus, Pencil, Trash2 } from 'lucide-angular';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
-import { ModalComponent } from '../../../shared/ui/modal/modal.component';
+import { DrawerComponent } from '../../../shared/ui/drawer/drawer.component';
 import { ColumnDef, DataTableComponent, RowAction } from '../../../shared/table/data-table.component';
 import { DynamicFormComponent } from '../../../shared/forms/dynamic-form.component';
 import { FormSchema } from '../../../shared/forms/core/types';
@@ -13,7 +13,7 @@ import { Permission, PermissionsApi } from './permissions.api';
 @Component({
   selector: 'app-admin-permissions',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, ButtonComponent, ModalComponent, DataTableComponent, DynamicFormComponent],
+  imports: [CommonModule, LucideAngularModule, ButtonComponent, DrawerComponent, DataTableComponent, DynamicFormComponent],
   template: `
     <div class="space-y-5">
       <header class="flex items-end justify-between gap-3">
@@ -26,11 +26,27 @@ import { Permission, PermissionsApi } from './permissions.api';
 
       <app-data-table [columns]="columns" [rows]="items()" [actions]="actions" [loading]="loading()" />
 
-      <app-modal [open]="!!editing()" [title]="editing()?.id ? 'Editar permiso' : 'Nuevo permiso'" size="md" (onClose)="close()">
+      <app-drawer
+        [open]="!!editing()"
+        [title]="editing()?.id ? 'Editar permiso' : 'Nuevo permiso'"
+        size="md"
+        [showActions]="true"
+        [dirty]="dirty()"
+        [saving]="saving()"
+        (save)="submitForm()"
+        (onClose)="close()"
+      >
         @if (editing()) {
-          <app-dynamic-form [schema]="schema" [model]="editing()!" [submitting]="saving()" (submitValue)="onSubmit($event)" />
+          <app-dynamic-form
+            #dynForm
+            [schema]="schema"
+            [model]="editing()!"
+            [submitting]="saving()"
+            (submitValue)="onSubmit($event)"
+            (dirtyChange)="dirty.set($event)"
+          />
         }
-      </app-modal>
+      </app-drawer>
     </div>
   `,
 })
@@ -45,6 +61,10 @@ export class AdminPermissionsPage {
   readonly loading = signal(false);
   readonly editing = signal<Partial<Permission> | null>(null);
   readonly saving = signal(false);
+  readonly dirty = signal(false);
+
+  readonly dynForm = viewChild<DynamicFormComponent>('dynForm');
+  submitForm() { this.dynForm()?.submit(); }
 
   readonly columns: ColumnDef<Permission>[] = [
     { key: 'code', label: 'Código', width: '180px' },
@@ -66,6 +86,7 @@ export class AdminPermissionsPage {
       { key: 'name', type: 'text', label: 'Nombre', width: 'half', validators: ['required'] },
       { key: 'description', type: 'textarea', label: 'Descripción', width: 'full' },
     ],
+    submit: { show: false },
   };
 
   constructor() { this.refresh(); }
@@ -78,8 +99,8 @@ export class AdminPermissionsPage {
     });
   }
 
-  open(p: Permission | null) { this.editing.set(p ? { ...p } : {}); }
-  close() { this.editing.set(null); }
+  open(p: Permission | null) { this.dirty.set(false); this.editing.set(p ? { ...p } : {}); }
+  close() { this.editing.set(null); this.dirty.set(false); }
 
   onSubmit(v: any) {
     const e = this.editing();

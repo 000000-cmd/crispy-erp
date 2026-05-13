@@ -3,19 +3,21 @@ import { Component, computed, input } from '@angular/core';
 import { AbstractControl, ReactiveFormsModule } from '@angular/forms';
 import { FieldConfig } from '../core/types';
 import { firstErrorMessage } from '../core/validators';
+import { controlTick } from '../core/control-tick';
 import { TPipe } from '../../pipes/t.pipe';
 
 /**
  * Campo de texto/textarea/email/password/etc. del dynamic-form.
  *
- * Las clases del input cambian de borde segun el estado de validacion una vez
- * el usuario ha tocado o modificado el control:
+ * Estados visuales (cuando el control esta touched o dirty):
  *   - rojo (`border-rose-500`) si invalido
  *   - verde (`border-emerald-500`) si valido
- *   - default + focus ring del primary mientras esta limpio
+ *   - default mientras esta limpio
  *
- * `transition-all` da la sensacion de fluidez vista en rifasya. El label con
- * icono/tooltip/badge lo dibuja `df-field-label` desde el dynamic-form.
+ * Sobre la reactividad: AbstractControl no expone signals, asi que
+ * suscribimos a `events` (statusChanges/valueChanges/touchedChanges) y
+ * disparamos un tick. De lo contrario, llamar `markAllAsTouched()` no
+ * propaga al template y los bordes/iconos se quedan stale.
  */
 @Component({
   selector: 'df-text-field',
@@ -53,6 +55,9 @@ export class TextFieldComponent {
   readonly hint = input<string>('');
   readonly ctrl = computed(() => this.control() as any);
 
+  /** Reactividad sobre touched/dirty/errors (no son signals nativas). */
+  private readonly _tick = controlTick(this.control);
+
   readonly htmlType = computed(() => {
     const t = this.field().type;
     if (t === 'email') return 'email';
@@ -81,16 +86,19 @@ export class TextFieldComponent {
   });
 
   readonly showError = computed(() => {
+    this._tick();
     const c = this.control();
     return !!c.errors && (c.touched || c.dirty);
   });
 
   readonly showValid = computed(() => {
+    this._tick();
     const c = this.control();
     return !c.errors && c.valid && (c.touched || c.dirty);
   });
 
   readonly errorMsg = computed(() => {
+    this._tick();
     const e = firstErrorMessage(this.control());
     return { key: e?.message ?? '', params: e?.params };
   });
