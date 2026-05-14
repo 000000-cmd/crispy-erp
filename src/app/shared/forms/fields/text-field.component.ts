@@ -23,30 +23,7 @@ import { TPipe } from '../../pipes/t.pipe';
   selector: 'df-text-field',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, TPipe],
-  template: `
-    @if (field().type === 'textarea') {
-      <textarea
-        [formControl]="ctrl()"
-        [placeholder]="field().placeholder || ''"
-        [readonly]="field().readonly || false"
-        rows="4"
-        [class]="inputClass()"
-      ></textarea>
-    } @else {
-      <input
-        [type]="htmlType()"
-        [formControl]="ctrl()"
-        [placeholder]="field().placeholder || ''"
-        [readonly]="field().readonly || false"
-        [class]="inputClass()"
-      />
-    }
-    @if (showError()) {
-      <p class="text-[11px] text-rose-600 mt-1">{{ errorMsg().key | t : errorMsg().params }}</p>
-    } @else if (hint()) {
-      <p class="text-[11px] text-text-muted mt-1">{{ hint() }}</p>
-    }
-  `,
+  templateUrl: './text-field.component.html',
 })
 export class TextFieldComponent {
   readonly field = input.required<FieldConfig>();

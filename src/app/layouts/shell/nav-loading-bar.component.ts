@@ -26,24 +26,8 @@ import {
   selector: 'app-nav-loading-bar',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div
-      aria-hidden="true"
-      class="absolute top-0 left-0 right-0 h-0.5 overflow-hidden pointer-events-none z-40"
-      [class.opacity-0]="!visible()"
-      [class.opacity-100]="visible()"
-      style="transition: opacity 150ms"
-    >
-      <div class="h-full bg-primary-500 animate-[nav-bar_1.2s_ease-in-out_infinite]"></div>
-    </div>
-  `,
-  styles: [`
-    @keyframes nav-bar {
-      0%   { transform: translateX(-100%); width: 30%; }
-      50%  { transform: translateX(50%);   width: 60%; }
-      100% { transform: translateX(200%);  width: 30%; }
-    }
-  `],
+  templateUrl: './nav-loading-bar.component.html',
+  styleUrl: './nav-loading-bar.component.scss',
 })
 export class NavLoadingBarComponent {
   private readonly router = inject(Router);

@@ -25,52 +25,7 @@ import { controlTick } from '../core/control-tick';
   selector: 'df-field-label',
   standalone: true,
   imports: [CommonModule, LucideAngularModule, TooltipComponent],
-  template: `
-    <label
-      [for]="forId()"
-      class="flex items-center gap-1.5 text-xs font-medium text-text-muted mb-1.5"
-    >
-      @if (required()) {
-        <span class="text-rose-500" aria-hidden="true">*</span>
-      }
-
-      @if (lucideIcon()) {
-        <lucide-angular [img]="lucideIcon()" class="w-3.5 h-3.5 text-primary-500"></lucide-angular>
-      }
-
-      <span>{{ label() }}</span>
-
-      @if (tooltip()) {
-        <app-tooltip [text]="tooltip()!" [variant]="tooltipVariant()"></app-tooltip>
-      }
-
-      <span
-        class="ml-auto relative inline-block w-3.5 h-3.5 transition-opacity duration-200"
-        [class.opacity-0]="!showStateBadge()"
-        [class.opacity-100]="showStateBadge()"
-        [attr.aria-label]="ariaState()"
-      >
-        <lucide-angular
-          [img]="ValidIcon"
-          class="w-3.5 h-3.5 text-emerald-500 absolute inset-0 transition-opacity duration-200"
-          [class.opacity-100]="state() === 'valid'"
-          [class.opacity-0]="state() !== 'valid'"
-        ></lucide-angular>
-        <lucide-angular
-          [img]="MissingIcon"
-          class="w-3.5 h-3.5 text-rose-500 absolute inset-0 transition-opacity duration-200"
-          [class.opacity-100]="state() === 'missing'"
-          [class.opacity-0]="state() !== 'missing'"
-        ></lucide-angular>
-        <lucide-angular
-          [img]="InvalidIcon"
-          class="w-3.5 h-3.5 text-amber-500 absolute inset-0 transition-opacity duration-200"
-          [class.opacity-100]="state() === 'invalid'"
-          [class.opacity-0]="state() !== 'invalid'"
-        ></lucide-angular>
-      </span>
-    </label>
-  `,
+  templateUrl: './field-label.component.html',
 })
 export class FieldLabelComponent {
   readonly forId = input<string>('');

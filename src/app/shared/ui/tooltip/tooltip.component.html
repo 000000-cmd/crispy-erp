@@ -1,0 +1,25 @@
+
+    <span class="relative inline-flex items-center group/tip">
+      <lucide-angular
+        [img]="HelpIcon"
+        class="w-3.5 h-3.5 text-text-muted cursor-help"
+        tabindex="0"
+      ></lucide-angular>
+
+      <span
+        class="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 z-20
+               whitespace-pre w-max max-w-xs rounded-md border px-2.5 py-1.5
+               text-[11px] leading-snug text-left
+               opacity-0 group-hover/tip:opacity-100 group-focus-within/tip:opacity-100
+               transition-opacity duration-200"
+        [class]="bodyClass()"
+      >
+        <span [innerHTML]="text()"></span>
+        <span
+          class="absolute left-1/2 top-full -translate-x-1/2 w-0 h-0
+                 border-x-4 border-x-transparent border-t-4"
+          [class]="arrowClass()"
+        ></span>
+      </span>
+    </span>
+  

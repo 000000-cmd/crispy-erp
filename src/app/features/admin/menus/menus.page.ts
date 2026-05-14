@@ -14,155 +14,21 @@ import { FormSchema, Option } from '../../../shared/forms/core/types';
 import { resolveIcon } from '../../../layouts/shell/icon-resolver';
 import { AdminMenusApi, MenuNode } from './menus.api';
 import { Role, RolesApi } from '../roles/roles.api';
+import { TPipe } from '../../../shared/pipes/t.pipe';
+import { I18nService } from '../../../core/i18n/i18n.service';
 
 @Component({
   selector: 'app-admin-menus',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, CheckboxComponent, DrawerComponent, EmptyComponent, SpinnerComponent, DynamicFormComponent],
-  template: `
-    <div class="space-y-5">
-      <header class="flex items-end justify-between gap-3">
-        <div>
-          <h1 class="text-xl font-semibold text-text tracking-tight">Menús</h1>
-          <p class="text-sm text-text-muted mt-0.5">Estructura jerárquica de navegación. Asigna cada menú a uno o más roles.</p>
-        </div>
-        <app-button [icon]="plusIcon" (onClick)="openCreate(null)">Nueva sección</app-button>
-      </header>
-
-      <div class="rounded-xl border border-border bg-surface">
-        @if (loading()) {
-          <div class="py-10 text-center"><app-spinner [size]="24" /></div>
-        } @else if (!tree().length) {
-          <app-empty title="Sin menús" description="Aún no hay menús configurados." />
-        } @else {
-          <ul class="divide-y divide-border">
-            @for (root of tree(); track root.id) {
-              <ng-container *ngTemplateOutlet="nodeTpl; context: { $implicit: root, depth: 0 }"></ng-container>
-            }
-          </ul>
-        }
-      </div>
-
-      <ng-template #nodeTpl let-node let-depth="depth">
-        <li>
-          <div class="flex items-center gap-2 px-3 py-2.5 hover:bg-surface-hover group" [style.paddingLeft.px]="12 + depth * 22">
-            @if (node.children?.length) {
-              <button class="h-6 w-6 inline-flex items-center justify-center text-text-muted hover:text-text" (click)="toggle(node.id)">
-                <lucide-icon [img]="isOpen(node.id) ? down : right" [size]="14"></lucide-icon>
-              </button>
-            } @else {
-              <span class="w-6 inline-flex justify-center text-text-soft">
-                @if (depth > 0) { <lucide-icon [img]="branchIcon" [size]="12"></lucide-icon> }
-              </span>
-            }
-
-            <span class="h-7 w-7 rounded-md bg-surface-muted text-text-muted inline-flex items-center justify-center shrink-0">
-              <lucide-icon [img]="resolveIcon(node.icon)" [size]="14"></lucide-icon>
-            </span>
-
-            <span class="flex-1 min-w-0">
-              <span class="text-sm font-medium text-text">{{ node.name }}</span>
-              <span class="ml-2 text-[10px] font-mono text-text-muted bg-surface-muted px-1.5 py-0.5 rounded">{{ node.code }}</span>
-              @if (node.route) {
-                <span class="ml-2 text-[11px] text-text-muted">{{ node.route }}</span>
-              } @else {
-                <span class="ml-2 text-[11px] text-text-soft italic">grupo</span>
-              }
-            </span>
-
-            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button class="h-7 w-7 rounded-md text-text-muted hover:bg-surface-muted hover:text-text inline-flex items-center justify-center"
-                      (click)="openCreate(node)" title="Añadir hijo">
-                <lucide-icon [img]="plusIcon" [size]="14"></lucide-icon>
-              </button>
-              <button class="h-7 w-7 rounded-md text-text-muted hover:bg-surface-muted hover:text-text inline-flex items-center justify-center"
-                      (click)="openRoles(node)" title="Asignar roles">
-                <lucide-icon [img]="shieldIcon" [size]="14"></lucide-icon>
-              </button>
-              <button class="h-7 w-7 rounded-md text-text-muted hover:bg-surface-muted hover:text-primary-600 inline-flex items-center justify-center"
-                      (click)="openEdit(node)" title="Editar">
-                <lucide-icon [img]="editIcon" [size]="14"></lucide-icon>
-              </button>
-              <button class="h-7 w-7 rounded-md text-text-muted hover:bg-surface-muted hover:text-rose-600 inline-flex items-center justify-center"
-                      (click)="askDelete(node)" title="Eliminar">
-                <lucide-icon [img]="trashIcon" [size]="14"></lucide-icon>
-              </button>
-            </div>
-          </div>
-
-          @if (node.children?.length && isOpen(node.id)) {
-            <ul>
-              @for (child of node.children; track child.id) {
-                <ng-container *ngTemplateOutlet="nodeTpl; context: { $implicit: child, depth: depth + 1 }"></ng-container>
-              }
-            </ul>
-          }
-        </li>
-      </ng-template>
-
-      <!-- Create / edit drawer -->
-      <app-drawer
-        [open]="!!editing()"
-        [title]="modalTitle()"
-        size="lg"
-        [showActions]="true"
-        [dirty]="dirty()"
-        [saving]="saving()"
-        (save)="submitForm()"
-        (onClose)="closeEditor()"
-      >
-        @if (editing()) {
-          <app-dynamic-form
-            #dynForm
-            [schema]="schema()"
-            [model]="editing()!"
-            [submitting]="saving()"
-            (submitValue)="onSubmit($event)"
-            (dirtyChange)="dirty.set($event)"
-          />
-        }
-      </app-drawer>
-
-      <!-- Roles assignment modal -->
-      <app-drawer [open]="!!rolesFor()" [title]="rolesFor()?.name + ' · roles'" size="md" (onClose)="closeRoles()">
-        @if (rolesFor()) {
-          @if (loadingRoles()) {
-            <div class="py-10 text-center"><app-spinner [size]="24" /></div>
-          } @else {
-            <div class="space-y-2">
-              <p class="text-xs text-text-muted">Marca los roles que verán este menú.</p>
-              @for (r of allRoles(); track r.id) {
-                <label class="flex items-start gap-2 p-2.5 rounded-md border border-border hover:bg-surface-hover cursor-pointer">
-                  <span class="mt-0.5">
-                    <app-checkbox
-                      [checked]="selectedRoles().has(r.id)"
-                      (checkedChange)="toggleRole(r.id, $event)"
-                    />
-                  </span>
-                  <span class="min-w-0">
-                    <span class="block text-sm font-medium text-text">{{ r.name }}</span>
-                    <span class="block text-[11px] text-text-muted font-mono">{{ r.code }}</span>
-                  </span>
-                </label>
-              }
-            </div>
-          }
-        }
-        @if (rolesFor()) {
-          <div drawerFooter class="px-5 py-3 border-t border-border flex justify-end gap-2 bg-surface-muted">
-            <app-button variant="ghost" (onClick)="closeRoles()">Cancelar</app-button>
-            <app-button [loading]="savingRoles()" (onClick)="saveRoles()">Guardar</app-button>
-          </div>
-        }
-      </app-drawer>
-    </div>
-  `,
+  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, CheckboxComponent, DrawerComponent, EmptyComponent, SpinnerComponent, DynamicFormComponent, TPipe],
+  templateUrl: './menus.page.html',
 })
 export class AdminMenusPage {
   private readonly api = inject(AdminMenusApi);
   private readonly rolesApi = inject(RolesApi);
   private readonly confirm = inject(ConfirmService);
   private readonly toast = inject(ToastService);
+  private readonly i18n = inject(I18nService);
 
   protected readonly plusIcon = Plus;
   protected readonly editIcon = Pencil;
@@ -184,7 +50,10 @@ export class AdminMenusPage {
 
   readonly dynForm = viewChild<DynamicFormComponent>('dynForm');
   submitForm() { this.dynForm()?.submit(); }
-  readonly modalTitle = computed(() => this.editing()?._mode === 'create' ? 'Nuevo menú' : 'Editar menú');
+  readonly modalTitle = computed(() => {
+    void this.i18n.dict();
+    return this.editing()?._mode === 'create' ? this.i18n.t('admin.menus.newTitle') : this.i18n.t('admin.menus.editTitle');
+  });
 
   readonly schema = computed<FormSchema>(() => {
     const e = this.editing();
@@ -256,7 +125,7 @@ export class AdminMenusPage {
     };
     const obs = e.id ? this.api.update(e.id, payload) : this.api.create(payload);
     obs.subscribe({
-      next: () => { this.toast.success('Guardado'); this.saving.set(false); this.closeEditor(); this.refresh(); },
+      next: () => { this.toast.success(this.i18n.t('admin.menus.toast.saved')); this.saving.set(false); this.closeEditor(); this.refresh(); },
       error: () => this.saving.set(false),
     });
   }
@@ -264,15 +133,15 @@ export class AdminMenusPage {
   async askDelete(n: MenuNode) {
     const hasKids = n.children?.length > 0;
     const ok = await this.confirm.ask({
-      title: 'Eliminar menú',
+      title: this.i18n.t('admin.menus.delete.title'),
       message: hasKids
-        ? `"${n.name}" tiene ${n.children.length} sub-menú(s). Se eliminarán también. ¿Continuar?`
-        : `¿Eliminar "${n.name}"?`,
-      tone: 'danger', confirmText: 'Eliminar',
+        ? this.i18n.t('admin.menus.delete.withChildren', { name: n.name, count: n.children.length })
+        : this.i18n.t('admin.menus.delete.message', { name: n.name }),
+      tone: 'danger', confirmText: this.i18n.t('common.delete'),
     });
     if (!ok) return;
     this.api.remove(n.id).subscribe({
-      next: () => { this.toast.success('Eliminado'); this.refresh(); },
+      next: () => { this.toast.success(this.i18n.t('admin.menus.toast.deleted')); this.refresh(); },
     });
   }
 
@@ -304,7 +173,7 @@ export class AdminMenusPage {
     if (!r) return;
     this.savingRoles.set(true);
     this.api.setRoles(r.id, Array.from(this.selectedRoles())).subscribe({
-      next: () => { this.toast.success('Roles asignados'); this.savingRoles.set(false); this.closeRoles(); },
+      next: () => { this.toast.success(this.i18n.t('admin.menus.toast.rolesSaved')); this.savingRoles.set(false); this.closeRoles(); },
       error: () => this.savingRoles.set(false),
     });
   }

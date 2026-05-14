@@ -5,10 +5,7 @@ import { ComingSoonComponent } from './coming-soon.component';
   selector: 'app-admin-tenants',
   standalone: true,
   imports: [ComingSoonComponent],
-  template: `<app-coming-soon
-    title="Empresas"
-    subtitle="Tenants registrados en la plataforma."
-    description="Gestión de empresas, planes y límites. El backend para esta sección está en desarrollo." />`,
+  templateUrl: './admin-stub.pages.tenants.html',
 })
 export class AdminTenantsPage {}
 
@@ -16,10 +13,7 @@ export class AdminTenantsPage {}
   selector: 'app-admin-invitations',
   standalone: true,
   imports: [ComingSoonComponent],
-  template: `<app-coming-soon
-    title="Invitaciones"
-    subtitle="Invitaciones enviadas a nuevos usuarios."
-    description="Aquí podrás reenviar, revocar y crear invitaciones. Pendiente de endpoint en el backend." />`,
+  templateUrl: './admin-stub.pages.invitations.html',
 })
 export class AdminInvitationsPage {}
 
@@ -27,9 +21,6 @@ export class AdminInvitationsPage {}
   selector: 'app-admin-audit',
   standalone: true,
   imports: [ComingSoonComponent],
-  template: `<app-coming-soon
-    title="Auditoría"
-    subtitle="Bitácora de eventos del sistema."
-    description="Historial filtrable de acciones por usuario, módulo y rango de fechas. Pendiente de endpoint." />`,
+  templateUrl: './admin-stub.pages.audit.html',
 })
 export class AdminAuditPage {}

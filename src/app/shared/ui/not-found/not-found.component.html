@@ -1,0 +1,36 @@
+<div class="min-h-[60vh] flex items-center justify-center px-6 py-12">
+  <div class="max-w-md w-full text-center space-y-6 anim-in">
+    <div class="relative inline-flex">
+      <div class="absolute inset-0 bg-primary-500/20 rounded-full blur-2xl"></div>
+      <div class="relative h-24 w-24 mx-auto rounded-full bg-primary-50 dark:bg-primary-900/30
+                  text-primary-500 dark:text-primary-300 inline-flex items-center justify-center
+                  ring-1 ring-primary-200/60 dark:ring-primary-700/40">
+        <lucide-icon [img]="iconCompass" [size]="40"></lucide-icon>
+      </div>
+    </div>
+
+    @if (mode() === 'not-found') {
+      <p class="text-7xl font-bold text-primary-500 tracking-tight leading-none">404</p>
+    }
+
+    <div class="space-y-2">
+      <h1 class="text-2xl font-semibold text-text tracking-tight">
+        {{ resolvedTitleKey() | t }}
+      </h1>
+      <p class="text-sm text-text-muted leading-relaxed">
+        {{ resolvedDescKey() | t }}
+      </p>
+    </div>
+
+    <div class="flex items-center justify-center gap-2 pt-2">
+      <app-button variant="secondary" [icon]="iconBack" (onClick)="goBack()">
+        {{ 'common.back' | t }}
+      </app-button>
+      <a [routerLink]="homeRoute()">
+        <app-button variant="primary" [icon]="iconHome">
+          {{ 'notfound.goHome' | t }}
+        </app-button>
+      </a>
+    </div>
+  </div>
+</div>

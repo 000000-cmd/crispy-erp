@@ -30,46 +30,7 @@ import { Check, LucideAngularModule } from 'lucide-angular';
   providers: [
     { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => CheckboxComponent), multi: true },
   ],
-  template: `
-    <label class="inline-flex items-center gap-2 select-none"
-           [class.cursor-pointer]="!disabled()"
-           [class.cursor-not-allowed]="disabled()"
-           [class.opacity-50]="disabled()">
-      <input
-        type="checkbox"
-        class="sr-only peer"
-        [checked]="checked()"
-        [disabled]="disabled()"
-        (change)="onToggle($any($event.target).checked)"
-        (blur)="touched()"
-      />
-
-      <span
-        class="w-4 h-4 inline-flex items-center justify-center rounded
-               border-2 transition-all duration-200
-               peer-focus-visible:ring-2 peer-focus-visible:ring-primary-500/40 peer-focus-visible:ring-offset-1 peer-focus-visible:ring-offset-surface"
-        [class.bg-primary-500]="checked()"
-        [class.border-primary-500]="checked()"
-        [class.bg-surface]="!checked()"
-        [class.border-border]="!checked() && !invalid()"
-        [class.border-rose-500]="invalid() && !checked()"
-        [class.hover:border-primary-500]="!disabled() && !checked() && !invalid()"
-      >
-        <lucide-angular
-          [img]="CheckIcon"
-          class="w-3 h-3 text-white transition-all duration-150"
-          [class.opacity-100]="checked()"
-          [class.opacity-0]="!checked()"
-          [class.scale-100]="checked()"
-          [class.scale-50]="!checked()"
-        ></lucide-angular>
-      </span>
-
-      @if (label()) {
-        <span class="text-sm text-text">{{ label() }}</span>
-      }
-    </label>
-  `,
+  templateUrl: './checkbox.component.html',
 })
 export class CheckboxComponent implements ControlValueAccessor {
   readonly checked = model<boolean>(false);

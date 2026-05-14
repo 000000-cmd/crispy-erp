@@ -1,0 +1,23 @@
+
+    <header class="h-14 border-b border-border bg-surface/80 backdrop-blur flex items-center px-3 gap-3 sticky top-0 z-30">
+      <button
+        class="h-9 w-9 rounded-md hover:bg-surface-hover inline-flex items-center justify-center text-text-muted hover:text-text transition-colors cursor-pointer"
+        (click)="layout.toggle()"
+        [title]="(layout.isCollapsed() ? 'common.expand' : 'common.collapse') | t"
+      >
+        <lucide-icon [img]="layout.isCollapsed() ? openIcon : closeIcon" [size]="16"></lucide-icon>
+      </button>
+
+      <div class="flex-1 min-w-0 px-1">
+        <ng-content />
+      </div>
+
+      <app-language-toggle />
+      <app-theme-toggle />
+
+      <button class="h-9 w-9 rounded-md hover:bg-surface-hover inline-flex items-center justify-center text-text-muted hover:text-text relative transition-colors cursor-pointer" [title]="'common.notifications' | t">
+        <lucide-icon [img]="bellIcon" [size]="16"></lucide-icon>
+        <span class="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-rose-500"></span>
+      </button>
+    </header>
+  

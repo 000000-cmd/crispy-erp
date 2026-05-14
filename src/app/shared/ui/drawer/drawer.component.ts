@@ -5,6 +5,8 @@ import {
 } from '@angular/core';
 import { ConfirmService } from '../confirm/confirm.service';
 import { ButtonComponent } from '../button/button.component';
+import { TPipe } from '../../pipes/t.pipe';
+import { I18nService } from '../../../core/i18n/i18n.service';
 
 /**
  * Slide-from-right drawer.
@@ -28,77 +30,12 @@ import { ButtonComponent } from '../button/button.component';
 @Component({
   selector: 'app-drawer',
   standalone: true,
-  imports: [CommonModule, ButtonComponent],
-  template: `
-    <div
-      #portal
-      class="fixed inset-0 z-[200]"
-      [class.pointer-events-none]="!open()"
-      aria-hidden="false"
-    >
-      <!-- Backdrop -->
-      <div
-        class="absolute inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity duration-300 ease-out"
-        [class.opacity-100]="open()"
-        [class.opacity-0]="!open()"
-        (click)="requestClose('backdrop')"
-      ></div>
-
-      <aside
-        role="dialog"
-        aria-modal="true"
-        class="absolute top-0 right-0 h-full bg-surface border-l border-border shadow-2xl
-               flex flex-col transition-transform duration-300 ease-out
-               will-change-transform"
-        [class]="sizeClass()"
-        [class.translate-x-0]="open()"
-        [class.translate-x-full]="!open()"
-      >
-        @if (title()) {
-          <header class="px-5 py-4 border-b border-border flex items-center justify-between shrink-0">
-            <h3 class="text-base font-semibold text-text">{{ title() }}</h3>
-            <button
-              type="button"
-              class="h-8 w-8 inline-flex items-center justify-center rounded-md text-text-soft
-                     hover:text-text hover:bg-surface-hover transition-colors cursor-pointer"
-              (click)="requestClose('button')"
-              aria-label="Cerrar"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
-          </header>
-        }
-
-        <div class="px-5 py-4 overflow-auto flex-1">
-          <ng-content />
-        </div>
-
-        @if (hasFooterSlot) {
-          <ng-content select="[drawerFooter]" />
-        } @else if (showActions()) {
-          <footer class="px-5 py-3 border-t border-border bg-surface-muted/40 flex items-center justify-start gap-2 shrink-0">
-            <app-button
-              variant="secondary"
-              [disabled]="saving()"
-              (onClick)="requestClose('button')"
-            >
-              {{ cancelLabel() }}
-            </app-button>
-            <app-button
-              variant="primary"
-              [loading]="saving()"
-              (onClick)="onSaveClick()"
-            >
-              {{ saveLabel() }}
-            </app-button>
-          </footer>
-        }
-      </aside>
-    </div>
-  `,
+  imports: [CommonModule, ButtonComponent, TPipe],
+  templateUrl: './drawer.component.html',
 })
 export class DrawerComponent implements AfterViewInit, OnDestroy {
   private readonly confirm = inject(ConfirmService);
+  private readonly i18n = inject(I18nService);
   private readonly host = inject(ElementRef<HTMLElement>);
   private movedNode: HTMLElement | null = null;
 
@@ -106,16 +43,16 @@ export class DrawerComponent implements AfterViewInit, OnDestroy {
   readonly title = input<string>('');
   readonly size = input<'sm' | 'md' | 'lg' | 'xl'>('md');
   readonly confirmDiscard = input<boolean>(false);
-  readonly discardTitle = input<string>('Descartar cambios');
-  readonly discardMessage = input<string>('Hay cambios sin guardar. ¿Quieres descartarlos?');
+  readonly discardTitle = input<string>('common.discard.title');
+  readonly discardMessage = input<string>('common.discard.message');
 
   // Footer builtin
   readonly showActions = input<boolean>(false);
   readonly saving = input<boolean>(false);
   readonly dirty = input<boolean>(false);
-  readonly saveLabel = input<string>('Guardar');
-  readonly closeLabel = input<string>('Cerrar');
-  readonly cancelLabel_ = input<string>('Cancelar', { alias: 'cancelLabel' });
+  readonly saveLabel = input<string>('common.save');
+  readonly closeLabel = input<string>('common.close');
+  readonly cancelLabel_ = input<string>('common.cancel', { alias: 'cancelLabel' });
 
   readonly onClose = output<void>();
   readonly save = output<void>();
@@ -162,10 +99,10 @@ export class DrawerComponent implements AfterViewInit, OnDestroy {
     const needsConfirm = this.confirmDiscard() || this.dirty();
     if (needsConfirm) {
       const ok = await this.confirm.ask({
-        title: this.discardTitle(),
-        message: this.discardMessage(),
-        confirmText: 'Descartar',
-        cancelText: 'Seguir editando',
+        title: this.i18n.t(this.discardTitle()),
+        message: this.i18n.t(this.discardMessage()),
+        confirmText: this.i18n.t('common.discard'),
+        cancelText: this.i18n.t('common.keepEditing'),
         tone: 'danger',
       });
       if (!ok) return;

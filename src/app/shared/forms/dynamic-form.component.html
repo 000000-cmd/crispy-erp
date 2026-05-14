@@ -1,0 +1,40 @@
+
+    <form [formGroup]="form" (ngSubmit)="submit()" (focusout)="onFocusOut($event)" class="grid gap-4" [style.gridTemplateColumns]="gridCols()">
+      @for (f of visibleFields(); track f.key) {
+        <div [attr.data-field]="f.key" [style.gridColumn]="span(f)">
+          @if (showLabel(f)) {
+            <df-field-label
+              [forId]="f.key"
+              [label]="f.label || ''"
+              [required]="isRequired(f)"
+              [icon]="f.icon"
+              [tooltip]="f.tooltip"
+              [tooltipVariant]="f.tooltipVariant ?? 'info'"
+              [control]="form.get(f.key)"
+            />
+          }
+
+          @switch (f.type) {
+            @case ('select')        { <df-select-field [field]="f" [control]="form.get(f.key)!" [options]="optionsFor(f)" [hint]="hintFor(f)" /> }
+            @case ('multiselect')   { <df-select-field [field]="f" [control]="form.get(f.key)!" [options]="optionsFor(f)" [hint]="hintFor(f)" /> }
+            @case ('radio')         { <df-radio-field  [field]="f" [control]="form.get(f.key)!" [options]="optionsFor(f)" [hint]="hintFor(f)" /> }
+            @case ('checkbox-group'){ <df-checkbox-group-field [field]="f" [control]="form.get(f.key)!" [options]="optionsFor(f)" [hint]="hintFor(f)" /> }
+            @case ('checkbox')      { <df-checkbox-field [field]="f" [control]="form.get(f.key)!" [hint]="hintFor(f)" /> }
+            @case ('switch')        { <df-switch-field [field]="f" [control]="form.get(f.key)!" [hint]="hintFor(f)" /> }
+            @case ('file')          { <df-file-field [field]="f" [control]="form.get(f.key)!" [hint]="hintFor(f)" /> }
+            @case ('hidden')        { }
+            @case ('custom')        { <ng-container *ngComponentOutlet="f.customComponent!; inputs: { field: f, control: form.get(f.key)! }"></ng-container> }
+            @default                { <df-text-field [field]="f" [control]="form.get(f.key)!" [hint]="hintFor(f)" /> }
+          }
+        </div>
+      }
+
+      @if (showSubmit()) {
+        <div [style.gridColumn]="'span ' + (schema().cols ?? 12)">
+          <app-button type="submit" [loading]="submitting()">
+            {{ schema().submit?.label || ('common.save' | t) }}
+          </app-button>
+        </div>
+      }
+    </form>
+  

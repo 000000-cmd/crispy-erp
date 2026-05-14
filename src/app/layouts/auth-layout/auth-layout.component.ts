@@ -7,30 +7,7 @@ import { LucideAngularModule, Moon, Sun } from 'lucide-angular';
   selector: 'app-auth-layout',
   standalone: true,
   imports: [RouterOutlet, LucideAngularModule],
-  template: `
-    <div class="min-h-screen flex bg-bg text-text">
-      <div class="hidden lg:flex flex-1 bg-primary-500 items-center justify-center p-12 relative">
-        <button
-          class="absolute top-5 right-5 h-9 w-9 rounded-full bg-white/15 hover:bg-white/25 text-white inline-flex items-center justify-center"
-          (click)="theme.toggleMode()"
-        >
-          <lucide-icon [img]="theme.mode() === 'dark' ? sunIcon : moonIcon" [size]="16"></lucide-icon>
-        </button>
-        <div class="max-w-md text-white">
-          <div class="h-12 w-12 rounded-lg bg-white/20 flex items-center justify-center text-xl font-semibold mb-6">EM</div>
-          <h1 class="text-3xl font-semibold leading-tight mb-3">ERP Moda</h1>
-          <p class="text-white/85 text-sm leading-relaxed">
-            Plataforma de gestión integral para tu negocio. Inventario, citas, equipo y métricas en un solo lugar.
-          </p>
-        </div>
-      </div>
-      <div class="flex-1 flex items-center justify-center p-8">
-        <div class="w-full max-w-sm">
-          <router-outlet />
-        </div>
-      </div>
-    </div>
-  `,
+  templateUrl: './auth-layout.component.html',
 })
 export class AuthLayoutComponent {
   protected readonly theme = inject(ThemeService);

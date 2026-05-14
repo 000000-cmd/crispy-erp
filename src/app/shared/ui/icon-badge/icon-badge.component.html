@@ -1,0 +1,9 @@
+
+    <span [class]="classes()">
+      @if (text(); as t) {
+        {{ t }}
+      } @else {
+        <lucide-icon [img]="icon()" [size]="iconSize()"></lucide-icon>
+      }
+    </span>
+  

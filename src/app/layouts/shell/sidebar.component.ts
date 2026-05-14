@@ -3,8 +3,10 @@ import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { LucideAngularModule, ChevronDown, ChevronRight, LogOut } from 'lucide-angular';
 import { AuthService } from '../../core/auth/auth.service';
+import { I18nService } from '../../core/i18n/i18n.service';
 import { LayoutStateService } from './layout-state.service';
 import { NavItem, NavSection } from './sidebar.types';
+import { TPipe } from '../../shared/pipes/t.pipe';
 
 interface FlyoutState {
   rootKey: string;
@@ -16,165 +18,9 @@ interface FlyoutState {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, LucideAngularModule],
-  template: `
-    <aside
-      class="relative h-screen bg-surface border-r border-border flex flex-col transition-[width] duration-200 ease-out"
-      [style.width.px]="layout.isCollapsed() ? 64 : 256"
-    >
-      <!-- Brand -->
-      <div class="h-14 px-3 flex items-center gap-2.5 border-b border-border shrink-0">
-        <div class="h-9 w-9 rounded-md bg-primary-500 text-white inline-flex items-center justify-center text-sm font-semibold shrink-0">EM</div>
-        @if (!layout.isCollapsed()) {
-          <div class="min-w-0 transition-opacity duration-150">
-            <p class="text-sm font-semibold text-text truncate leading-tight">{{ brand() }}</p>
-            <p class="text-[11px] text-text-muted truncate leading-tight">{{ subtitle() }}</p>
-          </div>
-        }
-      </div>
-
-      <!-- Nav -->
-      <nav class="flex-1 overflow-y-auto overflow-x-hidden py-2">
-        @for (section of sections(); track section.key) {
-          <div class="mb-1">
-            @if (!layout.isCollapsed()) {
-              <button
-                type="button"
-                class="w-full flex items-center justify-between px-3 py-1.5 text-[10px] uppercase tracking-wider text-text-soft hover:text-text-muted"
-                (click)="toggleSection(section.key)"
-              >
-                <span>{{ section.label }}</span>
-                <lucide-icon [img]="isOpen(section.key) ? down : right" [size]="11"></lucide-icon>
-              </button>
-            } @else {
-              <div class="h-px mx-3 my-1 bg-border"></div>
-            }
-
-            @if (layout.isCollapsed() || isOpen(section.key)) {
-              <ul class="space-y-0.5 px-2">
-                @for (item of section.items; track item.key) {
-                  <li
-                    class="relative"
-                    (mouseenter)="onItemHover(section, item, $event)"
-                    (mouseleave)="onItemLeave()"
-                  >
-                    <ng-container *ngTemplateOutlet="navTpl; context: { $implicit: item, depth: 0 }"></ng-container>
-                  </li>
-                }
-              </ul>
-            }
-          </div>
-        }
-      </nav>
-
-      <!-- User footer -->
-      <div class="border-t border-border p-2 shrink-0">
-        <button
-          class="w-full flex items-center gap-2 px-2 py-2 rounded-md hover:bg-surface-hover transition-colors text-left"
-          (click)="goProfile()"
-          [title]="layout.isCollapsed() ? (auth.user()?.fullName || auth.user()?.email || '') : ''"
-        >
-          <div class="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-200 inline-flex items-center justify-center text-[11px] font-semibold shrink-0">
-            {{ initials() }}
-          </div>
-          @if (!layout.isCollapsed()) {
-            <div class="min-w-0 flex-1">
-              <p class="text-xs font-medium text-text truncate leading-tight">{{ auth.user()?.fullName || auth.user()?.email }}</p>
-              <p class="text-[10px] text-text-muted truncate leading-tight">{{ auth.user()?.email }}</p>
-            </div>
-            <button class="text-text-muted hover:text-rose-600 p-1 rounded-md" (click)="$event.stopPropagation(); auth.logout()" title="Cerrar sesión">
-              <lucide-icon [img]="logoutIcon" [size]="14"></lucide-icon>
-            </button>
-          }
-        </button>
-      </div>
-    </aside>
-
-    <!-- Flyout: solo en modo collapsed cuando hay hover sobre un item -->
-    @if (layout.isCollapsed() && flyout(); as fly) {
-      <div
-        class="fixed z-[60] left-[64px] ml-2 w-56 bg-surface border border-border rounded-lg shadow-lg py-2 animate-fadeIn"
-        [style.top.px]="fly.topPx"
-        (mouseenter)="cancelClose()"
-        (mouseleave)="onItemLeave()"
-      >
-        <div class="px-3 pb-2 border-b border-border mb-1">
-          <p class="text-[11px] uppercase tracking-wider text-text-soft">{{ fly.label }}</p>
-        </div>
-        <ul class="space-y-0.5 px-1.5">
-          @for (item of fly.items; track item.key) {
-            @if (item.path) {
-              <li>
-                <a
-                  [routerLink]="item.path"
-                  routerLinkActive="bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-200"
-                  class="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-sm text-text hover:bg-surface-hover"
-                  (click)="closeFlyout()"
-                >
-                  @if (item.icon) { <lucide-icon [img]="item.icon" [size]="14" class="shrink-0 text-text-muted"></lucide-icon> }
-                  <span class="flex-1 truncate">{{ item.label }}</span>
-                </a>
-              </li>
-            }
-          }
-        </ul>
-      </div>
-    }
-
-    <!-- Templates -->
-    <ng-template #navTpl let-item let-depth="depth">
-      @if (item.path) {
-        <a
-          [routerLink]="item.path"
-          routerLinkActive="bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-200 font-medium"
-          [class]="linkClass(depth)"
-          [title]="layout.isCollapsed() ? item.label : ''"
-        >
-          @if (item.icon) { <lucide-icon [img]="item.icon" [size]="16" class="shrink-0"></lucide-icon> }
-          @if (!layout.isCollapsed()) {
-            <span class="flex-1 truncate">{{ item.label }}</span>
-            @if (item.badge != null) {
-              <span class="text-[10px] bg-surface-muted text-text-muted px-1.5 py-0.5 rounded">{{ item.badge }}</span>
-            }
-          }
-        </a>
-      } @else {
-        @if (!layout.isCollapsed()) {
-          <button
-            type="button"
-            [class]="linkClass(depth) + ' w-full text-left'"
-            (click)="toggleSection(item.key)"
-          >
-            @if (item.icon) { <lucide-icon [img]="item.icon" [size]="16" class="shrink-0"></lucide-icon> }
-            <span class="flex-1 truncate">{{ item.label }}</span>
-            <lucide-icon [img]="isOpen(item.key) ? down : right" [size]="12"></lucide-icon>
-          </button>
-
-          @if (isOpen(item.key) && item.children?.length) {
-            <ul class="space-y-0.5 mt-0.5">
-              @for (child of item.children; track child.key) {
-                <li>
-                  <ng-container *ngTemplateOutlet="navTpl; context: { $implicit: child, depth: depth + 1 }"></ng-container>
-                </li>
-              }
-            </ul>
-          }
-        } @else {
-          <button
-            type="button"
-            class="flex items-center justify-center h-9 w-9 mx-auto rounded-md text-text-muted hover:bg-surface-hover hover:text-text"
-            [title]="item.label"
-          >
-            @if (item.icon) { <lucide-icon [img]="item.icon" [size]="16"></lucide-icon> }
-          </button>
-        }
-      }
-    </ng-template>
-  `,
-  styles: [`
-    @keyframes fadeIn { from { opacity: 0; transform: translateX(-4px); } to { opacity: 1; transform: translateX(0); } }
-    .animate-fadeIn { animation: fadeIn 120ms ease-out; }
-  `],
+  imports: [CommonModule, RouterLink, RouterLinkActive, LucideAngularModule, TPipe],
+  templateUrl: './sidebar.component.html',
+  styleUrl: './sidebar.component.scss',
 })
 export class SidebarComponent {
   readonly brand = input<string>('ERP Moda');
@@ -184,6 +30,16 @@ export class SidebarComponent {
   protected readonly layout = inject(LayoutStateService);
   protected readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly i18n = inject(I18nService);
+
+  /** Traduce si el label es una clave del diccionario, si no lo devuelve tal cual. */
+  lbl(key: string): string {
+    // dependencia explicita para que cambios de locale repinten
+    void this.i18n.dict();
+    const v = this.i18n.t(key);
+    // i18n.t() devuelve el key sin tocar cuando no existe -> mismo string => literal.
+    return v;
+  }
 
   protected readonly down = ChevronDown;
   protected readonly right = ChevronRight;

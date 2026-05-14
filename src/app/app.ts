@@ -9,11 +9,7 @@ import { ConfirmHostComponent } from './shared/ui/confirm/confirm-host.component
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet, ToastContainerComponent, ConfirmHostComponent],
-  template: `
-    <router-outlet />
-    <app-toast-container />
-    <app-confirm-host />
-  `,
+  templateUrl: './app.html',
 })
 export class App {
   // Boot core services.

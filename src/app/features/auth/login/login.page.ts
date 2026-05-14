@@ -10,24 +10,7 @@ import { TPipe } from '../../../shared/pipes/t.pipe';
   selector: 'app-login-page',
   standalone: true,
   imports: [CommonModule, DynamicFormComponent, TPipe],
-  template: `
-    <div class="space-y-6">
-      <div>
-        <h1 class="text-2xl font-semibold text-text">{{ 'auth.welcome' | t }}</h1>
-        <p class="text-sm text-text-muted mt-1">{{ 'auth.subtitle' | t }}</p>
-      </div>
-
-      <app-dynamic-form
-        [schema]="schema"
-        [submitting]="loading()"
-        (submitValue)="onSubmit($event)"
-      />
-
-      @if (error()) {
-        <p class="text-sm text-rose-600">{{ error() }}</p>
-      }
-    </div>
-  `,
+  templateUrl: './login.page.html',
 })
 export class LoginPage {
   private readonly auth = inject(AuthService);

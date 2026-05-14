@@ -9,22 +9,7 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
   selector: 'app-button',
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
-  template: `
-    <button
-      [type]="type()"
-      [disabled]="disabled() || loading()"
-      [class]="classes()"
-      (click)="onClick.emit($event)"
-    >
-      @if (icon() && !loading()) {
-        <lucide-icon [img]="icon()" [size]="iconSize()" class="shrink-0"></lucide-icon>
-      }
-      @if (loading()) {
-        <span class="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
-      }
-      <ng-content />
-    </button>
-  `,
+  templateUrl: './button.component.html',
 })
 export class ButtonComponent {
   readonly variant = input<ButtonVariant>('primary');

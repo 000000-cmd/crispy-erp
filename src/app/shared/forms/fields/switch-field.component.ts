@@ -13,23 +13,7 @@ import { FieldConfig } from '../core/types';
   selector: 'df-switch-field',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, SwitchComponent, TooltipComponent],
-  template: `
-    <div class="flex items-center justify-between gap-3">
-      <span class="text-sm flex items-center gap-1.5">
-        {{ field().label }}
-        @if (field().tooltip) {
-          <app-tooltip
-            [text]="field().tooltip!"
-            [variant]="field().tooltipVariant ?? 'info'"
-          ></app-tooltip>
-        }
-      </span>
-      <app-switch [formControl]="ctrl()" />
-    </div>
-    @if (hint()) {
-      <p class="text-[11px] text-text-muted mt-1">{{ hint() }}</p>
-    }
-  `,
+  templateUrl: './switch-field.component.html',
 })
 export class SwitchFieldComponent {
   readonly field = input.required<FieldConfig>();

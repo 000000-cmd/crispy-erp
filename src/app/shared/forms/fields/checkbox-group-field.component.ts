@@ -15,23 +15,7 @@ import { TPipe } from '../../pipes/t.pipe';
   selector: 'df-checkbox-group-field',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, CheckboxComponent, TPipe],
-  template: `
-    <div class="flex flex-wrap gap-x-5 gap-y-2 py-1">
-      @for (o of options(); track o.value) {
-        <app-checkbox
-          [checked]="isChecked(o)"
-          [disabled]="o.disabled || false"
-          [label]="o.label"
-          (checkedChange)="toggle(o, $event)"
-        />
-      }
-    </div>
-    @if (showError()) {
-      <p class="text-[11px] text-rose-600 mt-1">{{ errorMsg().key | t : errorMsg().params }}</p>
-    } @else if (hint()) {
-      <p class="text-[11px] text-text-muted mt-1">{{ hint() }}</p>
-    }
-  `,
+  templateUrl: './checkbox-group-field.component.html',
 })
 export class CheckboxGroupFieldComponent {
   readonly field = input.required<FieldConfig>();

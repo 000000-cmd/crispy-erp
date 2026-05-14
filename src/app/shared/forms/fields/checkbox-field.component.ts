@@ -13,26 +13,7 @@ import { FieldConfig } from '../core/types';
   selector: 'df-checkbox-field',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, CheckboxComponent, TooltipComponent],
-  template: `
-    <div class="inline-flex items-start gap-2">
-      <app-checkbox [formControl]="ctrl()" />
-
-      <span class="text-sm leading-tight">
-        {{ field().label }}
-        @if (field().tooltip) {
-          <app-tooltip
-            class="ml-1 align-middle inline-flex"
-            [text]="field().tooltip!"
-            [variant]="field().tooltipVariant ?? 'info'"
-          ></app-tooltip>
-        }
-      </span>
-    </div>
-
-    @if (hint()) {
-      <p class="text-[11px] text-text-muted mt-1 ml-6">{{ hint() }}</p>
-    }
-  `,
+  templateUrl: './checkbox-field.component.html',
 })
 export class CheckboxFieldComponent {
   readonly field = input.required<FieldConfig>();

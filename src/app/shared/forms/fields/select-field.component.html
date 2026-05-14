@@ -1,0 +1,122 @@
+
+    <div class="relative">
+      <button
+        #trigger
+        type="button"
+        [disabled]="control().disabled"
+        (click)="toggle()"
+        (blur)="onBlur()"
+        [class]="triggerClass()"
+      >
+        <span
+          #displayText
+          class="truncate text-left flex-1"
+          [class.text-text-soft]="!hasSelection()"
+        >
+          {{ displayLabel() }}
+        </span>
+        <lucide-angular
+          [img]="ChevronIcon"
+          class="w-4 h-4 opacity-70 transition-transform duration-200 shrink-0"
+          [class.rotate-180]="open()"
+        ></lucide-angular>
+      </button>
+
+      <!-- Medidor invisible: ancho que ocuparia el texto sin truncar.
+           Se usa para decidir si pasar a "N items seleccionados". -->
+      <span
+        #measure
+        aria-hidden="true"
+        class="invisible absolute left-0 top-0 px-3 py-2 text-sm whitespace-nowrap"
+      >{{ rawJoinedLabel() }}</span>
+
+      <div
+        role="listbox"
+        class="absolute z-30 mt-1 w-full rounded-md border bg-surface shadow-lg
+               origin-top transition-all duration-150 ease-out border-border
+               flex flex-col overflow-hidden"
+        [class.opacity-100]="open()"
+        [class.scale-100]="open()"
+        [class.opacity-0]="!open()"
+        [class.scale-95]="!open()"
+        [class.pointer-events-none]="!open()"
+      >
+        @if (showHeader()) {
+          <div class="px-2 py-2 border-b border-border bg-surface-muted/40 shrink-0
+                      flex items-center gap-2">
+            @if (multi() && field().selectAll) {
+              <button
+                type="button"
+                (click)="toggleAll(); $event.stopPropagation()"
+                class="shrink-0 inline-flex items-center justify-center h-8 w-8 rounded
+                       hover:bg-surface-hover transition-colors cursor-pointer"
+                [title]="allFilteredSelected() ? 'Quitar todos' : 'Seleccionar todos'"
+              >
+                <span class="pointer-events-none">
+                  <app-checkbox [checked]="allFilteredSelected()" />
+                </span>
+              </button>
+            }
+            @if (field().searchable) {
+              <div class="relative flex-1">
+                <lucide-angular
+                  [img]="SearchIcon"
+                  class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-text-soft pointer-events-none"
+                ></lucide-angular>
+                <input
+                  #searchInput
+                  type="text"
+                  [value]="search()"
+                  (input)="search.set($any($event.target).value)"
+                  (click)="$event.stopPropagation()"
+                  [placeholder]="field().searchPlaceholder || 'Buscar…'"
+                  class="w-full pl-9 pr-2 py-1.5 text-sm rounded border border-border bg-surface
+                         outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20
+                         transition-colors"
+                />
+              </div>
+            }
+          </div>
+        }
+
+        <div class="overflow-y-auto max-h-60">
+          @for (o of filteredOptions(); track o.value) {
+            <div
+              role="option"
+              [attr.aria-selected]="isSelected(o)"
+              (click)="select(o)"
+              class="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer
+                     hover:bg-surface-hover transition-colors"
+              [class.font-medium]="isSelected(o) && !multi()"
+              [class.text-primary-600]="isSelected(o) && !multi()"
+              [class.opacity-50]="o.disabled"
+              [class.pointer-events-none]="o.disabled"
+            >
+              @if (multi()) {
+                <!-- pointer-events-none: clicks pasan al row, que llama select() -->
+                <span class="pointer-events-none">
+                  <app-checkbox [checked]="isSelected(o)" />
+                </span>
+              }
+              <span class="truncate flex-1">{{ o.label }}</span>
+            </div>
+          }
+          @if (filteredOptions().length === 0) {
+            <div class="px-3 py-4 text-center text-sm text-text-muted">
+              @if (search()) {
+                Sin resultados para "{{ search() }}"
+              } @else {
+                Sin opciones
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    @if (showError()) {
+      <p class="text-[11px] text-rose-600 mt-1">{{ errorMsg().key | t : errorMsg().params }}</p>
+    } @else if (hint()) {
+      <p class="text-[11px] text-text-muted mt-1">{{ hint() }}</p>
+    }
+  

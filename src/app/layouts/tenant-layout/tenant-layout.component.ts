@@ -12,20 +12,7 @@ import { MenuService } from '../../core/menu/menu.service';
   selector: 'app-tenant-layout',
   standalone: true,
   imports: [RouterOutlet, SidebarComponent, TopbarComponent, BreadcrumbsComponent, NavLoadingBarComponent],
-  template: `
-    <div class="flex h-screen overflow-hidden bg-bg text-text">
-      <app-sidebar brand="ERP Moda" [subtitle]="subtitle()" [sections]="sections()" />
-      <div class="flex-1 flex flex-col min-w-0 relative">
-        <app-nav-loading-bar />
-        <app-topbar><app-breadcrumbs /></app-topbar>
-        <main class="flex-1 overflow-auto">
-          <div class="max-w-[1400px] mx-auto p-6 lg:p-8">
-            <router-outlet />
-          </div>
-        </main>
-      </div>
-    </div>
-  `,
+  templateUrl: './tenant-layout.component.html',
 })
 export class TenantLayoutComponent {
   private readonly auth = inject(AuthService);

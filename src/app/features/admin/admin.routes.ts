@@ -21,6 +21,9 @@ export const ADMIN_ROUTES: Routes = [
       { path: 'permissions',   data: { crumb: 'Permisos' },     loadComponent: () => import('./permissions/permissions.page').then(m => m.AdminPermissionsPage) },
       { path: 'audit',         data: { crumb: 'Auditoría' },    loadComponent: () => import('./stubs/admin-stub.pages').then(m => m.AdminAuditPage) },
       { path: 'profile',       data: { crumb: 'Mi perfil' },    loadComponent: () => import('./profile/profile.page').then(m => m.AdminProfilePage) },
+      // Cualquier subruta admin/xxx desconocida cae aqui — se ve el sidebar y
+      // la 404 en el area de contenido en vez de patear al login.
+      { path: '**', loadComponent: () => import('../../shared/ui/not-found/not-found.component').then(m => m.NotFoundComponent) },
     ],
   },
 ];

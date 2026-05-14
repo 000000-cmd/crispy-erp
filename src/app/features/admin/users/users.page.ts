@@ -4,6 +4,8 @@ import { LucideAngularModule, Plus, Pencil, Trash2 } from 'lucide-angular';
 import { switchMap, tap } from 'rxjs';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { DrawerComponent } from '../../../shared/ui/drawer/drawer.component';
+import { TPipe } from '../../../shared/pipes/t.pipe';
+import { I18nService } from '../../../core/i18n/i18n.service';
 import { ColumnDef, DataTableComponent, RowAction } from '../../../shared/table/data-table.component';
 import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
@@ -15,53 +17,15 @@ import { buildUserSchema } from './user-form';
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, ButtonComponent, DrawerComponent, DataTableComponent, DynamicFormComponent],
-  template: `
-    <div class="space-y-5">
-      <header class="flex items-end justify-between gap-3">
-        <div>
-          <h1 class="text-xl font-semibold text-text">Usuarios</h1>
-          <p class="text-sm text-text-muted">Cuentas con acceso al sistema y sus roles asignados.</p>
-        </div>
-        <app-button [icon]="plusIcon" (onClick)="openCreate()">Nuevo usuario</app-button>
-      </header>
-
-      <app-data-table
-        [columns]="columns"
-        [rows]="users()"
-        [actions]="actions"
-        [loading]="loading()"
-      />
-
-      <app-drawer
-        [open]="!!editing()"
-        [title]="editing()?.id ? 'Editar usuario' : 'Nuevo usuario'"
-        size="lg"
-        [showActions]="true"
-        [dirty]="dirty()"
-        [saving]="saving()"
-        (save)="submitForm()"
-        (onClose)="close()"
-      >
-        @if (schema()) {
-          <app-dynamic-form
-            #dynForm
-            [schema]="schema()!"
-            [model]="editing()!"
-            [submitting]="saving()"
-            (submitValue)="onSubmit($event)"
-            (dirtyChange)="dirty.set($event)"
-          />
-        }
-      </app-drawer>
-    </div>
-  `,
+  imports: [CommonModule, LucideAngularModule, ButtonComponent, DrawerComponent, DataTableComponent, DynamicFormComponent, TPipe],
+  templateUrl: './users.page.html',
 })
 export class AdminUsersPage {
   private readonly api = inject(UsersApi);
   private readonly rolesApi = inject(RolesApi);
   private readonly confirm = inject(ConfirmService);
   private readonly toast = inject(ToastService);
+  private readonly i18n = inject(I18nService);
 
   protected readonly plusIcon = Plus;
 
@@ -81,18 +45,24 @@ export class AdminUsersPage {
     return { ...s, submit: { ...(s.submit ?? {}), show: false } };
   });
 
-  readonly columns: ColumnDef<AdminUser>[] = [
-    { key: 'username', label: 'Usuario', width: '160px' },
-    { key: 'fullName' as any, label: 'Nombre', format: r => r.fullName || `${r.firstName ?? ''} ${r.lastName ?? ''}`.trim() || '—' },
-    { key: 'email',    label: 'Correo' },
-    { key: 'roles' as any, label: 'Roles', format: r => r.roles?.map(x => x.name).join(', ') || r.roleCodes?.join(', ') || '—' },
-    { key: 'enabled' as any, label: 'Estado', align: 'center', format: r => r.enabled ? 'Activo' : 'Inactivo' },
-  ];
+  readonly columns = computed<ColumnDef<AdminUser>[]>(() => {
+    void this.i18n.dict();
+    return [
+      { key: 'username', label: this.i18n.t('admin.users.column.user'), width: '160px' },
+      { key: 'fullName' as any, label: this.i18n.t('admin.users.column.name'), format: r => r.fullName || `${r.firstName ?? ''} ${r.lastName ?? ''}`.trim() || '—' },
+      { key: 'email',    label: this.i18n.t('admin.users.column.email') },
+      { key: 'roles' as any, label: this.i18n.t('admin.users.column.roles'), format: r => r.roles?.map(x => x.name).join(', ') || r.roleCodes?.join(', ') || '—' },
+      { key: 'enabled' as any, label: this.i18n.t('admin.users.column.status'), align: 'center', format: r => r.enabled ? this.i18n.t('common.active') : this.i18n.t('common.inactive') },
+    ];
+  });
 
-  readonly actions: RowAction<AdminUser>[] = [
-    { icon: Pencil, label: 'Editar',  tone: 'primary', onClick: r => this.openEdit(r) },
-    { icon: Trash2, label: 'Eliminar', tone: 'danger', onClick: r => this.askDelete(r) },
-  ];
+  readonly actions = computed<RowAction<AdminUser>[]>(() => {
+    void this.i18n.dict();
+    return [
+      { icon: Pencil, label: this.i18n.t('common.edit'),  tone: 'primary', onClick: r => this.openEdit(r) },
+      { icon: Trash2, label: this.i18n.t('common.delete'), tone: 'danger', onClick: r => this.askDelete(r) },
+    ];
+  });
 
   constructor() { this.refresh(); }
 
@@ -111,10 +81,12 @@ export class AdminUsersPage {
 
   openEdit(u: AdminUser) {
     this.dirty.set(false);
-    this.editing.set({
-      ...u,
-      roleIds: u.roles?.map(r => r.id) ?? [],
-    } as any);
+    // El back devuelve `roleCodes`, no roleIds. Mapeamos via la lista de roles.
+    this.rolesApi.list().subscribe(allRoles => {
+      const codes = new Set(u.roleCodes ?? []);
+      const roleIds = allRoles.filter(r => codes.has(r.code)).map(r => r.id);
+      this.editing.set({ ...u, roleIds } as any);
+    });
   }
 
   close() { this.editing.set(null); this.dirty.set(false); }
@@ -135,7 +107,7 @@ export class AdminUsersPage {
         languageCode: value.languageCode,
         roleIds: value.roleIds ?? [],
       }).subscribe({
-        next: () => { this.toast.success('Usuario creado'); this.saving.set(false); this.close(); this.refresh(); },
+        next: () => { this.toast.success(this.i18n.t('admin.users.toast.created')); this.saving.set(false); this.close(); this.refresh(); },
         error: () => this.saving.set(false),
       });
     } else {
@@ -146,7 +118,7 @@ export class AdminUsersPage {
         languageCode: value.languageCode,
       }).pipe(
         switchMap(() => this.api.assignRoles(editing.id!, value.roleIds ?? [])),
-        tap(() => this.toast.success('Cambios guardados')),
+        tap(() => this.toast.success(this.i18n.t('admin.users.toast.saved'))),
       ).subscribe({
         next: () => { this.saving.set(false); this.close(); this.refresh(); },
         error: () => this.saving.set(false),
@@ -156,14 +128,14 @@ export class AdminUsersPage {
 
   async askDelete(u: AdminUser) {
     const ok = await this.confirm.ask({
-      title: 'Eliminar usuario',
-      message: `¿Confirmas eliminar a ${u.email}? Esta acción es reversible solo desde la base de datos.`,
-      confirmText: 'Eliminar',
+      title: this.i18n.t('admin.users.delete.title'),
+      message: this.i18n.t('admin.users.delete.message', { email: u.email }),
+      confirmText: this.i18n.t('common.delete'),
       tone: 'danger',
     });
     if (!ok) return;
     this.api.remove(u.id).subscribe({
-      next: () => { this.toast.success('Usuario eliminado'); this.refresh(); },
+      next: () => { this.toast.success(this.i18n.t('admin.users.toast.deleted')); this.refresh(); },
     });
   }
 }

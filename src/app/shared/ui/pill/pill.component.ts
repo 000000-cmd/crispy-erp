@@ -5,7 +5,7 @@ export type PillTone = 'neutral' | 'primary' | 'success' | 'warning' | 'danger' 
 @Component({
   selector: 'app-pill',
   standalone: true,
-  template: `<span [class]="classes()"><ng-content /></span>`,
+  templateUrl: './pill.component.html',
 })
 export class PillComponent {
   readonly tone = input<PillTone>('neutral');

@@ -1,0 +1,12 @@
+
+    <nav class="flex items-center gap-1.5 text-xs">
+      @for (c of crumbs(); track c.label; let last = $last) {
+        @if (c.url && !last) {
+          <a [routerLink]="c.url" class="text-text-muted hover:text-text">{{ c.label }}</a>
+        } @else {
+          <span [class.text-text]="last" [class.font-medium]="last" [class.text-text-muted]="!last">{{ c.label }}</span>
+        }
+        @if (!last) { <span class="text-text-soft">/</span> }
+      }
+    </nav>
+  

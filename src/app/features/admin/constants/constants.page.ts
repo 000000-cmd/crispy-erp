@@ -9,51 +9,20 @@ import { FormSchema } from '../../../shared/forms/core/types';
 import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { Constant, ConstantsApi } from './constants.api';
+import { TPipe } from '../../../shared/pipes/t.pipe';
+import { I18nService } from '../../../core/i18n/i18n.service';
 
 @Component({
   selector: 'app-admin-constants',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, ButtonComponent, DrawerComponent, DataTableComponent, DynamicFormComponent],
-  template: `
-    <div class="space-y-5">
-      <header class="flex items-end justify-between gap-3">
-        <div>
-          <h1 class="text-xl font-semibold text-text">Constantes</h1>
-          <p class="text-sm text-text-muted">Valores globales accesibles por código en runtime.</p>
-        </div>
-        <app-button [icon]="plusIcon" (onClick)="open(null)">Nueva constante</app-button>
-      </header>
-
-      <app-data-table [columns]="columns" [rows]="items()" [actions]="actions" [loading]="loading()" />
-
-      <app-drawer
-        [open]="!!editing()"
-        [title]="editing()?.id ? 'Editar constante' : 'Nueva constante'"
-        size="md"
-        [showActions]="true"
-        [dirty]="dirty()"
-        [saving]="saving()"
-        (save)="submitForm()"
-        (onClose)="close()"
-      >
-        @if (editing()) {
-          <app-dynamic-form
-            #dynForm
-            [schema]="schema"
-            [model]="editing()!"
-            [submitting]="saving()"
-            (submitValue)="onSubmit($event)"
-            (dirtyChange)="dirty.set($event)"
-          />
-        }
-      </app-drawer>
-    </div>
-  `,
+  imports: [CommonModule, LucideAngularModule, ButtonComponent, DrawerComponent, DataTableComponent, DynamicFormComponent, TPipe],
+  templateUrl: './constants.page.html',
 })
 export class AdminConstantsPage {
   private readonly api = inject(ConstantsApi);
   private readonly confirm = inject(ConfirmService);
   private readonly toast = inject(ToastService);
+  private readonly i18n = inject(I18nService);
 
   protected readonly plusIcon = Plus;
 
@@ -66,17 +35,23 @@ export class AdminConstantsPage {
   readonly dynForm = viewChild<DynamicFormComponent>('dynForm');
   submitForm() { this.dynForm()?.submit(); }
 
-  readonly columns: ColumnDef<Constant>[] = [
-    { key: 'code', label: 'Código', width: '180px' },
-    { key: 'name', label: 'Nombre' },
-    { key: 'value', label: 'Valor', width: '220px' },
-    { key: 'enabled' as any, label: 'Estado', align: 'center', format: r => r.enabled ? 'Activa' : 'Inactiva' },
-  ];
+  readonly columns = computed<ColumnDef<Constant>[]>(() => {
+    void this.i18n.dict();
+    return [
+      { key: 'code', label: this.i18n.t('common.code'), width: '180px' },
+      { key: 'name', label: this.i18n.t('common.name') },
+      { key: 'value', label: this.i18n.t('common.value'), width: '220px' },
+      { key: 'enabled' as any, label: this.i18n.t('common.status'), align: 'center', format: r => r.enabled ? this.i18n.t('common.active') : this.i18n.t('common.inactive') },
+    ];
+  });
 
-  readonly actions: RowAction<Constant>[] = [
-    { icon: Pencil, label: 'Editar', tone: 'primary', onClick: r => this.open(r) },
-    { icon: Trash2, label: 'Eliminar', tone: 'danger', onClick: r => this.askDelete(r) },
-  ];
+  readonly actions = computed<RowAction<Constant>[]>(() => {
+    void this.i18n.dict();
+    return [
+      { icon: Pencil, label: this.i18n.t('common.edit'), tone: 'primary', onClick: r => this.open(r) },
+      { icon: Trash2, label: this.i18n.t('common.delete'), tone: 'danger', onClick: r => this.askDelete(r) },
+    ];
+  });
 
   readonly schema: FormSchema = {
     cols: 12,
@@ -108,16 +83,16 @@ export class AdminConstantsPage {
     this.saving.set(true);
     const obs = e.id ? this.api.update(e.id, v) : this.api.create(v);
     obs.subscribe({
-      next: () => { this.toast.success('Guardado'); this.saving.set(false); this.close(); this.refresh(); },
+      next: () => { this.toast.success(this.i18n.t('admin.constants.toast.saved')); this.saving.set(false); this.close(); this.refresh(); },
       error: () => this.saving.set(false),
     });
   }
 
   async askDelete(c: Constant) {
-    const ok = await this.confirm.ask({ title: 'Eliminar constante', message: `¿Eliminar "${c.code}"?`, tone: 'danger', confirmText: 'Eliminar' });
+    const ok = await this.confirm.ask({ title: this.i18n.t('admin.constants.delete.title'), message: this.i18n.t('admin.constants.delete.message', { code: c.code }), tone: 'danger', confirmText: this.i18n.t('common.delete') });
     if (!ok) return;
     this.api.remove(c.id).subscribe({
-      next: () => { this.toast.success('Eliminada'); this.refresh(); },
+      next: () => { this.toast.success(this.i18n.t('admin.constants.toast.deleted')); this.refresh(); },
     });
   }
 }

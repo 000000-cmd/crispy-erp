@@ -10,18 +10,7 @@ interface Crumb { label: string; url?: string; }
   selector: 'app-breadcrumbs',
   standalone: true,
   imports: [CommonModule, RouterLink],
-  template: `
-    <nav class="flex items-center gap-1.5 text-xs">
-      @for (c of crumbs(); track c.label; let last = $last) {
-        @if (c.url && !last) {
-          <a [routerLink]="c.url" class="text-text-muted hover:text-text">{{ c.label }}</a>
-        } @else {
-          <span [class.text-text]="last" [class.font-medium]="last" [class.text-text-muted]="!last">{{ c.label }}</span>
-        }
-        @if (!last) { <span class="text-text-soft">/</span> }
-      }
-    </nav>
-  `,
+  templateUrl: './breadcrumbs.component.html',
 })
 export class BreadcrumbsComponent {
   private readonly router = inject(Router);

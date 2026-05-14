@@ -1,0 +1,35 @@
+
+    <div class="space-y-5">
+      <header class="flex items-end justify-between gap-3">
+        <div>
+          <h1 class="text-xl font-semibold text-text tracking-tight">{{ 'admin.permissions' | t }}</h1>
+          <p class="text-sm text-text-muted mt-0.5">{{ 'admin.permissions.subtitle' | t }}</p>
+        </div>
+        <app-button [icon]="plusIcon" (onClick)="open(null)">{{ 'admin.permissions.new' | t }}</app-button>
+      </header>
+
+      <app-data-table [columns]="columns()" [rows]="items()" [actions]="actions()" [loading]="loading()" />
+
+      <app-drawer
+        [open]="!!editing()"
+        [title]="editing()?.id ? ('admin.permissions.edit' | t) : ('admin.permissions.new' | t)"
+        size="md"
+        [showActions]="true"
+        [dirty]="dirty()"
+        [saving]="saving()"
+        (save)="submitForm()"
+        (onClose)="close()"
+      >
+        @if (editing()) {
+          <app-dynamic-form
+            #dynForm
+            [schema]="schema"
+            [model]="editing()!"
+            [submitting]="saving()"
+            (submitValue)="onSubmit($event)"
+            (dirtyChange)="dirty.set($event)"
+          />
+        }
+      </app-drawer>
+    </div>
+  

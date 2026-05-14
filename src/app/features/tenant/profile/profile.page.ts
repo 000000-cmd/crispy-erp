@@ -6,6 +6,6 @@ import { AdminProfilePage } from '../../admin/profile/profile.page';
   selector: 'app-tenant-profile',
   standalone: true,
   imports: [AdminProfilePage],
-  template: `<app-admin-profile />`,
+  templateUrl: './profile.page.html',
 })
 export class TenantProfilePage {}

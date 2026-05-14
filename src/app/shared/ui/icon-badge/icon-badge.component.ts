@@ -7,15 +7,7 @@ export type IconBadgeTone = 'primary' | 'neutral' | 'success' | 'warning' | 'dan
   selector: 'app-icon-badge',
   standalone: true,
   imports: [LucideAngularModule],
-  template: `
-    <span [class]="classes()">
-      @if (text(); as t) {
-        {{ t }}
-      } @else {
-        <lucide-icon [img]="icon()" [size]="iconSize()"></lucide-icon>
-      }
-    </span>
-  `,
+  templateUrl: './icon-badge.component.html',
 })
 export class IconBadgeComponent {
   readonly icon = input<any>(null);

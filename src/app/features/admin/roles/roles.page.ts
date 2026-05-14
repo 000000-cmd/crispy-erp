@@ -13,91 +13,21 @@ import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { SpinnerComponent } from '../../../shared/ui/spinner/spinner.component';
 import { Role, RolesApi } from './roles.api';
 import { Permission, PermissionsApi } from '../permissions/permissions.api';
+import { TPipe } from '../../../shared/pipes/t.pipe';
+import { I18nService } from '../../../core/i18n/i18n.service';
 
 @Component({
   selector: 'app-admin-roles',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, CheckboxComponent, DrawerComponent, DataTableComponent, DynamicFormComponent, SpinnerComponent],
-  template: `
-    <div class="space-y-5">
-      <header class="flex items-end justify-between gap-3">
-        <div>
-          <h1 class="text-xl font-semibold text-text tracking-tight">Roles</h1>
-          <p class="text-sm text-text-muted mt-0.5">Conjuntos de permisos asignables a usuarios.</p>
-        </div>
-        <app-button [icon]="plusIcon" (onClick)="open(null)">Nuevo rol</app-button>
-      </header>
-
-      <app-data-table [columns]="columns" [rows]="items()" [actions]="actions" [loading]="loading()" />
-
-      <!-- Edit/create drawer -->
-      <app-drawer
-        [open]="!!editing()"
-        [title]="editing()?.id ? 'Editar rol' : 'Nuevo rol'"
-        size="md"
-        [showActions]="true"
-        [dirty]="dirty()"
-        [saving]="saving()"
-        (save)="submitForm()"
-        (onClose)="close()"
-      >
-        @if (editing()) {
-          <app-dynamic-form
-            #dynForm
-            [schema]="schema"
-            [model]="editing()!"
-            [submitting]="saving()"
-            (submitValue)="onSubmit($event)"
-            (dirtyChange)="dirty.set($event)"
-          />
-        }
-      </app-drawer>
-
-      <!-- Permissions assignment modal -->
-      <app-drawer [open]="!!permsFor()" [title]="permsFor()?.name + ' · permisos'" size="lg" (onClose)="closePerms()">
-        @if (permsFor()) {
-          @if (loadingPerms()) {
-            <div class="py-10 text-center"><app-spinner [size]="24" /></div>
-          } @else {
-            <div class="space-y-3">
-              <p class="text-xs text-text-muted">Marca los permisos que tendrá este rol. Los cambios se guardan al confirmar.</p>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-1">
-                @for (p of allPerms(); track p.id) {
-                  <label class="flex items-start gap-2 p-2.5 rounded-md border border-border hover:bg-surface-hover cursor-pointer">
-                    <span class="mt-0.5">
-                      <app-checkbox
-                        [checked]="selected().has(p.id)"
-                        (checkedChange)="toggle(p.id, $event)"
-                      />
-                    </span>
-                    <span class="min-w-0">
-                      <span class="block text-sm font-medium text-text">{{ p.name }}</span>
-                      <span class="block text-[11px] text-text-muted font-mono">{{ p.code }}</span>
-                      @if (p.description) {
-                        <span class="block text-[11px] text-text-muted mt-0.5 line-clamp-2">{{ p.description }}</span>
-                      }
-                    </span>
-                  </label>
-                }
-              </div>
-            </div>
-          }
-        }
-        @if (permsFor()) {
-          <div drawerFooter class="px-5 py-3 border-t border-border flex justify-end gap-2 bg-surface-muted">
-            <app-button variant="ghost" (onClick)="closePerms()">Cancelar</app-button>
-            <app-button [loading]="savingPerms()" (onClick)="savePerms()">Guardar permisos</app-button>
-          </div>
-        }
-      </app-drawer>
-    </div>
-  `,
+  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, CheckboxComponent, DrawerComponent, DataTableComponent, DynamicFormComponent, SpinnerComponent, TPipe],
+  templateUrl: './roles.page.html',
 })
 export class AdminRolesPage {
   private readonly api = inject(RolesApi);
   private readonly permsApi = inject(PermissionsApi);
   private readonly confirm = inject(ConfirmService);
   private readonly toast = inject(ToastService);
+  private readonly i18n = inject(I18nService);
 
   protected readonly plusIcon = Plus;
 
@@ -117,18 +47,24 @@ export class AdminRolesPage {
   readonly loadingPerms = signal(false);
   readonly savingPerms = signal(false);
 
-  readonly columns: ColumnDef<Role>[] = [
-    { key: 'code', label: 'Código', width: '180px' },
-    { key: 'name', label: 'Nombre' },
-    { key: 'description' as any, label: 'Descripción', format: r => r.description ?? '—' },
-    { key: 'enabled' as any, label: 'Estado', align: 'center', format: r => r.enabled ? 'Activo' : 'Inactivo' },
-  ];
+  readonly columns = computed<ColumnDef<Role>[]>(() => {
+    void this.i18n.dict();
+    return [
+      { key: 'code', label: this.i18n.t('common.code'), width: '180px' },
+      { key: 'name', label: this.i18n.t('common.name') },
+      { key: 'description' as any, label: this.i18n.t('common.description'), format: r => r.description ?? '—' },
+      { key: 'enabled' as any, label: this.i18n.t('common.status'), align: 'center', format: r => r.enabled ? this.i18n.t('common.active') : this.i18n.t('common.inactive') },
+    ];
+  });
 
-  readonly actions: RowAction<Role>[] = [
-    { icon: ShieldCheck, label: 'Permisos', tone: 'primary', onClick: r => this.openPerms(r) },
-    { icon: Pencil, label: 'Editar', tone: 'primary', onClick: r => this.open(r) },
-    { icon: Trash2, label: 'Eliminar', tone: 'danger', onClick: r => this.askDelete(r) },
-  ];
+  readonly actions = computed<RowAction<Role>[]>(() => {
+    void this.i18n.dict();
+    return [
+      { icon: ShieldCheck, label: this.i18n.t('admin.permissions'), tone: 'primary', onClick: r => this.openPerms(r) },
+      { icon: Pencil, label: this.i18n.t('common.edit'), tone: 'primary', onClick: r => this.open(r) },
+      { icon: Trash2, label: this.i18n.t('common.delete'), tone: 'danger', onClick: r => this.askDelete(r) },
+    ];
+  });
 
   readonly schema: FormSchema = {
     cols: 12,
@@ -160,16 +96,16 @@ export class AdminRolesPage {
     this.saving.set(true);
     const obs = e.id ? this.api.update(e.id, v) : this.api.create(v);
     obs.subscribe({
-      next: () => { this.toast.success('Guardado'); this.saving.set(false); this.close(); this.refresh(); },
+      next: () => { this.toast.success(this.i18n.t('admin.roles.toast.saved')); this.saving.set(false); this.close(); this.refresh(); },
       error: () => this.saving.set(false),
     });
   }
 
   async askDelete(r: Role) {
-    const ok = await this.confirm.ask({ title: 'Eliminar rol', message: `¿Eliminar "${r.code}"?`, tone: 'danger', confirmText: 'Eliminar' });
+    const ok = await this.confirm.ask({ title: this.i18n.t('admin.roles.delete.title'), message: this.i18n.t('admin.roles.delete.message', { code: r.code }), tone: 'danger', confirmText: this.i18n.t('common.delete') });
     if (!ok) return;
     this.api.remove(r.id).subscribe({
-      next: () => { this.toast.success('Eliminado'); this.refresh(); },
+      next: () => { this.toast.success(this.i18n.t('admin.roles.toast.deleted')); this.refresh(); },
     });
   }
 
@@ -201,7 +137,7 @@ export class AdminRolesPage {
     if (!r) return;
     this.savingPerms.set(true);
     this.api.setPermissions(r.id, Array.from(this.selected())).subscribe({
-      next: () => { this.toast.success('Permisos actualizados'); this.savingPerms.set(false); this.closePerms(); },
+      next: () => { this.toast.success(this.i18n.t('admin.roles.toast.permissions')); this.savingPerms.set(false); this.closePerms(); },
       error: () => this.savingPerms.set(false),
     });
   }

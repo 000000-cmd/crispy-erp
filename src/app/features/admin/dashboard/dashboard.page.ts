@@ -2,6 +2,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CardComponent } from '../../../shared/ui/card/card.component';
+import { TPipe } from '../../../shared/pipes/t.pipe';
 import { AuthService } from '../../../core/auth/auth.service';
 import {
   LucideAngularModule,
@@ -27,120 +28,8 @@ interface ServiceCard {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, CardComponent, LucideAngularModule, DatePipe],
-  template: `
-    <div class="space-y-6">
-      <header>
-        <h1 class="text-2xl font-semibold text-text tracking-tight">Hola, {{ greeting() }}</h1>
-        <p class="text-sm text-text-muted mt-1">Estado de los microservicios en este momento.</p>
-      </header>
-
-      <!-- Service cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        @for (svc of services; track svc.label) {
-          @let h = svc.health();
-          @let info = h?.info;
-          @let st = h?.status ?? 'UNKNOWN';
-          <app-card>
-            <div class="flex items-start gap-3">
-              <span
-                class="h-11 w-11 rounded-lg inline-flex items-center justify-center shrink-0"
-                [class]="iconBg(st)"
-              >
-                <lucide-icon [img]="svc.icon" [size]="20"></lucide-icon>
-              </span>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between gap-2">
-                  <h3 class="text-sm font-semibold text-text truncate">{{ svc.label }}</h3>
-                  <span
-                    class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium transition-colors"
-                    [class]="badgeClass(st)"
-                  >
-                    <span
-                      class="h-1.5 w-1.5 rounded-full"
-                      [class]="dotClass(st)"
-                      [class.animate-pulse]="st === 'UNKNOWN'"
-                    ></span>
-                    {{ st }}
-                  </span>
-                </div>
-
-                <dl class="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
-                  <dt class="text-text-soft inline-flex items-center gap-1">
-                    <lucide-icon [img]="tagIcon" [size]="11"></lucide-icon> Versión
-                  </dt>
-                  <dd class="text-text font-mono truncate" [title]="info?.version || ''">{{ info?.version || '—' }}</dd>
-
-                  <dt class="text-text-soft inline-flex items-center gap-1">
-                    <lucide-icon [img]="cpuIcon" [size]="11"></lucide-icon> Entorno
-                  </dt>
-                  <dd class="text-text">{{ info?.environment || '—' }}</dd>
-
-                  <dt class="text-text-soft inline-flex items-center gap-1">
-                    <lucide-icon [img]="clockIcon" [size]="11"></lucide-icon> Uptime
-                  </dt>
-                  <dd class="text-text">{{ formatUptime(info?.uptimeMillis) }}</dd>
-
-                  @if (info?.buildTime) {
-                    <dt class="text-text-soft">Build</dt>
-                    <dd class="text-text">{{ info!.buildTime | date:'dd/MM/yy HH:mm' }}</dd>
-                  }
-                </dl>
-
-                @if (info?.dependencies?.length) {
-                  <div class="mt-3 pt-3 border-t border-border">
-                    <p class="text-[10px] uppercase tracking-wide text-text-soft mb-2">Dependencias</p>
-                    <ul class="flex flex-wrap gap-1.5">
-                      @for (d of info!.dependencies!; track d.name) {
-                        <li
-                          class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] border transition-colors"
-                          [class]="depClass(d.status)"
-                          [title]="d.detail || (d.type + ' · ' + d.status)"
-                        >
-                          <lucide-icon [img]="depIcon(d.type)" [size]="11"></lucide-icon>
-                          <span class="font-medium">{{ d.type }}</span>
-                          <span class="text-text-soft">·</span>
-                          <span>{{ d.status }}</span>
-                        </li>
-                      }
-                    </ul>
-                  </div>
-                }
-
-                @if (!info && st === 'DOWN') {
-                  <p class="mt-3 text-[11px] text-rose-600 dark:text-rose-400">
-                    Sin respuesta del servicio.
-                  </p>
-                }
-              </div>
-            </div>
-          </app-card>
-        }
-      </div>
-
-      <!-- Aggregate -->
-      <app-card title="Resumen" subtitle="Estado agregado de la plataforma">
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div>
-            <p class="text-xs text-text-muted">Servicios</p>
-            <p class="text-xl font-semibold text-text">{{ services.length }}</p>
-          </div>
-          <div>
-            <p class="text-xs text-text-muted">UP</p>
-            <p class="text-xl font-semibold text-emerald-600">{{ counts().up }}</p>
-          </div>
-          <div>
-            <p class="text-xs text-text-muted">DEGRADED</p>
-            <p class="text-xl font-semibold text-amber-600">{{ counts().degraded }}</p>
-          </div>
-          <div>
-            <p class="text-xs text-text-muted">DOWN</p>
-            <p class="text-xl font-semibold text-rose-600">{{ counts().down }}</p>
-          </div>
-        </div>
-      </app-card>
-    </div>
-  `,
+  imports: [CommonModule, CardComponent, LucideAngularModule, DatePipe, TPipe],
+  templateUrl: './dashboard.page.html',
 })
 export class AdminDashboardPage {
   private readonly auth = inject(AuthService);
