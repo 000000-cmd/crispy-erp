@@ -1,4 +1,4 @@
-import { Building2, Users, UserPlus, ShieldCheck, Settings, ListTree, Hash, Menu as MenuIcon, FileText, ScrollText, Shield } from 'lucide-angular';
+import { Building2, Users, UserPlus, ShieldCheck, Settings, ListTree, Hash, Menu as MenuIcon, FileText, ScrollText, Shield, MapPin } from 'lucide-angular';
 import { NavSection } from '../shell/sidebar.types';
 
 // Los `label` que empiecen por `admin.` se interpretan como claves i18n al
@@ -26,13 +26,10 @@ export const ADMIN_NAV: NavSection[] = [
     label: 'admin.section.system',
     defaultOpen: true,
     items: [
-      {
-        key: 'catalogs', label: 'Catálogos', icon: ListTree, children: [
-          { key: 'catalogs_lists', label: 'admin.lists',     icon: ListTree, path: '/admin/system-lists' },
-          { key: 'catalogs_const', label: 'admin.constants', icon: Hash,     path: '/admin/constants' },
-        ],
-      },
-      { key: 'menus', label: 'admin.menus', icon: MenuIcon, path: '/admin/menus' },
+      { key: 'lists',     label: 'admin.lists',     icon: ListTree, path: '/admin/system-lists' },
+      { key: 'constants', label: 'admin.constants', icon: Hash,     path: '/admin/constants' },
+      { key: 'political', label: 'División política', icon: MapPin, path: '/admin/political-division' },
+      { key: 'menus',     label: 'admin.menus',     icon: MenuIcon, path: '/admin/menus' },
     ],
   },
   {

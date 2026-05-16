@@ -8,6 +8,6 @@ export const AUTH_ROUTES: Routes = [
     component: AuthLayoutComponent,
     canActivate: [guestGuard],
     children: [
-      { path: '',loadComponent: () => import('./login/login.page').then(m => m.LoginPage) }],
+      { path: '',loadComponent: () => import('./login/login.component').then(m => m.LoginComponent) }],
   },
 ];
