@@ -14,9 +14,9 @@ import { ToastService } from '../../../shared/ui/toast/toast.service';
   selector: 'app-admin-profile',
   standalone: true,
   imports: [CommonModule, CardComponent, DynamicFormComponent],
-  templateUrl: './profile.page.html',
+  templateUrl: './profile.component.html',
 })
-export class AdminProfilePage {
+export class AdminProfileComponent {
   protected readonly theme = inject(ThemeService);
   protected readonly i18n = inject(I18nService);
   protected readonly auth = inject(AuthService);

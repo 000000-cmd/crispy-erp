@@ -11,9 +11,9 @@ interface Stat { label: string; value: string; delta: string; up: boolean; icon:
   selector: 'app-tenant-dashboard',
   standalone: true,
   imports: [CommonModule, LucideAngularModule, CardComponent, ButtonComponent],
-  templateUrl: './dashboard.page.html',
+  templateUrl: './dashboard.component.html',
 })
-export class TenantDashboardPage {
+export class TenantDashboardComponent {
   private readonly auth = inject(AuthService);
   readonly greeting = computed(() => this.auth.user()?.fullName?.split(' ')[0] ?? '');
 

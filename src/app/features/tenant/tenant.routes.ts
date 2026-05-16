@@ -12,11 +12,11 @@ export const TENANT_ROUTES: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
         path: 'dashboard', data: { crumb: 'Panel' },
-        loadComponent: () => import('./dashboard/dashboard.page').then(m => m.TenantDashboardPage),
+        loadComponent: () => import('./dashboard/dashboard.component').then(m => m.TenantDashboardComponent),
       },
       {
         path: 'profile', data: { crumb: 'Mi perfil' },
-        loadComponent: () => import('./profile/profile.page').then(m => m.TenantProfilePage),
+        loadComponent: () => import('./profile/profile.component').then(m => m.TenantProfileComponent),
       },
     ],
   },

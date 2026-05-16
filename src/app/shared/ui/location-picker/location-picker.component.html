@@ -1,0 +1,54 @@
+
+<div [class]="inline() ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3' : 'space-y-3'">
+  @if (show().country) {
+    <div>
+      <label class="block text-[11px] font-medium text-text-muted mb-1">{{ labels().country }}</label>
+      <app-autocomplete
+        [searchFn]="countriesFn()"
+        [minSearchChars]="3"
+        [placeholder]="'Buscar país…'"
+        hintText="Escribe al menos 3 letras"
+        (selected)="onCountry($event)"
+      />
+    </div>
+  }
+
+  @if (show().department) {
+    <div>
+      <label class="block text-[11px] font-medium text-text-muted mb-1">{{ labels().department }}</label>
+      <app-autocomplete
+        [searchFn]="departmentsFn()"
+        [minSearchChars]="3"
+        [placeholder]="'Buscar departamento…'"
+        hintText="Escribe al menos 3 letras"
+        (selected)="onDepartment($event)"
+      />
+    </div>
+  }
+
+  @if (show().municipality) {
+    <div>
+      <label class="block text-[11px] font-medium text-text-muted mb-1">{{ labels().municipality }}</label>
+      <app-autocomplete
+        [searchFn]="municipalitiesFn()"
+        [minSearchChars]="3"
+        [placeholder]="'Buscar municipio…'"
+        hintText="Escribe al menos 3 letras"
+        (selected)="onMunicipality($event)"
+      />
+    </div>
+  }
+
+  @if (show().neighborhood) {
+    <div>
+      <label class="block text-[11px] font-medium text-text-muted mb-1">{{ labels().neighborhood }}</label>
+      <app-autocomplete
+        [searchFn]="neighborhoodsFn()"
+        [minSearchChars]="3"
+        [placeholder]="'Buscar barrio o vereda…'"
+        hintText="Escribe al menos 3 letras"
+        (selected)="onNeighborhood($event)"
+      />
+    </div>
+  }
+</div>

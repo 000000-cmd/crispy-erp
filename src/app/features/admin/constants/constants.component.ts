@@ -16,9 +16,9 @@ import { I18nService } from '../../../core/i18n/i18n.service';
   selector: 'app-admin-constants',
   standalone: true,
   imports: [CommonModule, LucideAngularModule, ButtonComponent, DrawerComponent, DataTableComponent, DynamicFormComponent, TPipe],
-  templateUrl: './constants.page.html',
+  templateUrl: './constants.component.html',
 })
-export class AdminConstantsPage {
+export class AdminConstantsComponent {
   private readonly api = inject(ConstantsApi);
   private readonly confirm = inject(ConfirmService);
   private readonly toast = inject(ToastService);

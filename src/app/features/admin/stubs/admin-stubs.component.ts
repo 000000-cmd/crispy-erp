@@ -5,22 +5,22 @@ import { ComingSoonComponent } from './coming-soon.component';
   selector: 'app-admin-tenants',
   standalone: true,
   imports: [ComingSoonComponent],
-  templateUrl: './admin-stub.pages.tenants.html',
+  templateUrl: './admin-stubs.tenants.html',
 })
-export class AdminTenantsPage {}
+export class AdminTenantsComponent {}
 
 @Component({
   selector: 'app-admin-invitations',
   standalone: true,
   imports: [ComingSoonComponent],
-  templateUrl: './admin-stub.pages.invitations.html',
+  templateUrl: './admin-stubs.invitations.html',
 })
-export class AdminInvitationsPage {}
+export class AdminInvitationsComponent {}
 
 @Component({
   selector: 'app-admin-audit',
   standalone: true,
   imports: [ComingSoonComponent],
-  templateUrl: './admin-stub.pages.audit.html',
+  templateUrl: './admin-stubs.audit.html',
 })
-export class AdminAuditPage {}
+export class AdminAuditComponent {}

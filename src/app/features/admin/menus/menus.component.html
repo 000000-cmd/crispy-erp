@@ -103,7 +103,15 @@
       </app-drawer>
 
       <!-- Roles assignment modal -->
-      <app-drawer [open]="!!rolesFor()" [title]="'admin.menus.roles.title' | t : { name: rolesFor()?.name ?? '' }" size="md" (onClose)="closeRoles()">
+      <app-drawer
+        [open]="!!rolesFor()"
+        [title]="'admin.menus.roles.title' | t : { name: rolesFor()?.name ?? '' }"
+        size="md"
+        [showActions]="true"
+        [saving]="savingRoles()"
+        (save)="saveRoles()"
+        (onClose)="closeRoles()"
+      >
         @if (rolesFor()) {
           @if (loadingRoles()) {
             <div class="py-10 text-center"><app-spinner [size]="24" /></div>
@@ -126,12 +134,6 @@
               }
             </div>
           }
-        }
-        @if (rolesFor()) {
-          <div drawerFooter class="px-5 py-3 border-t border-border flex justify-end gap-2 bg-surface-muted">
-            <app-button variant="ghost" (onClick)="closeRoles()">{{ 'common.cancel' | t }}</app-button>
-            <app-button [loading]="savingRoles()" (onClick)="saveRoles()">{{ 'common.save' | t }}</app-button>
-          </div>
         }
       </app-drawer>
     </div>

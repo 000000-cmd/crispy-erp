@@ -1,0 +1,233 @@
+
+<div class="space-y-5">
+  <header class="flex items-end justify-between gap-3">
+    <div>
+      <h1 class="text-xl font-semibold text-text tracking-tight flex items-center gap-2">
+        <lucide-icon [img]="pinIcon" [size]="18"></lucide-icon>
+        División política
+      </h1>
+      <p class="text-sm text-text-muted mt-0.5">País › Departamento › Municipio › Barrio / Vereda</p>
+    </div>
+    <app-button [icon]="plusIcon" (onClick)="openCreate('country')">Nuevo país</app-button>
+  </header>
+
+  @if (loadingCountries()) {
+    <div class="py-10 text-center"><app-spinner [size]="24" /></div>
+  } @else if (!countries().length) {
+    <app-empty title="Sin países" [icon]="globeIcon" description="Aún no hay países registrados. Crea el primero para empezar." />
+  } @else {
+    <ul class="space-y-3">
+      @for (c of countries(); track c.code) {
+        <li class="rounded-xl border border-border bg-surface overflow-hidden"
+            [class.opacity-60]="!c.enabled">
+          <!-- Cabecera país -->
+          <div class="flex items-center gap-2 px-4 py-3 hover:bg-surface-hover group">
+            <button class="h-7 w-7 inline-flex items-center justify-center text-text-muted hover:text-text"
+                    (click)="toggleCountry(c)" [title]="isOpen('c:' + c.code) ? 'Colapsar' : 'Expandir'">
+              <lucide-icon [img]="isOpen('c:' + c.code) ? down : right" [size]="14"></lucide-icon>
+            </button>
+            <span class="h-9 w-9 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 inline-flex items-center justify-center shrink-0">
+              <lucide-icon [img]="globeIcon" [size]="18"></lucide-icon>
+            </span>
+            <span class="flex-1 min-w-0">
+              <span class="block text-sm font-semibold text-text truncate">{{ c.name }}</span>
+              <span class="text-[11px] font-mono text-text-muted">{{ c.code }}</span>
+              @if (!c.enabled) { <span class="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-600">inhabilitado</span> }
+            </span>
+            <div class="flex items-center gap-1">
+              <button class="h-7 w-7 rounded-md text-text-muted hover:bg-surface-muted hover:text-text inline-flex items-center justify-center"
+                      (click)="openCreate('department', { countryCode: c.code })" title="Nuevo departamento">
+                <lucide-icon [img]="plusIcon" [size]="14"></lucide-icon>
+              </button>
+              <button class="h-7 w-7 rounded-md text-text-muted hover:bg-surface-muted inline-flex items-center justify-center"
+                      [class.hover:text-emerald-600]="!c.enabled"
+                      [class.hover:text-amber-600]="c.enabled"
+                      (click)="toggleEnabled('country', c)" [title]="c.enabled ? 'Inhabilitar' : 'Habilitar'">
+                <lucide-icon [img]="c.enabled ? powerOffIcon : powerOnIcon" [size]="14"></lucide-icon>
+              </button>
+              <button class="h-7 w-7 rounded-md text-text-muted hover:bg-surface-muted hover:text-primary-600 inline-flex items-center justify-center"
+                      (click)="openEdit('country', c)" title="Editar">
+                <lucide-icon [img]="editIcon" [size]="14"></lucide-icon>
+              </button>
+              <button class="h-7 w-7 rounded-md text-text-muted hover:bg-surface-muted hover:text-rose-600 inline-flex items-center justify-center"
+                      (click)="askDelete('country', c)" title="Eliminar">
+                <lucide-icon [img]="trashIcon" [size]="14"></lucide-icon>
+              </button>
+            </div>
+          </div>
+
+          @if (isOpen('c:' + c.code)) {
+            <div class="px-3 pb-3 pl-12 border-t border-border bg-surface-muted/40">
+              @if (loadingDepartments()[c.code]) {
+                <div class="py-6 text-center"><app-spinner [size]="18" /></div>
+              } @else if (!(departments()[c.code]?.length)) {
+                <div class="py-4 text-center text-xs text-text-muted">Sin departamentos. Usa <kbd>+</kbd> arriba para crear uno.</div>
+              } @else {
+                <ul class="space-y-2 pt-3">
+                  @for (d of departments()[c.code]; track d.code) {
+                    <li class="rounded-lg border border-border bg-surface" [class.opacity-60]="!d.enabled">
+                      <!-- Cabecera departamento -->
+                      <div class="flex items-center gap-2 px-3 py-2 hover:bg-surface-hover">
+                        <button class="h-6 w-6 inline-flex items-center justify-center text-text-muted hover:text-text"
+                                (click)="toggleDept(d, c.code)">
+                          <lucide-icon [img]="isOpen('d:' + d.code) ? down : right" [size]="14"></lucide-icon>
+                        </button>
+                        <span class="h-7 w-7 rounded-md bg-surface-muted text-text-muted inline-flex items-center justify-center shrink-0">
+                          <lucide-icon [img]="mapIcon" [size]="14"></lucide-icon>
+                        </span>
+                        <span class="flex-1 min-w-0">
+                          <span class="block text-sm font-medium text-text truncate">{{ d.name }}</span>
+                          <span class="text-[10px] font-mono text-text-muted">{{ d.code }}</span>
+                          @if (!d.enabled) { <span class="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-600">inhabilitado</span> }
+                        </span>
+                        <div class="flex items-center gap-1">
+                          <button class="h-6 w-6 rounded text-text-muted hover:bg-surface-muted hover:text-text inline-flex items-center justify-center"
+                                  (click)="openCreate('municipality', { countryCode: c.code, departmentCode: d.code })" title="Nuevo municipio">
+                            <lucide-icon [img]="plusIcon" [size]="12"></lucide-icon>
+                          </button>
+                          <button class="h-6 w-6 rounded text-text-muted hover:bg-surface-muted inline-flex items-center justify-center"
+                                  [class.hover:text-emerald-600]="!d.enabled"
+                                  [class.hover:text-amber-600]="d.enabled"
+                                  (click)="toggleEnabled('department', d, { countryCode: c.code })" [title]="d.enabled ? 'Inhabilitar' : 'Habilitar'">
+                            <lucide-icon [img]="d.enabled ? powerOffIcon : powerOnIcon" [size]="12"></lucide-icon>
+                          </button>
+                          <button class="h-6 w-6 rounded text-text-muted hover:bg-surface-muted hover:text-primary-600 inline-flex items-center justify-center"
+                                  (click)="openEdit('department', d, { countryCode: c.code })" title="Editar">
+                            <lucide-icon [img]="editIcon" [size]="12"></lucide-icon>
+                          </button>
+                          <button class="h-6 w-6 rounded text-text-muted hover:bg-surface-muted hover:text-rose-600 inline-flex items-center justify-center"
+                                  (click)="askDelete('department', d, { countryCode: c.code })" title="Eliminar">
+                            <lucide-icon [img]="trashIcon" [size]="12"></lucide-icon>
+                          </button>
+                        </div>
+                      </div>
+
+                      @if (isOpen('d:' + d.code)) {
+                        <div class="px-3 pb-3 pl-10 border-t border-border bg-surface-muted/30">
+                          @if (loadingMunicipalities()[d.code]) {
+                            <div class="py-5 text-center"><app-spinner [size]="16" /></div>
+                          } @else if (!(municipalities()[d.code]?.length)) {
+                            <div class="py-3 text-center text-xs text-text-muted">Sin municipios.</div>
+                          } @else {
+                            <ul class="space-y-2 pt-2">
+                              @for (m of municipalities()[d.code]; track m.code) {
+                                <li class="rounded-md border border-border bg-surface" [class.opacity-60]="!m.enabled">
+                                  <div class="flex items-center gap-2 px-3 py-2 hover:bg-surface-hover">
+                                    <button class="h-6 w-6 inline-flex items-center justify-center text-text-muted hover:text-text"
+                                            (click)="toggleMuni(m, d.code, c.code)">
+                                      <lucide-icon [img]="isOpen('m:' + m.code) ? down : right" [size]="12"></lucide-icon>
+                                    </button>
+                                    <span class="h-6 w-6 rounded bg-surface-muted text-text-muted inline-flex items-center justify-center shrink-0">
+                                      <lucide-icon [img]="cityIcon" [size]="12"></lucide-icon>
+                                    </span>
+                                    <span class="flex-1 min-w-0">
+                                      <span class="text-sm text-text">{{ m.name }}</span>
+                                      <span class="ml-2 text-[10px] font-mono text-text-muted">{{ m.code }}</span>
+                                      @if (!m.enabled) { <span class="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-600">inhabilitado</span> }
+                                    </span>
+                                    <div class="flex items-center gap-1">
+                                      <button class="h-6 w-6 rounded text-text-muted hover:bg-surface-muted hover:text-text inline-flex items-center justify-center"
+                                              (click)="openCreate('neighborhood', { countryCode: c.code, departmentCode: d.code, municipalityCode: m.code })" title="Nuevo barrio/vereda">
+                                        <lucide-icon [img]="plusIcon" [size]="12"></lucide-icon>
+                                      </button>
+                                      <button class="h-6 w-6 rounded text-text-muted hover:bg-surface-muted inline-flex items-center justify-center"
+                                              [class.hover:text-emerald-600]="!m.enabled"
+                                              [class.hover:text-amber-600]="m.enabled"
+                                              (click)="toggleEnabled('municipality', m, { countryCode: c.code, departmentCode: d.code })" [title]="m.enabled ? 'Inhabilitar' : 'Habilitar'">
+                                        <lucide-icon [img]="m.enabled ? powerOffIcon : powerOnIcon" [size]="12"></lucide-icon>
+                                      </button>
+                                      <button class="h-6 w-6 rounded text-text-muted hover:bg-surface-muted hover:text-primary-600 inline-flex items-center justify-center"
+                                              (click)="openEdit('municipality', m, { countryCode: c.code, departmentCode: d.code })" title="Editar">
+                                        <lucide-icon [img]="editIcon" [size]="12"></lucide-icon>
+                                      </button>
+                                      <button class="h-6 w-6 rounded text-text-muted hover:bg-surface-muted hover:text-rose-600 inline-flex items-center justify-center"
+                                              (click)="askDelete('municipality', m, { countryCode: c.code, departmentCode: d.code })" title="Eliminar">
+                                        <lucide-icon [img]="trashIcon" [size]="12"></lucide-icon>
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  @if (isOpen('m:' + m.code)) {
+                                    <div class="px-3 pb-3 pl-9 border-t border-border bg-surface-muted/20">
+                                      @if (loadingNeighborhoods()[m.code]) {
+                                        <div class="py-4 text-center"><app-spinner [size]="14" /></div>
+                                      } @else if (!(neighborhoods()[m.code]?.length)) {
+                                        <div class="py-3 text-center text-xs text-text-muted">Sin barrios / veredas.</div>
+                                      } @else {
+                                        <ul class="space-y-1 pt-2">
+                                          @for (n of neighborhoods()[m.code]; track n.code) {
+                                            <li class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-surface-hover"
+                                                [class.opacity-60]="!n.enabled">
+                                              <span class="h-5 w-5 rounded bg-surface-muted text-text-muted inline-flex items-center justify-center shrink-0">
+                                                <lucide-icon [img]="homeIcon" [size]="10"></lucide-icon>
+                                              </span>
+                                              <span class="flex-1 min-w-0 text-sm">
+                                                {{ n.name }}
+                                                <span class="ml-2 text-[10px] font-mono text-text-muted">{{ n.code }}</span>
+                                                @if (n.raw?.['neighborhoodType']) {
+                                                  <span class="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-primary-50 dark:bg-primary-900/20 text-primary-600">{{ n.raw!['neighborhoodType'] }}</span>
+                                                }
+                                                @if (!n.enabled) { <span class="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-600">inhabilitado</span> }
+                                              </span>
+                                              <div class="flex items-center gap-1">
+                                                <button class="h-6 w-6 rounded text-text-muted hover:bg-surface-muted inline-flex items-center justify-center"
+                                                        [class.hover:text-emerald-600]="!n.enabled"
+                                                        [class.hover:text-amber-600]="n.enabled"
+                                                        (click)="toggleEnabled('neighborhood', n, { countryCode: c.code, departmentCode: d.code, municipalityCode: m.code })" [title]="n.enabled ? 'Inhabilitar' : 'Habilitar'">
+                                                  <lucide-icon [img]="n.enabled ? powerOffIcon : powerOnIcon" [size]="12"></lucide-icon>
+                                                </button>
+                                                <button class="h-6 w-6 rounded text-text-muted hover:bg-surface-muted hover:text-primary-600 inline-flex items-center justify-center"
+                                                        (click)="openEdit('neighborhood', n, { countryCode: c.code, departmentCode: d.code, municipalityCode: m.code })" title="Editar">
+                                                  <lucide-icon [img]="editIcon" [size]="12"></lucide-icon>
+                                                </button>
+                                                <button class="h-6 w-6 rounded text-text-muted hover:bg-surface-muted hover:text-rose-600 inline-flex items-center justify-center"
+                                                        (click)="askDelete('neighborhood', n, { countryCode: c.code, departmentCode: d.code, municipalityCode: m.code })" title="Eliminar">
+                                                  <lucide-icon [img]="trashIcon" [size]="12"></lucide-icon>
+                                                </button>
+                                              </div>
+                                            </li>
+                                          }
+                                        </ul>
+                                      }
+                                    </div>
+                                  }
+                                </li>
+                              }
+                            </ul>
+                          }
+                        </div>
+                      }
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          }
+        </li>
+      }
+    </ul>
+  }
+
+  <!-- Drawer crear/editar -->
+  <app-drawer
+    [open]="!!editing()"
+    [title]="editorTitle()"
+    size="lg"
+    [showActions]="true"
+    [dirty]="dirty()"
+    [saving]="saving()"
+    (save)="submitForm()"
+    (onClose)="closeEditor()"
+  >
+    @if (editing()) {
+      <app-dynamic-form
+        #dynForm
+        [schema]="schema()"
+        [model]="editing()!.model || {}"
+        [submitting]="saving()"
+        (submitValue)="onSubmit($event)"
+        (dirtyChange)="dirty.set($event)"
+      />
+    }
+  </app-drawer>
+</div>

@@ -18,9 +18,9 @@ import { buildUserSchema } from './user-form';
   selector: 'app-admin-users',
   standalone: true,
   imports: [CommonModule, LucideAngularModule, ButtonComponent, DrawerComponent, DataTableComponent, DynamicFormComponent, TPipe],
-  templateUrl: './users.page.html',
+  templateUrl: './users.component.html',
 })
-export class AdminUsersPage {
+export class AdminUsersComponent {
   private readonly api = inject(UsersApi);
   private readonly rolesApi = inject(RolesApi);
   private readonly confirm = inject(ConfirmService);

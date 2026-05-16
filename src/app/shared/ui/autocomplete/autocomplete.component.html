@@ -1,0 +1,81 @@
+
+<div class="relative" (focusout)="onBlurContainer($event)">
+  <div [class]="triggerClass()">
+    <lucide-angular [img]="SearchIcon" class="w-4 h-4 opacity-60 shrink-0"></lucide-angular>
+    <input
+      #inputEl
+      type="text"
+      class="flex-1 bg-transparent outline-none placeholder:text-text-soft min-w-0"
+      [placeholder]="placeholder()"
+      [disabled]="isDisabled()"
+      [value]="inputValue()"
+      (input)="onInput($any($event.target).value)"
+      (focus)="onFocus()"
+      autocomplete="off"
+    />
+
+    @if (loading()) {
+      <span class="w-3 h-3 rounded-full border-2 border-primary-500/30 border-t-primary-500 animate-spin shrink-0"></span>
+    }
+
+    @if (clearable() && selectedOption() && !isDisabled()) {
+      <button
+        type="button"
+        (click)="clear($event)"
+        class="shrink-0 p-0.5 rounded hover:bg-surface-hover text-text-muted"
+        title="Limpiar"
+      >
+        <lucide-angular [img]="XIcon" class="w-3.5 h-3.5"></lucide-angular>
+      </button>
+    }
+
+    <button
+      type="button"
+      (click)="toggle()"
+      class="shrink-0"
+      [disabled]="isDisabled()"
+      tabindex="-1"
+    >
+      <lucide-angular
+        [img]="ChevronIcon"
+        class="w-4 h-4 opacity-70 transition-transform duration-200"
+        [class.rotate-180]="open()"
+      ></lucide-angular>
+    </button>
+  </div>
+
+  @if (open()) {
+    <div
+      role="listbox"
+      class="absolute z-30 mt-1 w-full rounded-md border border-border bg-surface shadow-lg overflow-hidden"
+    >
+      <div class="overflow-y-auto max-h-60">
+        @for (o of displayed(); track o.value) {
+          <div
+            role="option"
+            [attr.aria-selected]="selectedOption()?.value === o.value"
+            (mousedown)="$event.preventDefault(); pick(o)"
+            class="px-3 py-2 text-sm cursor-pointer hover:bg-surface-hover transition-colors"
+            [class.font-medium]="selectedOption()?.value === o.value"
+            [class.text-primary-600]="selectedOption()?.value === o.value"
+            [class.opacity-50]="o.disabled"
+            [class.pointer-events-none]="o.disabled"
+          >
+            {{ o.label }}
+          </div>
+        }
+        @if (!loading() && displayed().length === 0) {
+          <div class="px-3 py-4 text-center text-sm text-text-muted">
+            @if (searchFn() && search().length < minSearchChars()) {
+              {{ hintText() || ('Escribe al menos ' + minSearchChars() + ' caracteres') }}
+            } @else if (search()) {
+              {{ emptyText() }} para "{{ search() }}"
+            } @else {
+              {{ emptyText() }}
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

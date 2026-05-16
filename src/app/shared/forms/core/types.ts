@@ -93,6 +93,16 @@ export interface BaseFieldConfig {
   searchPlaceholder?: string;
   /** Para multiselect: muestra un checkbox "Seleccionar todos" en el header del panel. */
   selectAll?: boolean;
+  /**
+   * Para `autocomplete`: funcion async invocada con el termino tipeado por el
+   * user. Si esta presente, el componente la usa con debounce. Si no, cae en
+   * `options` y filtra client-side.
+   */
+  searchOptions?: (term: string) => Observable<Option[]>;
+  /** Para `autocomplete`: caracteres minimos antes de invocar `searchOptions`. */
+  minSearchChars?: number;
+  /** Para `autocomplete`: ms de debounce de `searchOptions`. */
+  debounceMs?: number;
 
   // ---- Decoradores opcionales del label ----
   /** Nombre de icono Lucide (kebab-case) que se renderiza junto al label. Ver `icon-resolver`. */

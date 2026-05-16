@@ -11,7 +11,7 @@ import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { DynamicFormComponent } from '../../../shared/forms/dynamic-form.component';
 import { FormSchema } from '../../../shared/forms/core/types';
-import { SystemList, SystemListItem, SystemListsApi } from './system-lists.api';
+import { CatalogItem, CatalogRequest, SystemList, SystemListsApi } from './system-lists.api';
 import { TPipe } from '../../../shared/pipes/t.pipe';
 import { I18nService } from '../../../core/i18n/i18n.service';
 
@@ -19,9 +19,9 @@ import { I18nService } from '../../../core/i18n/i18n.service';
   selector: 'app-admin-system-lists',
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, DrawerComponent, SwitchComponent, EmptyComponent, SpinnerComponent, DynamicFormComponent, TPipe],
-  templateUrl: './system-lists.page.html',
+  templateUrl: './system-lists.component.html',
 })
-export class AdminSystemListsPage {
+export class AdminSystemListsComponent {
   private readonly api = inject(SystemListsApi);
   private readonly confirm = inject(ConfirmService);
   private readonly toast = inject(ToastService);
@@ -32,7 +32,7 @@ export class AdminSystemListsPage {
   protected readonly treeIcon = ListTree;
 
   readonly lists = signal<SystemList[]>([]);
-  readonly items = signal<SystemListItem[]>([]);
+  readonly items = signal<CatalogItem[]>([]);
   readonly selectedId = signal<string | null>(null);
   readonly loadingLists = signal(false);
   readonly loadingItems = signal(false);
@@ -49,9 +49,9 @@ export class AdminSystemListsPage {
   readonly itemSchema: FormSchema = {
     cols: 12,
     fields: [
-      { key: 'code', type: 'text', label: 'Código',  width: 'half', validators: ['required', { kind: 'pattern', value: /^[A-Z0-9_]+$/, message: 'Solo mayúsculas, números y _' }] },
+      { key: 'code', type: 'text', label: 'Código', width: 'half', validators: ['required', { kind: 'pattern', value: /^[A-Z0-9_]+$/, message: 'Solo mayúsculas, números y _' }] },
       { key: 'name', type: 'text', label: 'Nombre', width: 'half', validators: ['required'] },
-      { key: 'description', type: 'textarea', label: 'Descripción', width: 'full' },
+      { key: 'value', type: 'textarea', label: 'Valor / Descripción', width: 'full' },
       { key: 'displayOrder', type: 'number', label: 'Orden', width: 'half', defaultValue: 1, validators: ['required'] },
     ],
     submit: { show: false },
@@ -77,40 +77,66 @@ export class AdminSystemListsPage {
   }
 
   loadItems() {
-    const id = this.selectedId();
-    if (!id) return;
+    const list = this.selected();
+    if (!list) return;
     this.loadingItems.set(true);
-    this.api.items(id).subscribe({
-      next: i => { this.items.set(i); this.loadingItems.set(false); },
+    console.log(list);
+    this.api.items(list.code).subscribe({
+      next: items => { this.items.set(items); this.loadingItems.set(false); },
       error: () => this.loadingItems.set(false),
     });
   }
 
-  patchItem(it: SystemListItem, p: Partial<SystemListItem>) {
-    this.api.updateItem(it.listId, it.id, { ...it, ...p }).subscribe({
-      next: updated => {
-        this.items.update(arr => arr.map(x => x.id === updated.id ? updated : x));
-      },
+  patchItem(it: CatalogItem, patch: Partial<CatalogRequest>) {
+    const list = this.selected();
+    if (!list) return;
+    const body: CatalogRequest = {
+      code: it.code,
+      name: it.name,
+      value: it.value,
+      displayOrder: it.displayOrder,
+      ...patch,
+    };
+    this.api.updateItem(list.code, it.id, body).subscribe({
+      next: updated => this.items.update(arr => arr.map(x => x.id === updated.id ? updated : x)),
     });
   }
 
-  openItem(_: null) { this.dirty.set(false); this.itemModalOpen.set(true); }
+  toggleEnabled(it: CatalogItem, enabled: boolean) {
+    const list = this.selected();
+    if (!list) return;
+    this.api.toggleItemEnabled(list.code, it.id, enabled).subscribe({
+      next: () => this.items.update(arr => arr.map(x => x.id === it.id ? { ...x, enabled } : x)),
+    });
+  }
+
+  openItem() { this.dirty.set(false); this.itemModalOpen.set(true); }
 
   createItem(value: any) {
-    const id = this.selectedId();
-    if (!id) return;
-    this.api.createItem(id, value).subscribe({
+    const list = this.selected();
+    if (!list) return;
+    const body: CatalogRequest = {
+      code: value.code,
+      name: value.name,
+      value: value.value,
+      displayOrder: value.displayOrder ?? 1,
+    };
+    this.api.createItem(list.code, body).subscribe({
       next: () => { this.toast.success(this.i18n.t('admin.lists.toast.created')); this.closeItemDrawer(); this.loadItems(); },
     });
   }
 
-  async deleteItem(it: SystemListItem) {
+  async deleteItem(it: CatalogItem) {
+    const list = this.selected();
+    if (!list) return;
     const ok = await this.confirm.ask({
-      title: this.i18n.t('admin.lists.items.delete.title'), message: this.i18n.t('admin.lists.items.delete.message', { name: it.name }),
-      confirmText: this.i18n.t('common.delete'), tone: 'danger',
+      title: this.i18n.t('admin.lists.items.delete.title'),
+      message: this.i18n.t('admin.lists.items.delete.message', { name: it.name }),
+      confirmText: this.i18n.t('common.delete'),
+      tone: 'danger',
     });
     if (!ok) return;
-    this.api.deleteItem(it.listId, it.id).subscribe({
+    this.api.deleteItem(list.code, it.id).subscribe({
       next: () => { this.toast.success(this.i18n.t('admin.lists.toast.deleted')); this.loadItems(); },
     });
   }

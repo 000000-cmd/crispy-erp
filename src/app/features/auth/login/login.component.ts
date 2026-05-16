@@ -10,9 +10,9 @@ import { TPipe } from '../../../shared/pipes/t.pipe';
   selector: 'app-login-page',
   standalone: true,
   imports: [CommonModule, DynamicFormComponent, TPipe],
-  templateUrl: './login.page.html',
+  templateUrl: './login.component.html',
 })
-export class LoginPage {
+export class LoginComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 

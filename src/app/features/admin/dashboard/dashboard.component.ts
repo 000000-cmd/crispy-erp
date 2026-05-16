@@ -29,9 +29,9 @@ interface ServiceCard {
   selector: 'app-admin-dashboard',
   standalone: true,
   imports: [CommonModule, CardComponent, LucideAngularModule, DatePipe, TPipe],
-  templateUrl: './dashboard.page.html',
+  templateUrl: './dashboard.component.html',
 })
-export class AdminDashboardPage {
+export class AdminDashboardComponent {
   private readonly auth = inject(AuthService);
   private readonly panel = inject(PanelService);
 

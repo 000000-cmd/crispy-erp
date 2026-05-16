@@ -16,9 +16,9 @@ import { I18nService } from '../../../core/i18n/i18n.service';
   selector: 'app-admin-permissions',
   standalone: true,
   imports: [CommonModule, LucideAngularModule, ButtonComponent, DrawerComponent, DataTableComponent, DynamicFormComponent, TPipe],
-  templateUrl: './permissions.page.html',
+  templateUrl: './permissions.component.html',
 })
-export class AdminPermissionsPage {
+export class AdminPermissionsComponent {
   private readonly api = inject(PermissionsApi);
   private readonly confirm = inject(ConfirmService);
   private readonly toast = inject(ToastService);

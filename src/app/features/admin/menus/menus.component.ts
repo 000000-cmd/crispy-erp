@@ -21,9 +21,9 @@ import { I18nService } from '../../../core/i18n/i18n.service';
   selector: 'app-admin-menus',
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, CheckboxComponent, DrawerComponent, EmptyComponent, SpinnerComponent, DynamicFormComponent, TPipe],
-  templateUrl: './menus.page.html',
+  templateUrl: './menus.component.html',
 })
-export class AdminMenusPage {
+export class AdminMenusComponent {
   private readonly api = inject(AdminMenusApi);
   private readonly rolesApi = inject(RolesApi);
   private readonly confirm = inject(ConfirmService);

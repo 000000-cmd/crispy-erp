@@ -12,6 +12,7 @@ import { buildValidators } from './core/validators';
 
 import { TextFieldComponent } from './fields/text-field.component';
 import { SelectFieldComponent } from './fields/select-field.component';
+import { AutocompleteFieldComponent } from './fields/autocomplete-field.component';
 import { RadioFieldComponent } from './fields/radio-field.component';
 import { CheckboxGroupFieldComponent } from './fields/checkbox-group-field.component';
 import { CheckboxFieldComponent } from './fields/checkbox-field.component';
@@ -24,7 +25,7 @@ import { FieldLabelComponent } from './fields/field-label.component';
   standalone: true,
   imports: [
     CommonModule, ReactiveFormsModule, ButtonComponent, TPipe,
-    TextFieldComponent, SelectFieldComponent, RadioFieldComponent,
+    TextFieldComponent, SelectFieldComponent, AutocompleteFieldComponent, RadioFieldComponent,
     CheckboxGroupFieldComponent, CheckboxFieldComponent, SwitchFieldComponent, FileFieldComponent,
     FieldLabelComponent,
   ],
@@ -227,6 +228,9 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
   }
 
   private resolveOptions(f: FieldConfig) {
+    // Autocomplete con searchOptions resuelve sus opciones bajo demanda en el
+    // propio componente. Evitar precarga aqui para no duplicar peticiones.
+    if (f.type === 'autocomplete' && f.searchOptions) return;
     const src = f.options;
     if (!src) return;
     if (Array.isArray(src)) {

@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import { AdminProfilePage } from '../../admin/profile/profile.page';
+import { AdminProfileComponent } from '../../admin/profile/profile.component';
 
 // Mismo contenido que admin/profile por ahora; se puede divergir cuando se necesite.
 @Component({
   selector: 'app-tenant-profile',
   standalone: true,
-  imports: [AdminProfilePage],
-  templateUrl: './profile.page.html',
+  imports: [AdminProfileComponent],
+  templateUrl: './profile.component.html',
 })
-export class TenantProfilePage {}
+export class TenantProfileComponent {}

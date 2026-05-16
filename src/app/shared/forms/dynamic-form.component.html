@@ -17,6 +17,7 @@
           @switch (f.type) {
             @case ('select')        { <df-select-field [field]="f" [control]="form.get(f.key)!" [options]="optionsFor(f)" [hint]="hintFor(f)" /> }
             @case ('multiselect')   { <df-select-field [field]="f" [control]="form.get(f.key)!" [options]="optionsFor(f)" [hint]="hintFor(f)" /> }
+            @case ('autocomplete')  { <df-autocomplete-field [field]="f" [control]="form.get(f.key)!" [options]="optionsFor(f)" [hint]="hintFor(f)" /> }
             @case ('radio')         { <df-radio-field  [field]="f" [control]="form.get(f.key)!" [options]="optionsFor(f)" [hint]="hintFor(f)" /> }
             @case ('checkbox-group'){ <df-checkbox-group-field [field]="f" [control]="form.get(f.key)!" [options]="optionsFor(f)" [hint]="hintFor(f)" /> }
             @case ('checkbox')      { <df-checkbox-field [field]="f" [control]="form.get(f.key)!" [hint]="hintFor(f)" /> }

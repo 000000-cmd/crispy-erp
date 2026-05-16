@@ -20,9 +20,9 @@ import { I18nService } from '../../../core/i18n/i18n.service';
   selector: 'app-admin-roles',
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, CheckboxComponent, DrawerComponent, DataTableComponent, DynamicFormComponent, SpinnerComponent, TPipe],
-  templateUrl: './roles.page.html',
+  templateUrl: './roles.component.html',
 })
-export class AdminRolesPage {
+export class AdminRolesComponent {
   private readonly api = inject(RolesApi);
   private readonly permsApi = inject(PermissionsApi);
   private readonly confirm = inject(ConfirmService);
