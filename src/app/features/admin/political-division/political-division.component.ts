@@ -9,6 +9,8 @@ import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { DrawerComponent } from '../../../shared/ui/drawer/drawer.component';
 import { EmptyComponent } from '../../../shared/ui/empty/empty.component';
 import { SpinnerComponent } from '../../../shared/ui/spinner/spinner.component';
+import { AutocompleteComponent } from '../../../shared/ui/autocomplete/autocomplete.component';
+import { AutocompleteOption } from '../../../shared/ui/autocomplete/autocomplete.types';
 import { DynamicFormComponent } from '../../../shared/forms/dynamic-form.component';
 import { FormSchema, Option } from '../../../shared/forms/core/types';
 import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
@@ -48,7 +50,7 @@ interface EditorState {
   selector: 'app-political-division',
   standalone: true,
   imports: [CommonModule, LucideAngularModule, ButtonComponent, DrawerComponent,
-    EmptyComponent, SpinnerComponent, DynamicFormComponent],
+    EmptyComponent, SpinnerComponent, AutocompleteComponent, DynamicFormComponent],
   templateUrl: './political-division.component.html',
 })
 export class PoliticalDivisionComponent {
@@ -88,6 +90,60 @@ export class PoliticalDivisionComponent {
   readonly loadingNeighborhoods = signal<Record<string, boolean>>({});
 
   readonly openMap = signal<Record<string, boolean>>({});
+
+  // ----- filtros (codes seleccionados) -----
+  // Cada filtro restringe la lista del nivel correspondiente a un solo nodo
+  // (el seleccionado). Set a null para volver a "mostrar todos".
+  readonly countryFilter = signal<string | null>(null);
+  readonly departmentFilter = signal<Record<string, string | null>>({});   // por countryCode
+  readonly municipalityFilter = signal<Record<string, string | null>>({}); // por departmentCode
+  readonly neighborhoodFilter = signal<Record<string, string | null>>({}); // por municipalityCode
+
+  // searchFns reactivas (recomputan cuando cambia el padre filtrado)
+  readonly countriesSearchFn = this.api.searchFn.countries();
+  departmentsSearchFn(countryCode: string)  { return this.api.searchFn.departments(countryCode); }
+  municipalitiesSearchFn(countryCode: string, departmentCode: string) {
+    return this.api.searchFn.municipalities(countryCode, departmentCode);
+  }
+  neighborhoodsSearchFn(countryCode: string, departmentCode: string, municipalityCode: string) {
+    return this.api.searchFn.neighborhoods(countryCode, departmentCode, municipalityCode);
+  }
+
+  // Listas filtradas
+  readonly visibleCountries = computed(() => {
+    const f = this.countryFilter();
+    const all = this.countries();
+    return f ? all.filter(c => c.code === f) : all;
+  });
+  visibleDepartments(countryCode: string): Node[] {
+    const all = this.departments()[countryCode] ?? [];
+    const f = this.departmentFilter()[countryCode];
+    return f ? all.filter(d => d.code === f) : all;
+  }
+  visibleMunicipalities(departmentCode: string): Node[] {
+    const all = this.municipalities()[departmentCode] ?? [];
+    const f = this.municipalityFilter()[departmentCode];
+    return f ? all.filter(m => m.code === f) : all;
+  }
+  visibleNeighborhoods(municipalityCode: string): Node[] {
+    const all = this.neighborhoods()[municipalityCode] ?? [];
+    const f = this.neighborhoodFilter()[municipalityCode];
+    return f ? all.filter(n => n.code === f) : all;
+  }
+
+  // Setters (recibe la opcion seleccionada del autocomplete o null al limpiar)
+  onCountryFilter(opt: AutocompleteOption | null) {
+    this.countryFilter.set((opt?.value as string) ?? null);
+  }
+  onDepartmentFilter(countryCode: string, opt: AutocompleteOption | null) {
+    this.departmentFilter.update(s => ({ ...s, [countryCode]: (opt?.value as string) ?? null }));
+  }
+  onMunicipalityFilter(departmentCode: string, opt: AutocompleteOption | null) {
+    this.municipalityFilter.update(s => ({ ...s, [departmentCode]: (opt?.value as string) ?? null }));
+  }
+  onNeighborhoodFilter(municipalityCode: string, opt: AutocompleteOption | null) {
+    this.neighborhoodFilter.update(s => ({ ...s, [municipalityCode]: (opt?.value as string) ?? null }));
+  }
 
   // ----- editor (drawer) -----
   readonly editing = signal<EditorState | null>(null);
@@ -159,19 +215,33 @@ export class PoliticalDivisionComponent {
   toggleCountry(c: Node) {
     const k = `c:${c.code}`;
     this.toggleOpen(k);
-    if (this.isOpen(k)) this.loadDepartments(c.code);
+    if (this.isOpen(k)) {
+      this.loadDepartments(c.code);
+    } else {
+      // Al colapsar limpia el filtro interno; asi al reabrir se ven todos
+      // (el autocomplete dentro del @if se re-monta vacio).
+      this.departmentFilter.update(s => ({ ...s, [c.code]: null }));
+    }
   }
 
   toggleDept(d: Node, countryCode: string) {
     const k = `d:${d.code}`;
     this.toggleOpen(k);
-    if (this.isOpen(k)) this.loadMunicipalities(d.code, countryCode);
+    if (this.isOpen(k)) {
+      this.loadMunicipalities(d.code, countryCode);
+    } else {
+      this.municipalityFilter.update(s => ({ ...s, [d.code]: null }));
+    }
   }
 
   toggleMuni(m: Node, departmentCode: string, countryCode: string) {
     const k = `m:${m.code}`;
     this.toggleOpen(k);
-    if (this.isOpen(k)) this.loadNeighborhoods(m.code, departmentCode, countryCode);
+    if (this.isOpen(k)) {
+      this.loadNeighborhoods(m.code, departmentCode, countryCode);
+    } else {
+      this.neighborhoodFilter.update(s => ({ ...s, [m.code]: null }));
+    }
   }
 
   private toNode(h: LocationHit, level: Level): Node {

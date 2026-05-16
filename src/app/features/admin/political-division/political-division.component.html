@@ -11,13 +11,27 @@
     <app-button [icon]="plusIcon" (onClick)="openCreate('country')">Nuevo país</app-button>
   </header>
 
+  <!-- Filtro nivel país -->
+  <div class="max-w-sm">
+    <label class="block text-[11px] font-medium text-text-muted mb-1">Filtrar por país</label>
+    <app-autocomplete
+      [searchFn]="countriesSearchFn"
+      [minSearchChars]="3"
+      placeholder="Buscar país…"
+      hintText="Escribe al menos 3 letras"
+      (selected)="onCountryFilter($event)"
+    />
+  </div>
+
   @if (loadingCountries()) {
     <div class="py-10 text-center"><app-spinner [size]="24" /></div>
   } @else if (!countries().length) {
     <app-empty title="Sin países" [icon]="globeIcon" description="Aún no hay países registrados. Crea el primero para empezar." />
+  } @else if (!visibleCountries().length) {
+    <app-empty title="Sin coincidencias" [icon]="globeIcon" description="Limpia el filtro para ver todos los países." />
   } @else {
     <ul class="space-y-3">
-      @for (c of countries(); track c.code) {
+      @for (c of visibleCountries(); track c.code) {
         <li class="rounded-xl border border-border bg-surface overflow-hidden"
             [class.opacity-60]="!c.enabled">
           <!-- Cabecera país -->
@@ -63,8 +77,18 @@
               } @else if (!(departments()[c.code]?.length)) {
                 <div class="py-4 text-center text-xs text-text-muted">Sin departamentos. Usa <kbd>+</kbd> arriba para crear uno.</div>
               } @else {
+                <div class="pt-3 max-w-sm">
+                  <label class="block text-[11px] font-medium text-text-muted mb-1">Filtrar departamento</label>
+                  <app-autocomplete
+                    [searchFn]="departmentsSearchFn(c.code)"
+                    [minSearchChars]="3"
+                    placeholder="Buscar departamento…"
+                    hintText="Escribe al menos 3 letras"
+                    (selected)="onDepartmentFilter(c.code, $event)"
+                  />
+                </div>
                 <ul class="space-y-2 pt-3">
-                  @for (d of departments()[c.code]; track d.code) {
+                  @for (d of visibleDepartments(c.code); track d.code) {
                     <li class="rounded-lg border border-border bg-surface" [class.opacity-60]="!d.enabled">
                       <!-- Cabecera departamento -->
                       <div class="flex items-center gap-2 px-3 py-2 hover:bg-surface-hover">
@@ -109,8 +133,18 @@
                           } @else if (!(municipalities()[d.code]?.length)) {
                             <div class="py-3 text-center text-xs text-text-muted">Sin municipios.</div>
                           } @else {
+                            <div class="pt-2 max-w-sm">
+                              <label class="block text-[11px] font-medium text-text-muted mb-1">Filtrar municipio</label>
+                              <app-autocomplete
+                                [searchFn]="municipalitiesSearchFn(c.code, d.code)"
+                                [minSearchChars]="3"
+                                placeholder="Buscar municipio…"
+                                hintText="Escribe al menos 3 letras"
+                                (selected)="onMunicipalityFilter(d.code, $event)"
+                              />
+                            </div>
                             <ul class="space-y-2 pt-2">
-                              @for (m of municipalities()[d.code]; track m.code) {
+                              @for (m of visibleMunicipalities(d.code); track m.code) {
                                 <li class="rounded-md border border-border bg-surface" [class.opacity-60]="!m.enabled">
                                   <div class="flex items-center gap-2 px-3 py-2 hover:bg-surface-hover">
                                     <button class="h-6 w-6 inline-flex items-center justify-center text-text-muted hover:text-text"
@@ -154,8 +188,18 @@
                                       } @else if (!(neighborhoods()[m.code]?.length)) {
                                         <div class="py-3 text-center text-xs text-text-muted">Sin barrios / veredas.</div>
                                       } @else {
+                                        <div class="pt-2 max-w-sm">
+                                          <label class="block text-[11px] font-medium text-text-muted mb-1">Filtrar barrio / vereda</label>
+                                          <app-autocomplete
+                                            [searchFn]="neighborhoodsSearchFn(c.code, d.code, m.code)"
+                                            [minSearchChars]="3"
+                                            placeholder="Buscar barrio o vereda…"
+                                            hintText="Escribe al menos 3 letras"
+                                            (selected)="onNeighborhoodFilter(m.code, $event)"
+                                          />
+                                        </div>
                                         <ul class="space-y-1 pt-2">
-                                          @for (n of neighborhoods()[m.code]; track n.code) {
+                                          @for (n of visibleNeighborhoods(m.code); track n.code) {
                                             <li class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-surface-hover"
                                                 [class.opacity-60]="!n.enabled">
                                               <span class="h-5 w-5 rounded bg-surface-muted text-text-muted inline-flex items-center justify-center shrink-0">
