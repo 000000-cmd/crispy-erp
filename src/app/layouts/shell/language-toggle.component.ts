@@ -20,13 +20,15 @@ export class LanguageToggleComponent {
   protected readonly locales: Locale[] = ['es', 'en'];
 
   protected btnClass(active: boolean): string {
+    // El fondo del activo lo pinta el pill deslizante (.app-lang-pill); el
+    // boton solo transiciona color de texto, encima del pill (z-10).
     const base =
-      'inline-flex items-center justify-center px-2.5 h-6 rounded text-[11px] font-semibold ' +
-      'transition-all duration-200 cursor-pointer ' +
+      'relative z-10 inline-flex items-center justify-center px-2.5 h-6 rounded text-[11px] font-semibold ' +
+      'transition-colors duration-200 cursor-pointer ' +
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40';
     return active
-      ? `${base} bg-primary-500 text-white shadow-sm`
-      : `${base} text-text-muted hover:text-text hover:bg-surface-hover`;
+      ? `${base} text-white`
+      : `${base} text-text-muted hover:text-text`;
   }
 
   protected set(l: Locale) { this.i18n.setLocale(l); }

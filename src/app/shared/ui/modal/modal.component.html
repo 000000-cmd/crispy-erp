@@ -1,16 +1,27 @@
 
-    @if (open()) {
+    @if (rendered()) {
       <div class="fixed inset-0 z-[300] flex items-center justify-center p-4" (click)="onClose.emit()">
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
         <div
-          class="relative bg-surface border border-border rounded-xl shadow-xl flex flex-col max-h-[90vh]"
+          class="app-modal-backdrop absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+          [class.is-closing]="closing()"
+        ></div>
+        <div
+          class="app-modal relative bg-surface border border-border rounded-xl shadow-xl flex flex-col max-h-[90vh]"
           [class]="sizeClass()"
+          [class.is-closing]="closing()"
           (click)="$event.stopPropagation()"
         >
           @if (title()) {
             <header class="px-5 py-4 border-b border-border flex items-center justify-between">
               <h3 class="text-base font-semibold text-text">{{ title() }}</h3>
-              <button class="text-text-soft hover:text-text" (click)="onClose.emit()">×</button>
+              <button
+                type="button"
+                class="app-btn h-8 w-8 inline-flex items-center justify-center rounded-md text-text-soft hover:text-text hover:bg-surface-hover active:scale-[0.94]"
+                (click)="onClose.emit()"
+                aria-label="Cerrar"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </button>
             </header>
           }
           <div class="px-5 py-4 overflow-auto flex-1">

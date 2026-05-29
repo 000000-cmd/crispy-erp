@@ -25,7 +25,7 @@ export class ButtonComponent {
   readonly iconSize = computed(() => (this.size() === 'sm' ? 14 : this.size() === 'lg' ? 18 : 16));
 
   readonly classes = computed(() => {
-    const base = 'inline-flex items-center justify-center gap-2 rounded-md font-medium cursor-pointer select-none transition-all duration-150 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40 focus-visible:ring-offset-1 focus-visible:ring-offset-surface';
+    const base = 'app-btn inline-flex items-center justify-center gap-2 rounded-md font-medium cursor-pointer select-none active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40 focus-visible:ring-offset-1 focus-visible:ring-offset-surface';
     const size = this.size() === 'sm' ? 'h-8 px-3 text-xs' : this.size() === 'lg' ? 'h-11 px-5 text-sm' : 'h-9 px-4 text-sm';
     const variant = {
       primary:  'bg-primary-500 text-white shadow-sm hover:bg-primary-600 hover:shadow active:bg-primary-700',

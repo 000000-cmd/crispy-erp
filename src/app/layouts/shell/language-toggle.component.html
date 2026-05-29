@@ -2,9 +2,17 @@
     <div
       role="radiogroup"
       aria-label="Idioma"
-      class="inline-flex items-center rounded-md border border-border bg-surface p-0.5
+      class="relative inline-flex items-center rounded-md border border-border bg-surface p-0.5
              transition-colors hover:border-border-strong"
     >
+      <!-- Indicador deslizante: ocupa media zona util y se desliza al activo. -->
+      <span
+        class="app-lang-pill absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-0.125rem)]
+               rounded bg-primary-500 shadow-sm"
+        [class.is-second]="i18n.locale() === locales[1]"
+        aria-hidden="true"
+      ></span>
+
       @for (l of locales; track l) {
         <button
           type="button"
@@ -17,4 +25,3 @@
         </button>
       }
     </div>
-  

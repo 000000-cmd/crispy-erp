@@ -168,6 +168,16 @@ export const DICTIONARIES: Record<Locale, Dictionary> = {
     'admin.section.security': 'Seguridad',
     'admin.section.preferences': 'Preferencias',
     'admin.section.tenants': 'Tenants',
+    'admin.section.general': 'General',
+    'admin.section.access': 'Usuarios y acceso',
+    'admin.section.config': 'Configuración',
+    'admin.section.systemArea': 'Sistema',
+    'admin.tenants': 'Empresas',
+    'admin.invitations': 'Invitaciones',
+    'admin.political': 'División política',
+    'admin.audit': 'Auditoría',
+    'admin.systemStatus': 'Estado del sistema',
+    'admin.profile': 'Mi perfil',
 
     // Tabla / data-table
     'table.empty': 'Sin datos',
@@ -355,6 +365,16 @@ export const DICTIONARIES: Record<Locale, Dictionary> = {
     'admin.section.security': 'Security',
     'admin.section.preferences': 'Preferences',
     'admin.section.tenants': 'Tenants',
+    'admin.section.general': 'General',
+    'admin.section.access': 'Users & access',
+    'admin.section.config': 'Configuration',
+    'admin.section.systemArea': 'System',
+    'admin.tenants': 'Companies',
+    'admin.invitations': 'Invitations',
+    'admin.political': 'Political division',
+    'admin.audit': 'Audit',
+    'admin.systemStatus': 'System status',
+    'admin.profile': 'My profile',
 
     // Table
     'table.empty': 'No data',

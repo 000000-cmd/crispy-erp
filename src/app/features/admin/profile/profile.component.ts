@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { CardComponent } from '../../../shared/ui/card/card.component';
 import { DynamicFormComponent } from '../../../shared/forms/dynamic-form.component';
 import { FormSchema } from '../../../shared/forms/core/types';
 import { ThemeService } from '../../../core/theme/theme.service';
@@ -13,7 +12,7 @@ import { ToastService } from '../../../shared/ui/toast/toast.service';
 @Component({
   selector: 'app-admin-profile',
   standalone: true,
-  imports: [CommonModule, CardComponent, DynamicFormComponent],
+  imports: [CommonModule, DynamicFormComponent],
   templateUrl: './profile.component.html',
 })
 export class AdminProfileComponent {
@@ -24,6 +23,14 @@ export class AdminProfileComponent {
   private readonly toast = inject(ToastService);
 
   readonly saving = signal(false);
+
+  readonly initials = computed(() => {
+    const u = this.auth.user();
+    const name = u?.fullName || u?.email || '?';
+    return name.split(/\s+|@/).slice(0, 2).map(s => s.charAt(0).toUpperCase()).join('');
+  });
+
+  readonly roles = computed(() => this.auth.user()?.roles ?? []);
 
   readonly passwordSchema: FormSchema = {
     cols: 1,

@@ -7,11 +7,12 @@
       ></lucide-angular>
 
       <span
-        class="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 z-20
+        class="app-tooltip pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 z-20
                whitespace-pre w-max max-w-xs rounded-md border px-2.5 py-1.5
                text-[11px] leading-snug text-left
-               opacity-0 group-hover/tip:opacity-100 group-focus-within/tip:opacity-100
-               transition-opacity duration-200"
+               opacity-0 scale-95
+               group-hover/tip:opacity-100 group-hover/tip:scale-100
+               group-focus-within/tip:opacity-100 group-focus-within/tip:scale-100"
         [class]="bodyClass()"
       >
         <span [innerHTML]="text()"></span>

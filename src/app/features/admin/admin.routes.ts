@@ -18,6 +18,7 @@ export const ADMIN_ROUTES: Routes = [
       { path: 'political-division', data: { crumb: 'División política' }, loadComponent: () => import('./political-division/political-division.component').then(m => m.PoliticalDivisionComponent) },
       { path: 'constants',     data: { crumb: 'Constantes' },   loadComponent: () => import('./constants/constants.component').then(m => m.AdminConstantsComponent) },
       { path: 'menus',         data: { crumb: 'Menús' },        loadComponent: () => import('./menus/menus.component').then(m => m.AdminMenusComponent) },
+      { path: 'system-status', data: { crumb: 'Estado del sistema' }, loadComponent: () => import('./system-status/system-status.component').then(m => m.AdminSystemStatusComponent) },
       { path: 'roles',         data: { crumb: 'Roles' },        loadComponent: () => import('./roles/roles.component').then(m => m.AdminRolesComponent) },
       { path: 'permissions',   data: { crumb: 'Permisos' },     loadComponent: () => import('./permissions/permissions.component').then(m => m.AdminPermissionsComponent) },
       { path: 'audit',         data: { crumb: 'Auditoría' },    loadComponent: () => import('./stubs/admin-stubs.component').then(m => m.AdminAuditComponent) },

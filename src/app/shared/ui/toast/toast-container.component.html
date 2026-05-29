@@ -1,16 +1,45 @@
 
-    <div class="fixed bottom-4 right-4 z-[400] flex flex-col gap-2 w-80">
+    <div
+      class="app-toaster fixed bottom-4 right-4 z-[400] flex flex-col items-end gap-2.5"
+      (mouseenter)="onEnter()"
+      (mouseleave)="onLeave()"
+      role="region"
+      aria-label="Notificaciones"
+    >
       @for (t of toast.toasts(); track t.id) {
         <div
-          class="flex items-start gap-3 rounded-lg border px-4 py-3 shadow-sm bg-surface text-text"
-          [class.border-emerald-500]="t.kind === 'success'"
-          [class.border-amber-500]="t.kind === 'warning'"
-          [class.border-rose-500]="t.kind === 'error'"
-          [class.border-border]="t.kind === 'info'"
+          class="app-toast group relative w-[360px] max-w-[calc(100vw-2rem)]
+                 flex items-start gap-3 rounded-xl border border-border bg-surface
+                 pl-4 pr-3 py-3 shadow-lg shadow-black/[0.06] overflow-hidden
+                 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[3px]"
+          [class]="accent(t.kind)"
+          [class.is-out]="t.dismissing"
+          role="status"
+          aria-live="polite"
         >
-          <span class="mt-0.5 text-sm flex-1">{{ t.message }}</span>
-          <button class="text-text-soft hover:text-text text-xs" (click)="toast.dismiss(t.id)">×</button>
+          <lucide-angular
+            [img]="icon(t.kind)"
+            class="w-5 h-5 shrink-0 mt-0.5"
+            [class]="iconColor(t.kind)"
+          ></lucide-angular>
+
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-text leading-snug">{{ t.title }}</p>
+            @if (t.description) {
+              <p class="text-[13px] text-text-muted leading-snug mt-0.5">{{ t.description }}</p>
+            }
+          </div>
+
+          <button
+            type="button"
+            class="app-btn shrink-0 -mr-1 h-6 w-6 inline-flex items-center justify-center rounded-md
+                   text-text-soft opacity-0 group-hover:opacity-100 focus-visible:opacity-100
+                   hover:text-text hover:bg-surface-hover active:scale-[0.92]"
+            (click)="toast.dismiss(t.id)"
+            aria-label="Cerrar notificación"
+          >
+            <lucide-angular [img]="CloseIcon" class="w-3.5 h-3.5"></lucide-angular>
+          </button>
         </div>
       }
     </div>
-  

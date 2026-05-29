@@ -2,7 +2,7 @@
     <header class="h-14 border-b border-border bg-surface/80 backdrop-blur flex items-center px-3 gap-3 sticky top-0 z-30">
       <button
         class="h-9 w-9 rounded-md hover:bg-surface-hover inline-flex items-center justify-center text-text-muted hover:text-text transition-colors cursor-pointer"
-        (click)="layout.toggle()"
+        (click)="layout.toggleSidebar()"
         [title]="(layout.isCollapsed() ? 'common.expand' : 'common.collapse') | t"
       >
         <lucide-icon [img]="layout.isCollapsed() ? openIcon : closeIcon" [size]="16"></lucide-icon>

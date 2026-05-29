@@ -1,0 +1,101 @@
+
+    <div class="space-y-6">
+      <header class="flex items-end justify-between gap-3">
+        <div>
+          <h1 class="text-xl font-semibold text-text tracking-tight">Estado del sistema</h1>
+          <p class="text-sm text-text-muted mt-1">Salud de los microservicios y sus dependencias en tiempo real.</p>
+        </div>
+        <button
+          type="button"
+          (click)="refresh()"
+          class="app-btn inline-flex items-center gap-2 h-9 px-4 rounded-md text-sm font-medium border border-border text-text hover:bg-surface-hover active:scale-[0.97]"
+        >
+          <lucide-icon [img]="refreshIcon" [size]="15"></lucide-icon>
+          Actualizar
+        </button>
+      </header>
+
+      <!-- Resumen -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 rounded-xl border border-border bg-surface overflow-hidden">
+        <div class="px-5 py-4 border-r border-border">
+          <p class="text-xs text-text-muted">Monitoreados</p>
+          <p class="text-2xl font-semibold text-text mt-1">{{ counts().total }}</p>
+        </div>
+        <div class="px-5 py-4 border-r border-border">
+          <p class="text-xs text-text-muted">Operativos</p>
+          <p class="text-2xl font-semibold text-emerald-600 mt-1">{{ counts().up }}</p>
+        </div>
+        <div class="px-5 py-4 border-r border-border">
+          <p class="text-xs text-text-muted">Degradados</p>
+          <p class="text-2xl font-semibold text-amber-600 mt-1">{{ counts().degraded }}</p>
+        </div>
+        <div class="px-5 py-4">
+          <p class="text-xs text-text-muted">Caídos</p>
+          <p class="text-2xl font-semibold text-rose-600 mt-1">{{ counts().down }}</p>
+        </div>
+      </div>
+
+      <!-- Servicios -->
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        @for (svc of services; track svc.label) {
+          @let h = svc.health();
+          @let info = h?.info;
+          @let st = h?.status ?? 'UNKNOWN';
+          <div class="rounded-xl border border-border bg-surface overflow-hidden">
+            <header class="px-5 py-4 flex items-center gap-3 border-b border-border">
+              <span class="h-11 w-11 rounded-lg inline-flex items-center justify-center shrink-0" [class]="iconClass(st)">
+                <lucide-icon [img]="svc.icon" [size]="20"></lucide-icon>
+              </span>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-sm font-semibold text-text truncate">{{ svc.label }}</h3>
+                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 mt-1 rounded-full text-[11px] font-medium" [class]="statusClass(st)">
+                  <span class="h-1.5 w-1.5 rounded-full" [class]="dotClass(st)" [class.animate-pulse]="st === 'UNKNOWN'"></span>
+                  {{ st }}
+                </span>
+              </div>
+            </header>
+
+            <div class="px-5 py-4">
+              <dl class="space-y-2 text-xs">
+                <div class="flex items-center justify-between">
+                  <dt class="text-text-soft inline-flex items-center gap-1.5"><lucide-icon [img]="tagIcon" [size]="13"></lucide-icon> Versión</dt>
+                  <dd class="text-text font-mono">{{ info?.version || '—' }}</dd>
+                </div>
+                <div class="flex items-center justify-between">
+                  <dt class="text-text-soft inline-flex items-center gap-1.5"><lucide-icon [img]="cpuIcon" [size]="13"></lucide-icon> Entorno</dt>
+                  <dd class="text-text">{{ info?.environment || '—' }}</dd>
+                </div>
+                <div class="flex items-center justify-between">
+                  <dt class="text-text-soft inline-flex items-center gap-1.5"><lucide-icon [img]="clockIcon" [size]="13"></lucide-icon> Uptime</dt>
+                  <dd class="text-text">{{ formatUptime(info?.uptimeMillis) }}</dd>
+                </div>
+                @if (info?.buildTime) {
+                  <div class="flex items-center justify-between">
+                    <dt class="text-text-soft inline-flex items-center gap-1.5"><lucide-icon [img]="calendarIcon" [size]="13"></lucide-icon> Build</dt>
+                    <dd class="text-text">{{ info!.buildTime | date:'dd/MM/yy HH:mm' }}</dd>
+                  </div>
+                }
+              </dl>
+
+              @if (info?.dependencies?.length) {
+                <div class="mt-4 pt-4 border-t border-border">
+                  <p class="text-[10px] uppercase tracking-wide text-text-soft mb-2">Dependencias</p>
+                  <ul class="flex flex-wrap gap-1.5">
+                    @for (d of info!.dependencies!; track d.name) {
+                      <li class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] border" [class]="depClass(d.status)" [title]="d.detail || (d.type + ' · ' + d.status)">
+                        <lucide-icon [img]="depIcon(d.type)" [size]="11"></lucide-icon>
+                        <span class="font-medium">{{ d.type }}</span>
+                        <span class="opacity-50">·</span>
+                        <span>{{ d.status }}</span>
+                      </li>
+                    }
+                  </ul>
+                </div>
+              } @else if (!info && st === 'DOWN') {
+                <p class="mt-4 text-[11px] text-rose-600 dark:text-rose-400">Sin respuesta del servicio.</p>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>

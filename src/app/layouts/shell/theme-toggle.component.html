@@ -29,13 +29,11 @@
         <lucide-icon [img]="moonIcon" [size]="11" class="text-white"></lucide-icon>
       </span>
 
-      <!-- Perilla deslizante -->
+      <!-- Perilla deslizante (translateX en GPU, no `left`). -->
       <span
-        class="absolute top-0.5 h-5 w-5 rounded-full bg-surface shadow
-               transition-all duration-200 ease-out
+        class="app-knob absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-surface shadow
                flex items-center justify-center"
-        [class.left-0.5]="!isDark()"
-        [class.left-[1.625rem]]="isDark()"
+        [class.is-on]="isDark()"
       >
         <lucide-icon
           [img]="isDark() ? moonIcon : sunIcon"

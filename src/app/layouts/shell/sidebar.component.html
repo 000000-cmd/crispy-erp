@@ -1,7 +1,16 @@
 
+    <!-- Backdrop solo en móvil cuando el panel está abierto -->
+    @if (layout.isMobile() && layout.mobileOpen()) {
+      <div class="fixed inset-0 z-40 bg-black/40 lg:hidden" (click)="layout.closeMobile()"></div>
+    }
+
     <aside
-      class="relative h-screen bg-surface border-r border-border flex flex-col transition-[width] duration-200 ease-out"
-      [style.width.px]="layout.isCollapsed() ? 64 : 256"
+      class="h-screen bg-surface border-r border-border flex flex-col
+             transition-[width,transform] duration-300 ease-out
+             fixed inset-y-0 left-0 z-50 lg:static lg:z-auto"
+      [style.width.px]="layout.isMobile() ? 256 : (layout.isCollapsed() ? 64 : 256)"
+      [class.translate-x-0]="!layout.isMobile() || layout.mobileOpen()"
+      [class.-translate-x-full]="layout.isMobile() && !layout.mobileOpen()"
     >
       <!-- Brand -->
       <div class="h-14 px-3 flex items-center gap-2.5 border-b border-border shrink-0">

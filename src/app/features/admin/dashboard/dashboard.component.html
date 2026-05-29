@@ -1,113 +1,97 @@
 
-    <div class="space-y-6">
-      <header>
-        <h1 class="text-2xl font-semibold text-text tracking-tight">{{ 'admin.dashboard.title' | t : { name: greeting() } }}</h1>
-        <p class="text-sm text-text-muted mt-1">{{ 'admin.dashboard.subtitle' | t }}</p>
-      </header>
-
-      <!-- Service cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        @for (svc of services; track svc.label) {
-          @let h = svc.health();
-          @let info = h?.info;
-          @let st = h?.status ?? 'UNKNOWN';
-          <app-card>
-            <div class="flex items-start gap-3">
-              <span
-                class="h-11 w-11 rounded-lg inline-flex items-center justify-center shrink-0"
-                [class]="iconBg(st)"
-              >
-                <lucide-icon [img]="svc.icon" [size]="20"></lucide-icon>
-              </span>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between gap-2">
-                  <h3 class="text-sm font-semibold text-text truncate">{{ svc.label }}</h3>
-                  <span
-                    class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium transition-colors"
-                    [class]="badgeClass(st)"
-                  >
-                    <span
-                      class="h-1.5 w-1.5 rounded-full"
-                      [class]="dotClass(st)"
-                      [class.animate-pulse]="st === 'UNKNOWN'"
-                    ></span>
-                    {{ st }}
-                  </span>
-                </div>
-
-                <dl class="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
-                  <dt class="text-text-soft inline-flex items-center gap-1">
-                    <lucide-icon [img]="tagIcon" [size]="11"></lucide-icon> {{ 'admin.dashboard.version' | t }}
-                  </dt>
-                  <dd class="text-text font-mono truncate" [title]="info?.version || ''">{{ info?.version || '—' }}</dd>
-
-                  <dt class="text-text-soft inline-flex items-center gap-1">
-                    <lucide-icon [img]="cpuIcon" [size]="11"></lucide-icon> {{ 'admin.dashboard.environment' | t }}
-                  </dt>
-                  <dd class="text-text">{{ info?.environment || '—' }}</dd>
-
-                  <dt class="text-text-soft inline-flex items-center gap-1">
-                    <lucide-icon [img]="clockIcon" [size]="11"></lucide-icon> {{ 'admin.dashboard.uptime' | t }}
-                  </dt>
-                  <dd class="text-text">{{ formatUptime(info?.uptimeMillis) }}</dd>
-
-                  @if (info?.buildTime) {
-                    <dt class="text-text-soft">{{ 'admin.dashboard.build' | t }}</dt>
-                    <dd class="text-text">{{ info!.buildTime | date:'dd/MM/yy HH:mm' }}</dd>
-                  }
-                </dl>
-
-                @if (info?.dependencies?.length) {
-                  <div class="mt-3 pt-3 border-t border-border">
-                    <p class="text-[10px] uppercase tracking-wide text-text-soft mb-2">{{ 'admin.dashboard.dependencies' | t }}</p>
-                    <ul class="flex flex-wrap gap-1.5">
-                      @for (d of info!.dependencies!; track d.name) {
-                        <li
-                          class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] border transition-colors"
-                          [class]="depClass(d.status)"
-                          [title]="d.detail || (d.type + ' · ' + d.status)"
-                        >
-                          <lucide-icon [img]="depIcon(d.type)" [size]="11"></lucide-icon>
-                          <span class="font-medium">{{ d.type }}</span>
-                          <span class="text-text-soft">·</span>
-                          <span>{{ d.status }}</span>
-                        </li>
-                      }
-                    </ul>
-                  </div>
-                }
-
-                @if (!info && st === 'DOWN') {
-                  <p class="mt-3 text-[11px] text-rose-600 dark:text-rose-400">
-                    {{ 'admin.dashboard.noResponse' | t }}
-                  </p>
-                }
-              </div>
-            </div>
-          </app-card>
-        }
-      </div>
-
-      <!-- Aggregate -->
-      <app-card [title]="'admin.dashboard.summary' | t" [subtitle]="'admin.dashboard.summary.subtitle' | t">
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div>
-            <p class="text-xs text-text-muted">{{ 'admin.dashboard.services' | t }}</p>
-            <p class="text-xl font-semibold text-text">{{ services.length }}</p>
+    <div class="flex flex-col min-h-full">
+      <!-- Hero cálido -->
+      <section class="rounded-2xl px-5 py-5 sm:px-7 sm:py-6 border border-primary-200/50 bg-primary-50
+                      dark:border-primary-800/40 dark:bg-primary-900/15
+                      flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+        <div>
+          <h1 class="text-xl sm:text-2xl font-semibold text-text tracking-tight">Hola, {{ greeting() }}</h1>
+          <p class="text-sm text-text-muted mt-1 first-letter:uppercase">{{ todayLabel }} · resumen general de la plataforma.</p>
+        </div>
+        <div class="grid grid-cols-4 gap-px rounded-xl overflow-hidden bg-primary-200/40 dark:bg-primary-800/30 lg:flex lg:gap-0 lg:bg-transparent rounded-xl p-2">
+          <div class="bg-primary-50 dark:bg-primary-900/15 px-3 py-2.5 text-center lg:bg-transparent lg:dark:bg-transparent lg:px-5 lg:py-0 lg:text-right">
+            <p class="text-lg sm:text-xl font-semibold text-text">{{ userCount() }}</p>
+            <p class="text-[11px] text-text-muted">Usuarios</p>
           </div>
-          <div>
-            <p class="text-xs text-text-muted">UP</p>
-            <p class="text-xl font-semibold text-emerald-600">{{ counts().up }}</p>
+          <div class="bg-primary-50 dark:bg-primary-900/15 px-3 py-2.5 text-center lg:bg-transparent lg:dark:bg-transparent lg:px-5 lg:py-0 lg:text-right lg:border-l lg:border-primary-300/40 lg:dark:border-primary-700/40">
+            <p class="text-lg sm:text-xl font-semibold text-text">{{ superAdminCount() }}</p>
+            <p class="text-[11px] text-text-muted">Super admins</p>
           </div>
-          <div>
-            <p class="text-xs text-text-muted">DEGRADED</p>
-            <p class="text-xl font-semibold text-amber-600">{{ counts().degraded }}</p>
+          <div class="bg-primary-50 dark:bg-primary-900/15 px-3 py-2.5 text-center lg:bg-transparent lg:dark:bg-transparent lg:px-5 lg:py-0 lg:text-right lg:border-l lg:border-primary-300/40 lg:dark:border-primary-700/40">
+            <p class="text-lg sm:text-xl font-semibold text-text">{{ roleCount() }}</p>
+            <p class="text-[11px] text-text-muted">Roles</p>
           </div>
-          <div>
-            <p class="text-xs text-text-muted">DOWN</p>
-            <p class="text-xl font-semibold text-rose-600">{{ counts().down }}</p>
+          <div class="bg-primary-50 dark:bg-primary-900/15 px-3 py-2.5 text-center lg:bg-transparent lg:dark:bg-transparent lg:pl-5 lg:py-0 lg:text-right lg:border-l lg:border-primary-300/40 lg:dark:border-primary-700/40">
+            <p class="text-lg sm:text-xl font-semibold" [class.text-emerald-600]="allUp()" [class.text-text]="!allUp()">{{ servicesUp() }}/{{ services.length }}</p>
+            <p class="text-[11px] text-text-muted">Servicios</p>
           </div>
         </div>
-      </app-card>
+      </section>
+
+      <!-- Cuerpo: actividad (izq) + acciones/estado (der) -->
+      <div class="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-5 mt-5 flex-1 min-h-0">
+        <!-- Actividad reciente -->
+        <div class="rounded-xl border border-border bg-surface flex flex-col">
+          <header class="px-5 py-3.5 border-b border-border flex items-center justify-between">
+            <h2 class="text-sm font-semibold text-text">Actividad reciente</h2>
+            <a routerLink="/admin/audit" class="text-xs text-primary-600 hover:text-primary-700">Ver auditoría →</a>
+          </header>
+          <!-- Placeholder honesto: el servicio de auditoría aún no está conectado. -->
+          <div class="flex-1 flex flex-col items-center justify-center text-center px-6 py-16">
+            <span class="h-12 w-12 rounded-xl bg-surface-muted text-text-soft inline-flex items-center justify-center mb-3">
+              <lucide-icon [img]="activityIcon" [size]="22"></lucide-icon>
+            </span>
+            <p class="text-sm font-medium text-text">Sin actividad todavía</p>
+            <p class="text-xs text-text-muted mt-1 max-w-xs">Cuando el servicio de auditoría esté disponible, aquí verás los últimos cambios del sistema.</p>
+          </div>
+        </div>
+
+        <!-- Columna derecha -->
+        <div class="flex flex-col gap-5">
+          <!-- Acción primaria -->
+          <a routerLink="/admin/users"
+             class="group rounded-xl p-5 bg-primary-500 text-white block transition-colors hover:bg-primary-600">
+            <span class="h-10 w-10 rounded-xl bg-white/20 inline-flex items-center justify-center mb-3">
+              <lucide-icon [img]="addAdminIcon" [size]="20"></lucide-icon>
+            </span>
+            <h3 class="text-[15px] font-semibold">Crear super admin</h3>
+            <p class="text-xs text-white/80 mt-0.5">Da de alta un administrador del sistema. Los demás usuarios se autogestionan.</p>
+          </a>
+
+          <!-- Estado del sistema (compacto) -->
+          <div class="rounded-xl border border-border bg-surface">
+            <header class="px-5 py-3.5 border-b border-border flex items-center justify-between">
+              <h2 class="text-sm font-semibold text-text">Estado del sistema</h2>
+              <a routerLink="/admin/system-status" class="text-xs text-primary-600 hover:text-primary-700">Ver detalle →</a>
+            </header>
+            @for (s of services; track s.label) {
+              @let st = s.health()?.status ?? 'UNKNOWN';
+              <div class="px-5 py-3 flex items-center gap-3 border-b border-border last:border-0">
+                <lucide-icon [img]="s.icon" [size]="16" class="text-text-muted shrink-0"></lucide-icon>
+                <div class="flex-1 min-w-0">
+                  <p class="text-[13px] font-medium text-text">{{ s.label }}</p>
+                  <p class="text-[11px] text-text-soft font-mono">{{ s.health()?.info?.version || '—' }}</p>
+                </div>
+                <span class="h-2 w-2 rounded-full" [class]="dotClass(st)" [class.animate-pulse]="st === 'UNKNOWN'"></span>
+              </div>
+            }
+          </div>
+
+          <!-- Accesos rápidos (desde menús con ruta) -->
+          <div class="rounded-xl border border-border bg-surface">
+            <header class="px-5 py-3.5 border-b border-border flex items-center justify-between">
+              <h2 class="text-sm font-semibold text-text">Accesos rápidos</h2>
+              <span class="text-[11px] text-text-soft">desde tus menús</span>
+            </header>
+            @for (q of quickLinks(); track q.path) {
+              <a [routerLink]="q.path"
+                 class="px-5 py-2.5 flex items-center gap-3 border-b border-border last:border-0 text-text hover:bg-surface-hover transition-colors">
+                @if (q.icon) { <lucide-icon [img]="q.icon" [size]="16" class="text-text-muted shrink-0"></lucide-icon> }
+                <span class="flex-1 text-sm">{{ label(q.label) }}</span>
+                <lucide-icon [img]="chevron" [size]="15" class="text-text-soft"></lucide-icon>
+              </a>
+            }
+          </div>
+        </div>
+      </div>
     </div>
-  

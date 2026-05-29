@@ -1,40 +1,91 @@
 
-    <div class="space-y-6 max-w-4xl">
-      <header>
-        <h1 class="text-xl font-semibold text-text">Mi perfil</h1>
-        <p class="text-sm text-text-muted">Tu información, preferencias visuales e idioma.</p>
-      </header>
+    <div class="space-y-7 max-w-5xl">
+      <!-- Banner plano cálido -->
+      <section class="rounded-2xl px-5 py-5 sm:px-7 sm:py-6 bg-primary-50 border border-primary-200/50
+                      dark:bg-primary-900/15 dark:border-primary-800/40
+                      flex flex-col sm:flex-row sm:items-center gap-5">
+        <div class="h-16 w-16 rounded-2xl bg-primary-500 text-white inline-flex items-center justify-center text-2xl font-semibold shrink-0">
+          {{ initials() }}
+        </div>
+        <div class="min-w-0 flex-1">
+          <h1 class="text-xl font-semibold text-text truncate">{{ auth.user()?.fullName || auth.user()?.email }}</h1>
+          <p class="text-sm text-text-muted truncate">{{ auth.user()?.email }}</p>
+          @if (roles().length) {
+            <div class="flex flex-wrap gap-2 mt-3">
+              @for (r of roles(); track r; let first = $first) {
+                <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-surface border"
+                      [class.border-primary-300]="first" [class.text-primary-700]="first"
+                      [class.border-border]="!first" [class.text-text-muted]="!first"
+                      [class.font-mono]="!first" [class.text-[11px]]="!first">
+                  @if (first) { <span class="h-1.5 w-1.5 rounded-full bg-primary-500"></span> }
+                  {{ r }}
+                </span>
+              }
+            </div>
+          }
+        </div>
+        <div class="flex sm:flex-col gap-6 sm:gap-2 sm:text-right shrink-0">
+          <div>
+            <p class="text-[10px] uppercase tracking-wider text-text-soft">Estado</p>
+            <p class="text-sm font-medium text-emerald-600">Activo</p>
+          </div>
+        </div>
+      </section>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <app-card title="Información personal">
-          <p class="text-sm"><span class="text-text-muted">Correo:</span> {{ auth.user()?.email }}</p>
-          <p class="text-sm mt-1"><span class="text-text-muted">Nombre:</span> {{ auth.user()?.fullName || '—' }}</p>
-          <p class="text-sm mt-1"><span class="text-text-muted">Roles:</span> {{ auth.user()?.roles?.join(', ') || '—' }}</p>
-        </app-card>
+      <!-- Seguridad + Apariencia en dos columnas -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-2">
+        <!-- Seguridad -->
+        <section class="py-2">
+          <div class="flex items-center gap-2.5 mb-4">
+            <svg class="text-primary-600" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <h2 class="text-[15px] font-semibold text-text">Seguridad</h2>
+          </div>
+          <div class="max-w-md">
+            <app-dynamic-form [schema]="passwordSchema" [submitting]="saving()" (submitValue)="changePassword($event)" />
+          </div>
+        </section>
 
-        <app-card title="Cambiar contraseña">
-          <app-dynamic-form [schema]="passwordSchema" [submitting]="saving()" (submitValue)="changePassword($event)" />
-        </app-card>
+        <!-- Apariencia -->
+        <section class="py-2">
+          <div class="flex items-center gap-2.5 mb-4">
+            <svg class="text-primary-600" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 2a10 10 0 1 0 0 20 1.5 1.5 0 0 0 1.06-2.56A1.5 1.5 0 0 1 14 18.5a1.5 1.5 0 0 1 1.5-1.5H17a5 5 0 0 0 5-5 10 10 0 0 0-10-10z"/></svg>
+            <h2 class="text-[15px] font-semibold text-text">Apariencia</h2>
+          </div>
 
-        <app-card title="Tema">
-          <div class="space-y-4">
-            <div class="flex items-center justify-between">
-              <span class="text-sm">Modo</span>
-              <div class="inline-flex border border-border rounded-md overflow-hidden text-xs">
-                <button class="px-3 py-1.5" [class.bg-primary-500]="theme.mode() === 'light'" [class.text-white]="theme.mode() === 'light'" (click)="theme.setMode('light')">Claro</button>
-                <button class="px-3 py-1.5" [class.bg-primary-500]="theme.mode() === 'dark'" [class.text-white]="theme.mode() === 'dark'" (click)="theme.setMode('dark')">Oscuro</button>
+          <div class="divide-y divide-border">
+            <!-- Modo -->
+            <div class="flex items-center justify-between py-3 first:pt-0">
+              <div>
+                <p class="text-sm font-medium text-text">Modo</p>
+                <p class="text-xs text-text-muted">Claro u oscuro</p>
+              </div>
+              <div class="inline-flex border border-border rounded-md p-0.5 bg-surface">
+                <button class="px-3 py-1 text-xs font-semibold rounded transition-colors"
+                        [class.bg-primary-500]="theme.mode() === 'light'" [class.text-white]="theme.mode() === 'light'"
+                        [class.text-text-muted]="theme.mode() !== 'light'"
+                        (click)="theme.setMode('light')">Claro</button>
+                <button class="px-3 py-1 text-xs font-semibold rounded transition-colors"
+                        [class.bg-primary-500]="theme.mode() === 'dark'" [class.text-white]="theme.mode() === 'dark'"
+                        [class.text-text-muted]="theme.mode() !== 'dark'"
+                        (click)="theme.setMode('dark')">Oscuro</button>
               </div>
             </div>
 
-            <div>
-              <p class="text-sm mb-2">Paleta predefinida</p>
-              <div class="flex flex-wrap gap-2">
+            <!-- Paleta -->
+            <div class="flex items-center justify-between py-3 gap-4">
+              <div>
+                <p class="text-sm font-medium text-text">Paleta</p>
+                <p class="text-xs text-text-muted">Color de acento</p>
+              </div>
+              <div class="flex flex-wrap gap-2 justify-end">
                 @for (p of theme.palettes; track p.id) {
                   <button
-                    class="h-9 w-9 rounded-md border-2 transition-all"
+                    class="h-7 w-7 rounded-lg transition-transform hover:scale-105 active:scale-95"
                     [style.background]="p.scale[500]"
-                    [class.border-primary-700]="theme.paletteId() === p.id"
-                    [class.border-transparent]="theme.paletteId() !== p.id"
+                    [class.ring-2]="theme.paletteId() === p.id"
+                    [class.ring-offset-2]="theme.paletteId() === p.id"
+                    [class.ring-text]="theme.paletteId() === p.id"
+                    [class.ring-offset-surface]="theme.paletteId() === p.id"
                     [title]="p.label"
                     (click)="theme.setPalette(p.id)"
                   ></button>
@@ -42,34 +93,36 @@
               </div>
             </div>
 
-            <div>
-              <p class="text-sm mb-2">Color personalizado</p>
+            <!-- Color personalizado -->
+            <div class="flex items-center justify-between py-3 gap-4 last:pb-0">
+              <div>
+                <p class="text-sm font-medium text-text">Color propio</p>
+                <p class="text-xs text-text-muted">Hex personalizado</p>
+              </div>
               <div class="flex items-center gap-2">
                 <input type="color" [value]="theme.customHex() || '#a13a2c'" (input)="onHex($event)"
-                       class="h-9 w-12 rounded-md border border-border bg-transparent cursor-pointer" />
-                <input type="text" [value]="theme.customHex() || ''" placeholder="#rrggbb"
-                       (change)="onHex($event)"
-                       class="flex-1 h-9 px-3 rounded-md border border-border bg-surface text-sm" />
-                @if (theme.paletteId() === 'custom') {
-                  <span class="text-xs text-text-muted">Activa</span>
-                }
+                       class="h-8 w-9 rounded-md border border-border bg-transparent cursor-pointer p-0.5" />
+                <input type="text" [value]="theme.customHex() || ''" placeholder="#rrggbb" (change)="onHex($event)"
+                       class="w-28 h-8 px-2.5 rounded-md border border-border bg-surface text-sm font-mono" />
               </div>
             </div>
           </div>
-        </app-card>
-
-        <app-card title="Idioma">
-          <div class="inline-flex border border-border rounded-md overflow-hidden text-sm">
-            @for (l of i18n.available; track l) {
-              <button
-                class="px-4 py-1.5"
-                [class.bg-primary-500]="i18n.locale() === l"
-                [class.text-white]="i18n.locale() === l"
-                (click)="i18n.setLocale(l)"
-              >{{ l.toUpperCase() }}</button>
-            }
-          </div>
-        </app-card>
+        </section>
       </div>
+
+      <!-- Idioma a lo ancho -->
+      <section class="pt-5 border-t border-border">
+        <div class="flex items-center gap-2.5 mb-4">
+          <svg class="text-primary-600" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+          <h2 class="text-[15px] font-semibold text-text">Idioma y región</h2>
+        </div>
+        <div class="inline-flex border border-border rounded-md p-0.5 bg-surface">
+          @for (l of i18n.available; track l) {
+            <button class="px-4 py-1.5 text-xs font-semibold rounded transition-colors"
+                    [class.bg-primary-500]="i18n.locale() === l" [class.text-white]="i18n.locale() === l"
+                    [class.text-text-muted]="i18n.locale() !== l"
+                    (click)="i18n.setLocale(l)">{{ l === 'es' ? 'Español' : 'English' }}</button>
+          }
+        </div>
+      </section>
     </div>
-  

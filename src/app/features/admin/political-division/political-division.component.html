@@ -38,7 +38,7 @@
           <div class="flex items-center gap-2 px-4 py-3 hover:bg-surface-hover group">
             <button class="h-7 w-7 inline-flex items-center justify-center text-text-muted hover:text-text"
                     (click)="toggleCountry(c)" [title]="isOpen('c:' + c.code) ? 'Colapsar' : 'Expandir'">
-              <lucide-icon [img]="isOpen('c:' + c.code) ? down : right" [size]="14"></lucide-icon>
+              <lucide-icon [img]="right" [size]="14" class="transition-transform duration-200 ease-out" [class.rotate-90]="isOpen('c:' + c.code)"></lucide-icon>
             </button>
             <span class="h-9 w-9 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 inline-flex items-center justify-center shrink-0">
               <lucide-icon [img]="globeIcon" [size]="18"></lucide-icon>
@@ -71,7 +71,7 @@
           </div>
 
           @if (isOpen('c:' + c.code)) {
-            <div class="px-3 pb-3 pl-12 border-t border-border bg-surface-muted/40">
+            <div class="anim-in px-3 pb-3 pl-12 border-t border-border bg-surface-muted/40">
               @if (loadingDepartments()[c.code]) {
                 <div class="py-6 text-center"><app-spinner [size]="18" /></div>
               } @else if (!(departments()[c.code]?.length)) {
@@ -94,7 +94,7 @@
                       <div class="flex items-center gap-2 px-3 py-2 hover:bg-surface-hover">
                         <button class="h-6 w-6 inline-flex items-center justify-center text-text-muted hover:text-text"
                                 (click)="toggleDept(d, c.code)">
-                          <lucide-icon [img]="isOpen('d:' + d.code) ? down : right" [size]="14"></lucide-icon>
+                          <lucide-icon [img]="right" [size]="14" class="transition-transform duration-200 ease-out" [class.rotate-90]="isOpen('d:' + d.code)"></lucide-icon>
                         </button>
                         <span class="h-7 w-7 rounded-md bg-surface-muted text-text-muted inline-flex items-center justify-center shrink-0">
                           <lucide-icon [img]="mapIcon" [size]="14"></lucide-icon>
@@ -127,7 +127,7 @@
                       </div>
 
                       @if (isOpen('d:' + d.code)) {
-                        <div class="px-3 pb-3 pl-10 border-t border-border bg-surface-muted/30">
+                        <div class="anim-in px-3 pb-3 pl-10 border-t border-border bg-surface-muted/30">
                           @if (loadingMunicipalities()[d.code]) {
                             <div class="py-5 text-center"><app-spinner [size]="16" /></div>
                           } @else if (!(municipalities()[d.code]?.length)) {
@@ -149,7 +149,7 @@
                                   <div class="flex items-center gap-2 px-3 py-2 hover:bg-surface-hover">
                                     <button class="h-6 w-6 inline-flex items-center justify-center text-text-muted hover:text-text"
                                             (click)="toggleMuni(m, d.code, c.code)">
-                                      <lucide-icon [img]="isOpen('m:' + m.code) ? down : right" [size]="12"></lucide-icon>
+                                      <lucide-icon [img]="right" [size]="12" class="transition-transform duration-200 ease-out" [class.rotate-90]="isOpen('m:' + m.code)"></lucide-icon>
                                     </button>
                                     <span class="h-6 w-6 rounded bg-surface-muted text-text-muted inline-flex items-center justify-center shrink-0">
                                       <lucide-icon [img]="cityIcon" [size]="12"></lucide-icon>
@@ -182,7 +182,7 @@
                                   </div>
 
                                   @if (isOpen('m:' + m.code)) {
-                                    <div class="px-3 pb-3 pl-9 border-t border-border bg-surface-muted/20">
+                                    <div class="anim-in px-3 pb-3 pl-9 border-t border-border bg-surface-muted/20">
                                       @if (loadingNeighborhoods()[m.code]) {
                                         <div class="py-4 text-center"><app-spinner [size]="14" /></div>
                                       } @else if (!(neighborhoods()[m.code]?.length)) {

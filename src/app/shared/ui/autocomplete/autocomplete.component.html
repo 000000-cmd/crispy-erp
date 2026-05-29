@@ -47,7 +47,8 @@
   @if (open()) {
     <div
       role="listbox"
-      class="absolute z-30 mt-1 w-full rounded-md border border-border bg-surface shadow-lg overflow-hidden"
+      class="ui-enter-popover absolute z-30 mt-1 w-full rounded-md border border-border bg-surface shadow-lg overflow-hidden"
+      style="--ui-origin: top center"
     >
       <div class="overflow-y-auto max-h-60">
         @for (o of displayed(); track o.value) {

@@ -32,13 +32,9 @@
 
       <div
         role="listbox"
-        class="absolute z-30 mt-1 w-full rounded-md border bg-surface shadow-lg
-               origin-top transition-all duration-150 ease-out border-border
-               flex flex-col overflow-hidden"
-        [class.opacity-100]="open()"
-        [class.scale-100]="open()"
-        [class.opacity-0]="!open()"
-        [class.scale-95]="!open()"
+        class="app-dropdown absolute z-30 mt-1 w-full rounded-md border bg-surface shadow-lg
+               origin-top border-border flex flex-col overflow-hidden"
+        [class.is-open]="open()"
         [class.pointer-events-none]="!open()"
       >
         @if (showHeader()) {
