@@ -71,7 +71,7 @@
           </div>
 
           @if (isOpen('c:' + c.code)) {
-            <div class="anim-in px-3 pb-3 pl-12 border-t border-border bg-surface-muted/40">
+            <div @collapse class="px-3 pb-3 pl-12 border-t border-border bg-surface-muted/40">
               @if (loadingDepartments()[c.code]) {
                 <div class="py-6 text-center"><app-spinner [size]="18" /></div>
               } @else if (!(departments()[c.code]?.length)) {
@@ -127,7 +127,7 @@
                       </div>
 
                       @if (isOpen('d:' + d.code)) {
-                        <div class="anim-in px-3 pb-3 pl-10 border-t border-border bg-surface-muted/30">
+                        <div @collapse class="px-3 pb-3 pl-10 border-t border-border bg-surface-muted/30">
                           @if (loadingMunicipalities()[d.code]) {
                             <div class="py-5 text-center"><app-spinner [size]="16" /></div>
                           } @else if (!(municipalities()[d.code]?.length)) {
@@ -182,7 +182,7 @@
                                   </div>
 
                                   @if (isOpen('m:' + m.code)) {
-                                    <div class="anim-in px-3 pb-3 pl-9 border-t border-border bg-surface-muted/20">
+                                    <div @collapse class="px-3 pb-3 pl-9 border-t border-border bg-surface-muted/20">
                                       @if (loadingNeighborhoods()[m.code]) {
                                         <div class="py-4 text-center"><app-spinner [size]="14" /></div>
                                       } @else if (!(neighborhoods()[m.code]?.length)) {

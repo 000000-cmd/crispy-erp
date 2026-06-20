@@ -1,6 +1,7 @@
 import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { PreloadAllModules, provideRouter, withComponentInputBinding, withPreloading } from '@angular/router';
 import { provideHttpClient, withInterceptors, withFetch } from '@angular/common/http';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './core/http/auth.interceptor';
@@ -11,6 +12,10 @@ import { AuthService } from './core/auth/auth.service';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+
+    // Animaciones de Angular (lazy): habilita triggers como `collapse` para
+    // despliegue/repliegue suave de acordeones (ej. división política).
+    provideAnimationsAsync(),
 
     // `withPreloading(PreloadAllModules)` baja en background todos los chunks
     // lazy declarados con `loadComponent`/`loadChildren` apenas el bundle

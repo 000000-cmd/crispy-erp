@@ -17,4 +17,12 @@ export class PanelService {
   searchStatus() {
     return this.panel.health(MICROSERVICES.ELASTIC);
   }
+
+  auditStatus() {
+    return this.panel.health(MICROSERVICES.AUDIT);
+  }
+
+  businessStatus() {
+    return this.panel.health(MICROSERVICES.BUSINESS);
+  }
 }

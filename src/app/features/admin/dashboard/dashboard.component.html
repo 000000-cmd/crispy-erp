@@ -29,21 +29,46 @@
       </section>
 
       <!-- Cuerpo: actividad (izq) + acciones/estado (der) -->
-      <div class="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-5 mt-5 flex-1 min-h-0">
+      <div class="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-5 mt-5 flex-1 min-h-0 lg:items-start">
         <!-- Actividad reciente -->
         <div class="rounded-xl border border-border bg-surface flex flex-col">
           <header class="px-5 py-3.5 border-b border-border flex items-center justify-between">
             <h2 class="text-sm font-semibold text-text">Actividad reciente</h2>
             <a routerLink="/admin/audit" class="text-xs text-primary-600 hover:text-primary-700">Ver auditoría →</a>
           </header>
-          <!-- Placeholder honesto: el servicio de auditoría aún no está conectado. -->
-          <div class="flex-1 flex flex-col items-center justify-center text-center px-6 py-16">
-            <span class="h-12 w-12 rounded-xl bg-surface-muted text-text-soft inline-flex items-center justify-center mb-3">
-              <lucide-icon [img]="activityIcon" [size]="22"></lucide-icon>
-            </span>
-            <p class="text-sm font-medium text-text">Sin actividad todavía</p>
-            <p class="text-xs text-text-muted mt-1 max-w-xs">Cuando el servicio de auditoría esté disponible, aquí verás los últimos cambios del sistema.</p>
-          </div>
+          @if (recentItems().length) {
+            <div>
+              @for (a of recentItems(); track a.id) {
+                <div class="px-5 py-3 flex items-center gap-3 border-b border-border">
+                  <span class="h-8 w-8 rounded-lg inline-flex items-center justify-center shrink-0" [class]="actionTone(a.action)">
+                    <lucide-icon [img]="actionIcon(a.action)" [size]="15"></lucide-icon>
+                  </span>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[13px] text-text truncate">
+                      <span class="font-medium">{{ a.actorName || 'Sistema' }}</span>
+                      {{ actionVerb(a.action) }}
+                      <span class="font-medium">{{ a.aggregateType }}</span>
+                    </p>
+                    @if (a.changedFields?.length) {
+                      <p class="text-[11px] text-text-soft truncate">{{ a.changedFields!.join(', ') }}</p>
+                    }
+                  </div>
+                  <span class="text-[11px] text-text-soft whitespace-nowrap">{{ a.occurredAt | date:'dd/MM HH:mm' }}</span>
+                </div>
+              }
+            </div>
+            <a routerLink="/admin/audit" class="block px-5 py-3 text-center text-xs font-medium text-primary-600 hover:text-primary-700 hover:bg-surface-hover transition-colors">
+              Ver toda la actividad →
+            </a>
+          } @else {
+            <div class="flex-1 flex flex-col items-center justify-center text-center px-6 py-16">
+              <span class="h-12 w-12 rounded-xl bg-surface-muted text-text-soft inline-flex items-center justify-center mb-3">
+                <lucide-icon [img]="activityIcon" [size]="22"></lucide-icon>
+              </span>
+              <p class="text-sm font-medium text-text">Sin actividad todavía</p>
+              <p class="text-xs text-text-muted mt-1 max-w-xs">Cuando se realicen cambios en el sistema, aquí verás los últimos.</p>
+            </div>
+          }
         </div>
 
         <!-- Columna derecha -->

@@ -161,6 +161,7 @@ export const DICTIONARIES: Record<Locale, Dictionary> = {
     'admin.lists.items.delete.title': 'Eliminar item',
     'admin.lists.items.delete.message': '¿Eliminar "{name}"?',
     'admin.lists.toast.created': 'Item creado',
+    'admin.lists.toast.saved': 'Cambios guardados',
     'admin.lists.toast.deleted': 'Eliminado',
 
     'admin.section.users': 'Usuarios',
@@ -358,6 +359,7 @@ export const DICTIONARIES: Record<Locale, Dictionary> = {
     'admin.lists.items.delete.title': 'Delete item',
     'admin.lists.items.delete.message': 'Delete "{name}"?',
     'admin.lists.toast.created': 'Item created',
+    'admin.lists.toast.saved': 'Changes saved',
     'admin.lists.toast.deleted': 'Deleted',
 
     'admin.section.users': 'Users',

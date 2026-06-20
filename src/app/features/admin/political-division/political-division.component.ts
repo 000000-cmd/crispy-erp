@@ -16,6 +16,7 @@ import { FormSchema, Option } from '../../../shared/forms/core/types';
 import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { I18nService } from '../../../core/i18n/i18n.service';
+import { collapse } from '../../../shared/animations';
 import {
   LocationsApi, LocationHit, Country, Department, Municipality, Neighborhood,
   CountryRequest, DepartmentRequest, MunicipalityRequest, NeighborhoodRequest, NeighborhoodType,
@@ -52,6 +53,7 @@ interface EditorState {
   imports: [CommonModule, LucideAngularModule, ButtonComponent, DrawerComponent,
     EmptyComponent, SpinnerComponent, AutocompleteComponent, DynamicFormComponent],
   templateUrl: './political-division.component.html',
+  animations: [collapse],
 })
 export class PoliticalDivisionComponent {
   private readonly api = inject(LocationsApi);

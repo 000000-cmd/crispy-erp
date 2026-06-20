@@ -11,8 +11,15 @@ import { ToastService } from '../../shared/ui/toast/toast.service';
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const toast = inject(ToastService);
 
+  // Los probes de salud (/api/info) muestran su estado en la UI; un fallo no
+  // debe disparar un toast de error (un servicio caido es info, no alarma).
+  const isHealthProbe = req.url.includes('/api/info');
+
   return next(req).pipe(
     catchError((err: HttpErrorResponse) => {
+      if (isHealthProbe) {
+        return throwError(() => err);
+      }
       if (err.status === 401) {
         // Manejado por refreshInterceptor. Si llegamos aqui significa que el
         // refresh ya intento y fallo, o es un endpoint de auth. No molestar

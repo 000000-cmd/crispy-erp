@@ -1,18 +1,14 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { forkJoin } from 'rxjs';
 import {
   LucideAngularModule, ShieldCheck, Server, Search, Database, Network, Radio,
-  Tag, Cpu, Clock, Calendar, RefreshCw,
+  Tag, Cpu, Clock, Calendar, RefreshCw, ScrollText, Building2,
 } from 'lucide-angular';
 import { PanelService } from '../../../core/panel/panel.service';
 import { DependencyStatus, ServiceHealth } from '../../../core/panel/panel.api';
 
-interface ServiceCard {
-  label: string;
-  icon: any;
-  health: () => ServiceHealth | undefined;
-}
+interface ServiceCard { key: string; label: string; icon: any; }
 
 @Component({
   selector: 'app-admin-system-status',
@@ -29,31 +25,45 @@ export class AdminSystemStatusComponent {
   protected readonly calendarIcon = Calendar;
   protected readonly refreshIcon = RefreshCw;
 
-  // Permite re-suscribir para "Actualizar".
-  private readonly reloadKey = signal(0);
-
-  private readonly authHealth   = toSignal(this.panel.authStatus());
-  private readonly systemHealth = toSignal(this.panel.systemStatus());
-  private readonly searchHealth = toSignal(this.panel.searchStatus());
+  readonly loading = signal(true);
+  private readonly health = signal<Record<string, ServiceHealth | undefined>>({});
 
   readonly services: ServiceCard[] = [
-    { label: 'Auth service',   icon: ShieldCheck, health: this.authHealth },
-    { label: 'System service', icon: Server,      health: this.systemHealth },
-    { label: 'Search service', icon: Search,      health: this.searchHealth },
+    { key: 'auth',     label: 'Auth service',     icon: ShieldCheck },
+    { key: 'system',   label: 'System service',   icon: Server },
+    { key: 'search',   label: 'Search service',   icon: Search },
+    { key: 'audit',    label: 'Audit service',    icon: ScrollText },
+    { key: 'business', label: 'Business service', icon: Building2 },
   ];
+
+  constructor() { this.refresh(); }
+
+  refresh() {
+    this.loading.set(true);
+    forkJoin({
+      auth: this.panel.authStatus(),
+      system: this.panel.systemStatus(),
+      search: this.panel.searchStatus(),
+      audit: this.panel.auditStatus(),
+      business: this.panel.businessStatus(),
+    }).subscribe({
+      next: (r) => { this.health.set(r); this.loading.set(false); },
+      error: () => this.loading.set(false),
+    });
+  }
+
+  healthOf(key: string): ServiceHealth | undefined { return this.health()[key]; }
 
   readonly counts = computed(() => {
     const r = { total: this.services.length, up: 0, down: 0, degraded: 0 };
     for (const s of this.services) {
-      const st = s.health()?.status ?? 'UNKNOWN';
+      const st = this.health()[s.key]?.status ?? 'UNKNOWN';
       if (st === 'UP') r.up++;
       else if (st === 'DOWN') r.down++;
       else if (st === 'DEGRADED') r.degraded++;
     }
     return r;
   });
-
-  refresh() { location.reload(); }
 
   formatUptime(ms?: number): string {
     if (!ms || ms <= 0) return '—';

@@ -98,7 +98,10 @@ export class AdminSystemListsComponent {
       ...patch,
     };
     this.api.updateItem(list.code, it.id, body).subscribe({
-      next: updated => this.items.update(arr => arr.map(x => x.id === updated.id ? updated : x)),
+      next: updated => {
+        this.items.update(arr => arr.map(x => x.id === updated.id ? updated : x));
+        this.toast.success(this.i18n.t('admin.lists.toast.saved'));
+      },
     });
   }
 
@@ -106,7 +109,10 @@ export class AdminSystemListsComponent {
     const list = this.selected();
     if (!list) return;
     this.api.toggleItemEnabled(list.code, it.id, enabled).subscribe({
-      next: () => this.items.update(arr => arr.map(x => x.id === it.id ? { ...x, enabled } : x)),
+      next: () => {
+        this.items.update(arr => arr.map(x => x.id === it.id ? { ...x, enabled } : x));
+        this.toast.success(this.i18n.t(enabled ? 'common.enabled' : 'common.disabled'));
+      },
     });
   }
 

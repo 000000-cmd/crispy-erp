@@ -8,9 +8,10 @@
         <button
           type="button"
           (click)="refresh()"
-          class="app-btn inline-flex items-center gap-2 h-9 px-4 rounded-md text-sm font-medium border border-border text-text hover:bg-surface-hover active:scale-[0.97]"
+          [disabled]="loading()"
+          class="app-btn inline-flex items-center gap-2 h-9 px-4 rounded-md text-sm font-medium border border-border text-text hover:bg-surface-hover active:scale-[0.97] disabled:opacity-60"
         >
-          <lucide-icon [img]="refreshIcon" [size]="15"></lucide-icon>
+          <lucide-icon [img]="refreshIcon" [size]="15" [class.animate-spin]="loading()"></lucide-icon>
           Actualizar
         </button>
       </header>
@@ -37,8 +38,8 @@
 
       <!-- Servicios -->
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        @for (svc of services; track svc.label) {
-          @let h = svc.health();
+        @for (svc of services; track svc.key) {
+          @let h = healthOf(svc.key);
           @let info = h?.info;
           @let st = h?.status ?? 'UNKNOWN';
           <div class="rounded-xl border border-border bg-surface overflow-hidden">

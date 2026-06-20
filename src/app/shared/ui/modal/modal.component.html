@@ -2,7 +2,7 @@
     @if (rendered()) {
       <div class="fixed inset-0 z-[300] flex items-center justify-center p-4" (click)="onClose.emit()">
         <div
-          class="app-modal-backdrop absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+          class="app-modal-backdrop absolute inset-0 bg-black/40"
           [class.is-closing]="closing()"
         ></div>
         <div

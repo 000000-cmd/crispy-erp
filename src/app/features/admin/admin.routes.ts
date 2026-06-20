@@ -21,7 +21,7 @@ export const ADMIN_ROUTES: Routes = [
       { path: 'system-status', data: { crumb: 'Estado del sistema' }, loadComponent: () => import('./system-status/system-status.component').then(m => m.AdminSystemStatusComponent) },
       { path: 'roles',         data: { crumb: 'Roles' },        loadComponent: () => import('./roles/roles.component').then(m => m.AdminRolesComponent) },
       { path: 'permissions',   data: { crumb: 'Permisos' },     loadComponent: () => import('./permissions/permissions.component').then(m => m.AdminPermissionsComponent) },
-      { path: 'audit',         data: { crumb: 'Auditoría' },    loadComponent: () => import('./stubs/admin-stubs.component').then(m => m.AdminAuditComponent) },
+      { path: 'audit',         data: { crumb: 'Auditoría' },    loadComponent: () => import('./audit/audit.component').then(m => m.AdminAuditComponent) },
       { path: 'profile',       data: { crumb: 'Mi perfil' },    loadComponent: () => import('./profile/profile.component').then(m => m.AdminProfileComponent) },
       // Cualquier subruta admin/xxx desconocida cae aqui — se ve el sidebar y
       // la 404 en el area de contenido en vez de patear al login.

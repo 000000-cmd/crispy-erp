@@ -12,7 +12,9 @@
 export const MICROSERVICES = {
   AUTH: 'auth',
   SYSTEM: 'system',
-  ELASTIC: 'search'
+  ELASTIC: 'search',
+  AUDIT: 'audit',
+  BUSINESS: 'business'
 } as const;
 
 export type Microservice = (typeof MICROSERVICES)[keyof typeof MICROSERVICES];
