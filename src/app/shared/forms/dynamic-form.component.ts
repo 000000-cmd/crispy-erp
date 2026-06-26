@@ -50,6 +50,31 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
 
   readonly visibleFields = signal<FieldConfig[]>([]);
 
+  private refreshVisibleFields(): void {
+
+    const visible = this.schema().fields.filter(field => {
+
+      const isVisible =
+        !field.visibleWhen || field.visibleWhen(this.form);
+
+      const control = this.form.get(field.key);
+
+      if (control) {
+        if (isVisible) {
+          control.enable({ emitEvent: false });
+        } else {
+          control.disable({ emitEvent: false });
+        }
+      }
+
+      return isVisible;
+
+    });
+
+    this.visibleFields.set(visible);
+
+  }
+
   readonly gridCols = computed(() => {
     const c = this.schema().cols ?? 12;
     return `repeat(${c}, minmax(0, 1fr))`;
@@ -164,6 +189,13 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
         this.subs.push(sub);
       }
       // onBlur is wired via host (focusout) → onFocusOut().
+      this.refreshVisibleFields();
+
+      this.subs.push(
+        this.form.valueChanges.subscribe(() => {
+          this.refreshVisibleFields();
+        })
+      );
     }
   }
 

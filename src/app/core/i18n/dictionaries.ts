@@ -97,6 +97,28 @@ export const DICTIONARIES: Record<Locale, Dictionary> = {
     'admin.users.toast.saved': 'Cambios guardados',
     'admin.users.toast.deleted': 'Usuario eliminado',
 
+    'admin.thirdParties': 'Terceros',
+    'admin.thirdParties.subtitle': 'Administra la información de personas y empresas registradas en el sistema.',
+    'admin.thirdParties.new': 'Nuevo tercero',
+    'admin.thirdParties.edit': 'Editar tercero',
+
+    'admin.thirdParties.column.document': 'Documento',
+    'admin.thirdParties.column.documentType': 'Tipo documento',
+    'admin.thirdParties.column.type': 'Tipo',
+    'admin.thirdParties.column.name': 'Nombre',
+    'admin.thirdParties.column.email': 'Correo',
+    'admin.thirdParties.column.phone': 'Teléfono',
+    'admin.thirdParties.column.status': 'Estado',
+
+    'admin.thirdParties.type.person': 'Persona',
+    'admin.thirdParties.type.company': 'Empresa',
+
+    'admin.thirdParties.delete.title': 'Eliminar tercero',
+    'admin.thirdParties.delete.message': '¿Desea eliminar el tercero con documento {document}?',
+    'admin.thirdParties.toast.created': 'Tercero creado correctamente.',
+    'admin.thirdParties.toast.saved': 'Cambios guardados correctamente.',
+    'admin.thirdParties.toast.deleted': 'Tercero eliminado correctamente.',
+
     'admin.roles': 'Roles',
     'admin.roles.subtitle': 'Conjuntos de permisos asignables a usuarios.',
     'admin.roles.new': 'Nuevo rol',
