@@ -5,9 +5,12 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 
 import { routes } from './app.routes';
 import { authInterceptor } from './core/http/auth.interceptor';
+import { businessInterceptor } from './core/http/business.interceptor';
 import { refreshInterceptor } from './core/http/refresh.interceptor';
 import { errorInterceptor } from './core/http/error.interceptor';
 import { AuthService } from './core/auth/auth.service';
+import { BrandingService } from './core/branding/branding.service';
+import { firstValueFrom } from 'rxjs';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -31,7 +34,7 @@ export const appConfig: ApplicationConfig = {
     //  3. errorInterceptor   -> toasts para errores no-auth
     provideHttpClient(
       withFetch(),
-      withInterceptors([authInterceptor, refreshInterceptor, errorInterceptor]),
+      withInterceptors([authInterceptor, businessInterceptor, refreshInterceptor, errorInterceptor]),
     ),
 
     // Hidratacion de sesion en el arranque. Si en localStorage hay un token
@@ -41,6 +44,15 @@ export const appConfig: ApplicationConfig = {
     provideAppInitializer(() => {
       const auth = inject(AuthService);
       return auth.tryRestoreSession();
+    }),
+
+    // Resolucion de branding por subdominio ANTES del primer render. Asi el
+    // login del dueño ya aparece tematizado (logo + colores del negocio) sin
+    // un "flash" del tema por defecto. Es no-bloqueante ante fallos: si no hay
+    // subdominio o el negocio no existe, sigue con el tema estandar.
+    provideAppInitializer(() => {
+      const branding = inject(BrandingService);
+      return firstValueFrom(branding.resolve()).catch(() => null);
     }),
   ],
 };

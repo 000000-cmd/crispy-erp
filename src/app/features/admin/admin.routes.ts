@@ -13,6 +13,7 @@ export const ADMIN_ROUTES: Routes = [
       { path: 'dashboard',     data: { crumb: 'Panel' },        loadComponent: () => import('./dashboard/dashboard.component').then(m => m.AdminDashboardComponent) },
       { path: 'users',         data: { crumb: 'Usuarios' },     loadComponent: () => import('./users/users.component').then(m => m.AdminUsersComponent) },
       { path: 'thirdparty',    data: { crumb: 'Terceros' },     loadComponent: () => import('./thirdparty/thirdparty.component').then(m => m.ThirdPartyComponent) },
+      { path: 'business',      data: { crumb: 'Empresas' },     loadComponent: () => import('./business/business.component').then(m => m.AdminBusinessComponent) },
       { path: 'invitations',   data: { crumb: 'Invitaciones' }, loadComponent: () => import('./stubs/admin-stubs.component').then(m => m.AdminInvitationsComponent) },
       { path: 'tenants',       data: { crumb: 'Empresas' },     loadComponent: () => import('./stubs/admin-stubs.component').then(m => m.AdminTenantsComponent) },
       { path: 'system-lists',  data: { crumb: 'Listas' },       loadComponent: () => import('./system-lists/system-lists.component').then(m => m.AdminSystemListsComponent) },

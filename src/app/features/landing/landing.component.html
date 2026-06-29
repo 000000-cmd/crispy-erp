@@ -1,0 +1,139 @@
+
+<div class="min-h-screen bg-bg text-text">
+  <!-- ===================== NAV ===================== -->
+  <header class="sticky top-0 z-20 backdrop-blur bg-bg/80 border-b border-border">
+    <div class="mx-auto max-w-6xl px-5 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="h-8 w-8 rounded-lg bg-primary-500 text-white flex items-center justify-center font-semibold">
+          {{ brandName().charAt(0) }}
+        </div>
+        <span class="font-semibold">{{ brandName() }}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button (click)="theme.toggleMode()"
+                class="h-9 w-9 rounded-full hover:bg-surface-muted inline-flex items-center justify-center text-text-muted">
+          <lucide-icon [img]="theme.mode() === 'dark' ? sunIcon : moonIcon" [size]="16"></lucide-icon>
+        </button>
+        <a routerLink="/login" class="hidden sm:inline-flex h-9 items-center px-3 rounded-lg text-sm text-text hover:bg-surface-muted">Iniciar sesión</a>
+        <a routerLink="/login/register"
+           class="h-9 inline-flex items-center gap-1 px-4 rounded-lg text-sm font-medium bg-primary-500 text-white hover:bg-primary-600">
+          Empezar gratis <lucide-icon [img]="arrow" [size]="15"></lucide-icon>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================== HERO ===================== -->
+  <section class="mx-auto max-w-6xl px-5 pt-16 pb-12 grid lg:grid-cols-2 gap-10 items-center">
+    <div class="space-y-6">
+      <span class="inline-flex items-center gap-1.5 rounded-full bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-200 px-3 py-1 text-xs font-medium">
+        <lucide-icon [img]="star" [size]="13"></lucide-icon> Hecho para barberías, salones y spas
+      </span>
+      <h1 class="text-4xl sm:text-5xl font-bold leading-tight">
+        Tu negocio, <span class="text-primary-600">en orden</span> y creciendo.
+      </h1>
+      <p class="text-lg text-text-muted">
+        Agenda, equipo, servicios y métricas en una sola plataforma. Pruébala moviendo el panel de la derecha —
+        así trabaja por dentro.
+      </p>
+      <div class="flex flex-wrap items-center gap-3">
+        <a routerLink="/login/register"
+           class="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg font-medium bg-primary-500 text-white hover:bg-primary-600">
+          Crea tu negocio <lucide-icon [img]="arrow" [size]="16"></lucide-icon>
+        </a>
+        <a routerLink="/login" class="inline-flex items-center px-5 py-2.5 rounded-lg font-medium border border-border text-text hover:bg-surface-muted">
+          Ya tengo cuenta
+        </a>
+      </div>
+      <p class="text-xs text-text-muted">Sin tarjeta. Configúralo en minutos.</p>
+    </div>
+
+    <!-- Preview interactivo (enganche funcional) -->
+    <div class="relative">
+      <div class="rounded-2xl border border-border bg-surface shadow-xl overflow-hidden">
+        <div class="flex items-center gap-1.5 px-4 py-3 border-b border-border">
+          <span class="h-2.5 w-2.5 rounded-full bg-rose-400"></span>
+          <span class="h-2.5 w-2.5 rounded-full bg-amber-400"></span>
+          <span class="h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
+          <span class="ml-2 text-xs text-text-muted">{{ brandName() }} · panel</span>
+        </div>
+        <div class="p-5 space-y-4">
+          <div class="flex items-center gap-2">
+            <div class="h-10 w-10 rounded-xl bg-primary-500/15 text-primary-600 flex items-center justify-center">
+              <lucide-icon [img]="active().icon" [size]="20"></lucide-icon>
+            </div>
+            <div>
+              <p class="font-semibold leading-tight">{{ active().title }}</p>
+              <p class="text-xs text-text-muted">{{ active().blurb }}</p>
+            </div>
+          </div>
+          <ul class="space-y-2">
+            @for (p of active().points; track p) {
+              <li class="flex items-center gap-2 text-sm">
+                <span class="h-5 w-5 rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300 flex items-center justify-center shrink-0">
+                  <lucide-icon [img]="check" [size]="13"></lucide-icon>
+                </span>
+                {{ p }}
+              </li>
+            }
+          </ul>
+          <div class="grid grid-cols-3 gap-2 pt-1">
+            <div class="rounded-lg bg-surface-muted p-2.5 text-center">
+              <p class="text-lg font-bold text-text">128</p><p class="text-[10px] text-text-muted">citas/semana</p>
+            </div>
+            <div class="rounded-lg bg-surface-muted p-2.5 text-center">
+              <p class="text-lg font-bold text-text">94%</p><p class="text-[10px] text-text-muted">ocupación</p>
+            </div>
+            <div class="rounded-lg bg-surface-muted p-2.5 text-center">
+              <p class="text-lg font-bold text-text">+23%</p><p class="text-[10px] text-text-muted">ingresos</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FEATURES (selector que mueve el preview) ===================== -->
+  <section class="mx-auto max-w-6xl px-5 py-10">
+    <h2 class="text-2xl font-semibold mb-1">Todo lo que tu local necesita</h2>
+    <p class="text-text-muted mb-6">Toca una capacidad para verla reflejada en el panel de arriba.</p>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      @for (f of features; track f.key) {
+        <button (click)="activeKey.set(f.key)"
+                class="text-left rounded-xl border p-4 transition"
+                [class.border-primary-500]="activeKey() === f.key"
+                [class.bg-primary-50]="activeKey() === f.key"
+                [class.border-border]="activeKey() !== f.key">
+          <div class="h-9 w-9 rounded-lg bg-primary-500/15 text-primary-600 flex items-center justify-center mb-3">
+            <lucide-icon [img]="f.icon" [size]="18"></lucide-icon>
+          </div>
+          <p class="font-medium">{{ f.title }}</p>
+          <p class="text-xs text-text-muted mt-1">{{ f.blurb }}</p>
+        </button>
+      }
+    </div>
+  </section>
+
+  <!-- ===================== CTA FINAL ===================== -->
+  <section class="mx-auto max-w-6xl px-5 py-14">
+    <div class="rounded-2xl bg-primary-500 text-white px-8 py-12 text-center">
+      <h2 class="text-3xl font-bold mb-2">Empieza hoy, sin complicaciones</h2>
+      <p class="text-white/85 mb-6 max-w-xl mx-auto">Crea tu negocio en minutos y empieza a recibir reservas. Tu equipo y tus clientes lo van a notar.</p>
+      <div class="flex flex-wrap justify-center gap-3">
+        <a routerLink="/login/register" class="inline-flex items-center gap-1.5 px-6 py-3 rounded-lg font-medium bg-white text-primary-700 hover:bg-white/90">
+          Crear mi negocio <lucide-icon [img]="arrow" [size]="16"></lucide-icon>
+        </a>
+        <a routerLink="/login" class="inline-flex items-center px-6 py-3 rounded-lg font-medium bg-white/15 text-white hover:bg-white/25">
+          Iniciar sesión
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="border-t border-border">
+    <div class="mx-auto max-w-6xl px-5 py-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-text-muted">
+      <span>© {{ brandName() }}</span>
+      <span>Gestión integral para tu local</span>
+    </div>
+  </footer>
+</div>

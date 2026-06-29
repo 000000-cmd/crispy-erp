@@ -1,59 +1,170 @@
 <div class="space-y-5">
 
   <header class="flex items-end justify-between gap-3">
-
     <div>
-      <h1 class="text-xl font-semibold text-text">
-        {{ 'admin.thirdParties' | t }}
-      </h1>
-
-      <p class="text-sm text-text-muted">
-        {{ 'admin.thirdParties.subtitle' | t }}
-      </p>
+      <h1 class="text-xl font-semibold text-text">{{ 'admin.thirdParties' | t }}</h1>
+      <p class="text-sm text-text-muted">{{ 'admin.thirdParties.subtitle' | t }}</p>
     </div>
-
-    <app-button
-      [icon]="plusIcon"
-      (onClick)="openCreate()">
-
-      {{ 'admin.thirdParties.new' | t }}
-
-    </app-button>
-
+    <app-button [icon]="plusIcon" (onClick)="openCreate()">{{ 'admin.thirdParties.new' | t }}</app-button>
   </header>
 
-  <app-data-table
-    [columns]="columns()"
-    [rows]="thirdParties()"
-    [actions]="actions()"
-    [loading]="loading()"
-  />
+  <div class="max-w-sm">
+    <app-search-field
+      [value]="query()"
+      (valueChange)="onSearch($event)"
+      placeholder="Buscar por nombre o documento…" />
+  </div>
 
+  <div class="space-y-3">
+    <app-data-table
+      [columns]="columns()"
+      [rows]="thirdParties()"
+      [actions]="actions()"
+      [loading]="loading()" />
+
+    <app-paginator
+      [page]="page()"
+      [totalPages]="totalPages()"
+      [totalHits]="totalHits()"
+      (pageChange)="onPage($event)" />
+  </div>
+
+  <!-- Crear / Editar (datos base) -->
   <app-drawer
     [open]="!!editing()"
-    [title]="editing()?.id
-      ? ('admin.thirdParties.edit' | t)
-      : ('admin.thirdParties.new' | t)"
+    [title]="editing()?.id ? ('admin.thirdParties.edit' | t) : ('admin.thirdParties.new' | t)"
     size="lg"
     [showActions]="true"
     [dirty]="dirty()"
     [saving]="saving()"
     (save)="submitForm()"
     (onClose)="close()">
-
     @if (schema()) {
-
       <app-dynamic-form
         #dynForm
         [schema]="schema()!"
         [model]="editing()!"
         [submitting]="saving()"
         (submitValue)="onSubmit($event)"
-        (dirtyChange)="dirty.set($event)"
-      />
-
+        (dirtyChange)="dirty.set($event)" />
     }
 
+    <!-- Contactos y direcciones: sólo en edición (cuelgan de un tercero existente). -->
+    @if (editing()?.id; as tpId) {
+      <div class="mt-6 pt-5 border-t border-border">
+        <app-thirdparty-relations [thirdPartyId]="tpId" />
+      </div>
+    }
+  </app-drawer>
+
+  <!-- Visualizar (solo lectura, info completa anidada) -->
+  <app-drawer
+    [open]="viewing()"
+    [title]="'Detalle del tercero'"
+    size="lg"
+    [showActions]="false"
+    (onClose)="closeView()">
+
+    @if (loadingDetail()) {
+      <div class="py-10 text-center text-text-muted text-sm">Cargando…</div>
+    } @else if (detail(); as d) {
+
+      <div class="space-y-6">
+
+        <!-- Sección: Datos base -->
+        <section class="space-y-3">
+          <h3 class="text-sm font-semibold text-text">Datos</h3>
+          <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+            <div><span class="text-text-muted">Documento:</span> {{ d.thirdParty.documentNumber }}</div>
+            <div class="flex items-center gap-2">
+              <span class="text-text-muted">Estado:</span>
+              <app-tag [label]="d.thirdParty.enabled ? 'Activo' : 'Inactivo'" [tone]="d.thirdParty.enabled ? 'success' : 'neutral'" />
+            </div>
+            <div class="col-span-2"><span class="text-text-muted">Nombre:</span> {{ d.thirdParty.fullName }}</div>
+            @if (d.thirdParty.birthDate) { <div><span class="text-text-muted">Nacimiento:</span> {{ d.thirdParty.birthDate }}</div> }
+          </div>
+        </section>
+
+        <!-- Sección: Contactos -->
+        <section class="space-y-2">
+          <h3 class="text-sm font-semibold text-text">Contactos ({{ d.contacts.length }})</h3>
+          @if (!d.contacts.length) {
+            <p class="text-sm text-text-muted">Sin contactos.</p>
+          } @else {
+            <ul class="divide-y divide-border rounded-lg border border-border">
+              @for (c of d.contacts; track c.id) {
+                <li class="flex items-center justify-between gap-3 px-3 py-2 text-sm">
+                  <span class="truncate">{{ c.value }}</span>
+                  <span class="flex items-center gap-1.5 shrink-0">
+                    @if (c.isPrimary) { <app-tag label="Principal" tone="primary" /> }
+                    <app-tag [label]="c.isVerified ? 'Verificado' : 'Sin verificar'" [tone]="c.isVerified ? 'success' : 'warning'" />
+                  </span>
+                </li>
+              }
+            </ul>
+          }
+        </section>
+
+        <!-- Sección: Direcciones -->
+        <section class="space-y-2">
+          <h3 class="text-sm font-semibold text-text">Direcciones ({{ d.addresses.length }})</h3>
+          @if (!d.addresses.length) {
+            <p class="text-sm text-text-muted">Sin direcciones.</p>
+          } @else {
+            <ul class="divide-y divide-border rounded-lg border border-border">
+              @for (a of d.addresses; track a.id) {
+                <li class="flex items-center justify-between gap-3 px-3 py-2 text-sm">
+                  <span class="truncate">{{ a.line || a.reference || '—' }}</span>
+                  @if (a.isPrimary) { <app-tag label="Principal" tone="primary" /> }
+                </li>
+              }
+            </ul>
+          }
+        </section>
+
+      </div>
+    }
+  </app-drawer>
+
+  <!-- Reindexar: comparación Elastic vs BD -->
+  <app-drawer
+    [open]="reindexOpen()"
+    [title]="'Reindexar tercero'"
+    size="xl"
+    [showActions]="false"
+    (onClose)="closeReindex()">
+
+    @if (reindexing()) {
+      <div class="py-12 text-center">
+        <p class="text-sm text-text-muted">Reindexando el tercero…</p>
+      </div>
+    } @else if (loadingCompare()) {
+      <div class="py-12 text-center text-text-muted text-sm">Cargando comparación…</div>
+    } @else {
+      <div class="space-y-4">
+        <p class="text-sm text-text-muted">
+          Compara el documento indexado en Elasticsearch con la proyección de la fuente
+          (lo que el índice debería tener). Si hay diferencias, reindexa para sincronizar.
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="rounded-lg border border-border overflow-hidden">
+            <div class="px-3 py-2 bg-surface-muted text-xs font-semibold flex items-center justify-between">
+              <span>Elasticsearch (indexado)</span>
+              @if (!elasticDoc()) { <app-tag label="No indexado" tone="warning" /> }
+            </div>
+            <pre class="p-3 text-[11px] leading-relaxed overflow-auto max-h-[50vh] whitespace-pre-wrap">{{ elasticDoc() | json }}</pre>
+          </div>
+          <div class="rounded-lg border border-border overflow-hidden">
+            <div class="px-3 py-2 bg-surface-muted text-xs font-semibold">Fuente (debería indexarse)</div>
+            <pre class="p-3 text-[11px] leading-relaxed overflow-auto max-h-[50vh] whitespace-pre-wrap">{{ sourceDoc() | json }}</pre>
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <app-button variant="ghost" (onClick)="closeReindex()">Cancelar</app-button>
+          <app-button (onClick)="confirmReindex()">Reindexar</app-button>
+        </div>
+      </div>
+    }
   </app-drawer>
 
 </div>

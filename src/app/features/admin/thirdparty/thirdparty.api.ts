@@ -2,147 +2,79 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../../core/http/api.service';
 import { MICROSERVICES, ms } from '../../../core/http/microservices';
+import { SearchResponse } from '../../../core/http/search';
+import {
+  ThirdParty,
+  ThirdPartyAddress,
+  ThirdPartyAddressPayload,
+  ThirdPartyContact,
+  ThirdPartyContactPayload,
+  ThirdPartyDetail,
+  ThirdPartyPayload,
+} from './thirdparty.model';
 
 const path = (p: string) => ms(MICROSERVICES.THIRDPARTY, p);
 
-export interface ThirdParty {
-
-  id: string;
-
-  type: 'PERSON' | 'COMPANY';
-
-  documentTypeId: string;
-
-  /**
-   * Opcional.
-   * El backend puede enriquecer el DTO en el futuro.
-   */
-  documentTypeName?: string;
-
-  documentNumber: string;
-
-  /**
-   * Relación opcional con Auth.
-   */
-  userId?: string | null;
-
-  firstName?: string;
-
-  secondName?: string;
-
-  firstLastName?: string;
-
-  secondLastName?: string;
-
-  businessName?: string;
-
-  tradeName?: string;
-
-  email?: string;
-
-  phone?: string;
-
-  active: boolean;
-
-  enabled?: boolean;
-
-  visible?: boolean;
-
-  /**
-   * Campo únicamente para la tabla.
-   */
-  fullName?: string;
-}
-
-export interface CreateThirdPartyPayload {
-
-  type: 'PERSON' | 'COMPANY';
-
-  documentTypeId: string;
-
-  documentNumber: string;
-
-  firstName?: string;
-
-  secondName?: string;
-
-  firstLastName?: string;
-
-  secondLastName?: string;
-
-  businessName?: string;
-
-  tradeName?: string;
-
-  email?: string;
-
-  phone?: string;
-
-  active: boolean;
-}
-
-export interface UpdateThirdPartyPayload {
-
-  type?: 'PERSON' | 'COMPANY';
-
-  documentTypeId?: string;
-
-  documentNumber?: string;
-
-  firstName?: string;
-
-  secondName?: string;
-
-  firstLastName?: string;
-
-  secondLastName?: string;
-
-  businessName?: string;
-
-  tradeName?: string;
-
-  email?: string;
-
-  phone?: string;
-
-  active?: boolean;
-}
-
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class ThirdPartyApi {
-
   private readonly api = inject(ApiService);
 
-  list(): Observable<ThirdParty[]> {
-    return this.api.get(path('third-parties'));
+  /** Búsqueda paginada vía Elasticsearch (GET principal + buscador). */
+  search(params: { q?: string; enabled?: boolean; page?: number; size?: number; sort?: string }): Observable<SearchResponse<ThirdParty>> {
+    return this.api.get(ms(MICROSERVICES.ELASTIC, 'third-parties'), { ...params });
   }
 
-  get(id: string): Observable<ThirdParty> {
-    return this.api.get(path(`third-parties/${id}`));
+  /** Documento del tercero ALMACENADO en Elasticsearch (lado izquierdo del comparador). */
+  searchDoc(id: string): Observable<Record<string, unknown>> {
+    return this.api.get(ms(MICROSERVICES.ELASTIC, `third-parties/${id}`));
   }
 
-  create(payload: CreateThirdPartyPayload): Observable<ThirdParty> {
-    return this.api.post(path('third-parties'), payload);
+  /** Proyección de la fuente al read-model de ES: lo que el índice DEBERÍA tener. */
+  indexPreview(id: string): Observable<Record<string, unknown>> {
+    return this.api.get(path(`third-parties/${id}/full`));
   }
 
-  update(
-    id: string,
-    payload: UpdateThirdPartyPayload
-  ): Observable<ThirdParty> {
-    return this.api.put(path(`third-parties/${id}`), payload);
+  /** Fuerza un reindex completo del tercero (datos + contactos + direcciones). */
+  reindex(id: string): Observable<void> {
+    return this.api.post(path(`third-parties/${id}/reindex`));
   }
 
-  remove(id: string): Observable<void> {
-    return this.api.delete(path(`third-parties/${id}`));
+  // ---- Tercero ----
+  list(): Observable<ThirdParty[]> { return this.api.get(path('third-parties')); }
+  get(id: string): Observable<ThirdParty> { return this.api.get(path(`third-parties/${id}`)); }
+
+  /** Info COMPLETA y anidada (tercero + contactos + direcciones). */
+  getFull(id: string): Observable<ThirdPartyDetail> { return this.api.get(path(`third-parties/${id}/full`)); }
+
+  create(payload: ThirdPartyPayload): Observable<ThirdParty> { return this.api.post(path('third-parties'), payload); }
+  update(id: string, payload: Partial<ThirdPartyPayload>): Observable<ThirdParty> { return this.api.put(path(`third-parties/${id}`), payload); }
+  remove(id: string): Observable<void> { return this.api.delete(path(`third-parties/${id}`)); }
+
+  existsDocument(documentTypeId: string, documentNumber: string): Observable<boolean> {
+    return this.api.get(path('third-parties/document/exists'), { documentTypeId, documentNumber });
+  }
+  findByDocument(documentTypeId: string, documentNumber: string): Observable<ThirdParty> {
+    return this.api.get(path('third-parties/document'), { documentTypeId, documentNumber });
   }
 
-  existsDocument(
-    documentNumber: string
-  ): Observable<boolean> {
-    return this.api.get(
-      path(`third-parties/exists-document/${encodeURIComponent(documentNumber)}`)
-    );
+  // ---- Contactos (1:N) ----
+  listContacts(thirdPartyId: string): Observable<ThirdPartyContact[]> {
+    return this.api.get(path('third-party-contacts'), { thirdPartyId });
   }
+  createContact(payload: ThirdPartyContactPayload): Observable<ThirdPartyContact> { return this.api.post(path('third-party-contacts'), payload); }
+  updateContact(id: string, payload: Partial<ThirdPartyContactPayload>): Observable<ThirdPartyContact> { return this.api.put(path(`third-party-contacts/${id}`), payload); }
+  removeContact(id: string): Observable<void> { return this.api.delete(path(`third-party-contacts/${id}`)); }
+
+  // ---- Direcciones (1:N) ----
+  listAddresses(thirdPartyId: string): Observable<ThirdPartyAddress[]> {
+    return this.api.get(path('third-party-addresses'), { thirdPartyId });
+  }
+  createAddress(payload: ThirdPartyAddressPayload): Observable<ThirdPartyAddress> { return this.api.post(path('third-party-addresses'), payload); }
+  updateAddress(id: string, payload: Partial<ThirdPartyAddressPayload>): Observable<ThirdPartyAddress> { return this.api.put(path(`third-party-addresses/${id}`), payload); }
+  removeAddress(id: string): Observable<void> { return this.api.delete(path(`third-party-addresses/${id}`)); }
 }
+
+export type {
+  ThirdParty, ThirdPartyContact, ThirdPartyAddress, ThirdPartyDetail,
+  ThirdPartyPayload, ThirdPartyContactPayload, ThirdPartyAddressPayload,
+} from './thirdparty.model';

@@ -1,0 +1,200 @@
+
+<div class="space-y-8">
+
+  <!-- ===================== CONTACTOS ===================== -->
+  <section class="space-y-3">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="h-7 w-7 rounded-lg bg-primary-500/10 text-primary-600 flex items-center justify-center">
+          <lucide-icon [img]="phoneIcon" [size]="15"></lucide-icon>
+        </span>
+        <h4 class="text-sm font-semibold text-text">Contactos</h4>
+        <span class="text-xs text-text-muted">({{ contacts().length }})</span>
+      </div>
+      <button type="button" (click)="openNewContact()"
+              class="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-border text-text hover:bg-surface-muted">
+        <lucide-icon [img]="plusIcon" [size]="14"></lucide-icon> Agregar
+      </button>
+    </div>
+
+    @if (contacts().length === 0) {
+      <p class="text-xs text-text-muted rounded-lg border border-dashed border-border px-3 py-4 text-center">
+        Sin contactos. Usa “Agregar” para asignar uno.
+      </p>
+    } @else {
+      <div class="grid sm:grid-cols-2 gap-2.5">
+        @for (c of contacts(); track c.id) {
+          <div class="group rounded-xl border border-border bg-surface px-3.5 py-3 hover:border-primary-300 transition">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0 space-y-1">
+                <div class="flex items-center gap-1.5">
+                  <app-tag [label]="contactTypeName()(c.contactTypeId)" tone="info" />
+                  @if (c.isPrimary) { <app-tag label="Principal" tone="primary" /> }
+                </div>
+                <p class="text-sm text-text truncate">{{ c.value }}</p>
+                @if (c.notes) { <p class="text-xs text-text-muted truncate">{{ c.notes }}</p> }
+              </div>
+              <div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition">
+                <button type="button" (click)="openEditContact(c)" class="p-1.5 rounded-md text-text-muted hover:text-primary-600 hover:bg-surface-muted">
+                  <lucide-icon [img]="editIcon" [size]="14"></lucide-icon>
+                </button>
+                <button type="button" (click)="deleteContact(c)" class="p-1.5 rounded-md text-text-muted hover:text-rose-600 hover:bg-surface-muted">
+                  <lucide-icon [img]="delIcon" [size]="14"></lucide-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- ===================== DIRECCIONES ===================== -->
+  <section class="space-y-3">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="h-7 w-7 rounded-lg bg-primary-500/10 text-primary-600 flex items-center justify-center">
+          <lucide-icon [img]="pinIcon" [size]="15"></lucide-icon>
+        </span>
+        <h4 class="text-sm font-semibold text-text">Direcciones</h4>
+        <span class="text-xs text-text-muted">({{ addresses().length }})</span>
+      </div>
+      <button type="button" (click)="openNewAddress()"
+              class="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-border text-text hover:bg-surface-muted">
+        <lucide-icon [img]="plusIcon" [size]="14"></lucide-icon> Agregar
+      </button>
+    </div>
+
+    @if (addresses().length === 0) {
+      <p class="text-xs text-text-muted rounded-lg border border-dashed border-border px-3 py-4 text-center">
+        Sin direcciones. Usa “Agregar” para asignar una.
+      </p>
+    } @else {
+      <div class="grid sm:grid-cols-2 gap-2.5">
+        @for (a of addresses(); track a.id) {
+          <div class="group rounded-xl border border-border bg-surface px-3.5 py-3 hover:border-primary-300 transition">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0 space-y-1">
+                <div class="flex items-center gap-1.5">
+                  @if (a.addressTypeId) { <app-tag [label]="addressTypeName()(a.addressTypeId)" tone="info" /> }
+                  @if (a.isPrimary) { <app-tag label="Principal" tone="primary" /> }
+                </div>
+                <p class="text-sm text-text truncate">{{ a.line }}</p>
+                @if (a.reference) { <p class="text-xs text-text-muted truncate">{{ a.reference }}</p> }
+              </div>
+              <div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition">
+                <button type="button" (click)="openEditAddress(a)" class="p-1.5 rounded-md text-text-muted hover:text-primary-600 hover:bg-surface-muted">
+                  <lucide-icon [img]="editIcon" [size]="14"></lucide-icon>
+                </button>
+                <button type="button" (click)="deleteAddress(a)" class="p-1.5 rounded-md text-text-muted hover:text-rose-600 hover:bg-surface-muted">
+                  <lucide-icon [img]="delIcon" [size]="14"></lucide-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </section>
+</div>
+
+<!-- ===================== MODAL: CONTACTO ===================== -->
+<app-modal [open]="contactModalOpen()" [title]="editingContactId() ? 'Editar contacto' : 'Asignar contacto'" size="md" (onClose)="closeContactModal()">
+  <form [formGroup]="contactForm" class="space-y-4" (ngSubmit)="saveContact()">
+    <div>
+      <label class="block text-sm font-medium text-text mb-1.5">Tipo de contacto</label>
+      <app-autocomplete
+        formControlName="contactTypeId"
+        [options]="contactTypeOptions()"
+        placeholder="Selecciona el tipo…"
+        [clearable]="false"
+        [invalid]="!!(contactForm.get('contactTypeId')?.touched && contactForm.get('contactTypeId')?.invalid)" />
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-text mb-1.5">Valor</label>
+      <input type="text" formControlName="value" [placeholder]="contactRule().placeholder"
+             [attr.inputmode]="contactRule().mask === 'phone' ? 'numeric' : null"
+             class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none" />
+      @if (contactForm.get('value')?.touched && contactForm.get('value')?.invalid) {
+        <p class="text-xs text-rose-600 mt-1">{{ contactRule().help || 'Valor inválido para este tipo.' }}</p>
+      } @else if (contactRule().help) {
+        <p class="text-xs text-text-muted mt-1">{{ contactRule().help }}</p>
+      }
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-text mb-1.5">Notas (opcional)</label>
+      <input type="text" formControlName="notes" placeholder="Ej. contacto preferido en la mañana"
+             class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none" />
+    </div>
+
+    <app-checkbox formControlName="isPrimary" label="Marcar como principal (único por tipo)" />
+  </form>
+
+  <div modalFooter class="px-5 py-3 border-t border-border flex justify-end gap-2">
+    <button type="button" (click)="closeContactModal()" class="px-4 py-2 text-sm rounded-lg border border-border text-text hover:bg-surface-muted">Cancelar</button>
+    <button type="button" (click)="saveContact()" [disabled]="contactForm.invalid || saving()"
+            class="px-4 py-2 text-sm rounded-lg bg-primary-500 text-white hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed">
+      {{ saving() ? 'Guardando…' : (editingContactId() ? 'Guardar' : 'Asignar') }}
+    </button>
+  </div>
+</app-modal>
+
+<!-- ===================== MODAL: DIRECCIÓN ===================== -->
+<app-modal [open]="addressModalOpen()" [title]="editingAddressId() ? 'Editar dirección' : 'Asignar dirección'" size="lg" (onClose)="closeAddressModal()">
+  <form [formGroup]="addressForm" class="space-y-4">
+    <div>
+      <label class="block text-sm font-medium text-text mb-1.5">Tipo de dirección</label>
+      <app-autocomplete formControlName="addressTypeId" [options]="addressTypeOptions()" placeholder="Sin especificar" />
+    </div>
+
+    <div class="rounded-lg border border-border p-3 space-y-3">
+      <p class="text-sm font-medium text-text">Ubicación</p>
+      <div class="grid sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-medium text-text-muted mb-1">Municipio</label>
+          <app-autocomplete [searchFn]="muniSearchFn" [minSearchChars]="3"
+                            placeholder="Buscar municipio…" hintText="Escribe al menos 3 letras"
+                            (selected)="onMuniSelected($event)" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-text-muted mb-1">Barrio / vereda (opcional)</label>
+          <app-autocomplete [searchFn]="neighSearchFn()" [minSearchChars]="3"
+                            placeholder="Buscar barrio o vereda…" hintText="Escribe al menos 3 letras"
+                            (selected)="onNeighSelected($event)" />
+        </div>
+      </div>
+      @if (muniLabel()) {
+        <p class="text-xs text-text-muted">Municipio: <span class="text-text font-medium">{{ muniLabel() }}</span></p>
+      } @else if (addressTouched()) {
+        <p class="text-xs text-rose-600">Selecciona el municipio en el buscador.</p>
+      }
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-text mb-1.5">Dirección</label>
+      <input type="text" formControlName="line" placeholder="Calle 10 # 20-30, apto 401"
+             class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none" />
+      @if (addressForm.get('line')?.touched && addressForm.get('line')?.invalid) {
+        <p class="text-xs text-rose-600 mt-1">Escribe la dirección.</p>
+      }
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-text mb-1.5">Referencia (opcional)</label>
+      <input type="text" formControlName="reference" placeholder="Ej. frente al parque, portón azul"
+             class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none" />
+    </div>
+
+    <app-checkbox formControlName="isPrimary" label="Marcar como principal" />
+  </form>
+
+  <div modalFooter class="px-5 py-3 border-t border-border flex justify-end gap-2">
+    <button type="button" (click)="closeAddressModal()" class="px-4 py-2 text-sm rounded-lg border border-border text-text hover:bg-surface-muted">Cancelar</button>
+    <button type="button" (click)="saveAddress()" [disabled]="saving()"
+            class="px-4 py-2 text-sm rounded-lg bg-primary-500 text-white hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed">
+      {{ saving() ? 'Guardando…' : (editingAddressId() ? 'Guardar' : 'Asignar') }}
+    </button>
+  </div>
+</app-modal>

@@ -1,0 +1,142 @@
+
+    <div class="space-y-6">
+      <a routerLink="/" class="inline-flex items-center gap-1 text-sm text-text-muted hover:text-text">
+        <lucide-icon [img]="backIcon" [size]="15"></lucide-icon> Volver al inicio
+      </a>
+
+      <div class="space-y-1">
+        <h1 class="text-2xl font-semibold text-text">
+          @switch (step()) {
+            @case (1) { ¡Hola! Empecemos por tu negocio 👋 }
+            @case (2) { Cuéntanos quién eres }
+            @case (3) { Todo listo, revisa y confirma }
+          }
+        </h1>
+        <p class="text-sm text-text-muted">
+          @switch (step()) {
+            @case (1) { Paso 1 de 3 · Nombre y dirección web de tu local. }
+            @case (2) { Paso 2 de 3 · Los datos de tu cuenta de dueño. }
+            @case (3) { Paso 3 de 3 · Confirma y crea tu cuenta. }
+          }
+        </p>
+      </div>
+
+      <!-- Stepper: números con spinner→check y avance suave -->
+      <div class="flex items-center">
+        @for (s of steps; track s.n) {
+          <div class="flex flex-col items-center">
+            <div class="h-9 w-9 rounded-full flex items-center justify-center text-sm font-semibold
+                        transition-all duration-300 ease-out border-2"
+                 [class.bg-primary-500]="stepState(s.n) === 'done' || stepState(s.n) === 'current' || stepState(s.n) === 'loading'"
+                 [class.text-white]="stepState(s.n) !== 'todo'"
+                 [class.border-primary-500]="stepState(s.n) !== 'todo'"
+                 [class.bg-surface]="stepState(s.n) === 'todo'"
+                 [class.text-text-muted]="stepState(s.n) === 'todo'"
+                 [class.border-border]="stepState(s.n) === 'todo'"
+                 [class.scale-110]="stepState(s.n) === 'current' || stepState(s.n) === 'loading'">
+              @switch (stepState(s.n)) {
+                @case ('loading') { <lucide-icon [img]="spinnerIcon" [size]="16" class="animate-spin"></lucide-icon> }
+                @case ('done')    { <lucide-icon [img]="checkIcon" [size]="16"></lucide-icon> }
+                @default          { {{ s.n }} }
+              }
+            </div>
+            <span class="mt-1.5 text-[11px] transition-colors"
+                  [class.text-primary-600]="step() >= s.n"
+                  [class.text-text-muted]="step() < s.n">{{ s.label }}</span>
+          </div>
+          @if (!$last) {
+            <div class="flex-1 h-0.5 mx-2 -mt-5 rounded transition-colors duration-300"
+                 [class.bg-primary-500]="step() > s.n"
+                 [class.bg-surface-muted]="step() <= s.n"></div>
+          }
+        }
+      </div>
+
+      <!-- Paso 1: Negocio -->
+      @if (step() === 1) {
+        <div class="space-y-4">
+          <app-field label="Nombre del negocio">
+            <app-input [value]="model().businessName" (valueChange)="onBusinessName($event)"
+                       placeholder="Barbería El Estilo" />
+          </app-field>
+
+          <app-field label="Subdominio"
+                     hint="Tu dirección web (ej. mi-negocio.tuapp.com). Solo minúsculas, números y guiones (3–63).">
+            <app-input [value]="model().slug" (valueChange)="patch('slug', $event)"
+                       placeholder="mi-negocio" suffix=".tuapp.com" />
+          </app-field>
+        </div>
+      }
+
+      <!-- Paso 2: Dueño -->
+      @if (step() === 2) {
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-3">
+            <app-field label="Nombre">
+              <app-input [value]="model().firstName" (valueChange)="patch('firstName', $event)" autocomplete="given-name" />
+            </app-field>
+            <app-field label="Apellido">
+              <app-input [value]="model().lastName" (valueChange)="patch('lastName', $event)" autocomplete="family-name" />
+            </app-field>
+          </div>
+          <app-field label="Correo">
+            <app-input type="email" [value]="model().email" (valueChange)="patch('email', $event)"
+                       placeholder="tu@correo.com" autocomplete="email" />
+          </app-field>
+          <app-field label="Usuario">
+            <app-input [value]="model().username" (valueChange)="patch('username', $event)" autocomplete="username" />
+          </app-field>
+          <app-field label="Contraseña" hint="Mínimo 8 caracteres. Úsala con tu usuario o correo para entrar.">
+            <app-input type="password" [value]="model().password" (valueChange)="patch('password', $event)"
+                       placeholder="Mínimo 8 caracteres" autocomplete="new-password" />
+          </app-field>
+        </div>
+      }
+
+      <!-- Paso 3: Confirmar -->
+      @if (step() === 3) {
+        <div class="space-y-3 text-sm">
+          <div class="rounded-lg border border-border divide-y divide-border">
+            <div class="flex justify-between px-3 py-2">
+              <span class="text-text-muted">Negocio</span><span class="text-text font-medium">{{ model().businessName }}</span>
+            </div>
+            <div class="flex justify-between px-3 py-2">
+              <span class="text-text-muted">Subdominio</span><span class="text-text font-medium">{{ model().slug }}.tuapp.com</span>
+            </div>
+            <div class="flex justify-between px-3 py-2">
+              <span class="text-text-muted">Dueño</span><span class="text-text font-medium">{{ model().firstName }} {{ model().lastName }}</span>
+            </div>
+            <div class="flex justify-between px-3 py-2">
+              <span class="text-text-muted">Correo</span><span class="text-text font-medium">{{ model().email }}</span>
+            </div>
+            <div class="flex justify-between px-3 py-2">
+              <span class="text-text-muted">Usuario</span><span class="text-text font-medium">{{ model().username }}</span>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (error()) {
+        <p class="text-sm text-rose-600">{{ error() }}</p>
+      }
+
+      <!-- Navegación -->
+      <div class="flex items-center justify-between gap-3 pt-2">
+        @if (step() > 1) {
+          <app-button variant="secondary" (onClick)="back()">Atrás</app-button>
+        } @else {
+          <a routerLink="/login" class="px-1 py-2 text-sm text-text-muted hover:text-text">← Volver</a>
+        }
+
+        @if (step() < 3) {
+          <app-button (onClick)="next()" [loading]="advancing()"
+                      [disabled]="advancing() || (step() === 1 && !step1Valid()) || (step() === 2 && !step2Valid())">
+            Continuar
+          </app-button>
+        } @else {
+          <app-button (onClick)="submit()" [loading]="loading()" [disabled]="loading()">
+            {{ loading() ? 'Creando…' : 'Crear cuenta' }}
+          </app-button>
+        }
+      </div>
+    </div>

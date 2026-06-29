@@ -22,7 +22,11 @@
                 <tr class="border-t border-border hover:bg-surface-hover transition-colors">
                   @for (c of columns(); track c.key) {
                     <td class="px-4 py-2.5" [class.text-right]="c.align === 'right'" [class.text-center]="c.align === 'center'">
-                      {{ c.format ? c.format(row) : row[c.key] }}
+                      @if (c.tag) {
+                        @if (c.tag(row); as t) { <app-tag [label]="t.label" [tone]="t.tone" /> }
+                      } @else {
+                        {{ c.format ? c.format(row) : row[c.key] }}
+                      }
                     </td>
                   }
                   @if (actions().length) {
@@ -48,4 +52,3 @@
         </table>
       </div>
     </div>
-  

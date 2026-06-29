@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, input, output } from '@angular/core';
 import { LucideAngularModule, Pencil, Trash2 } from 'lucide-angular';
 import { EmptyComponent } from '../ui/empty/empty.component';
+import { TagComponent, TagTone } from '../ui/tag/tag.component';
 import { SpinnerComponent } from '../ui/spinner/spinner.component';
 
 export interface ColumnDef<T = any> {
@@ -11,6 +12,8 @@ export interface ColumnDef<T = any> {
   align?: 'left' | 'right' | 'center';
   format?: (row: T) => string | number;
   template?: 'pill' | 'switch' | 'text';
+  /** Si se define, la celda renderiza una <app-tag> con este label/tono. */
+  tag?: (row: T) => { label: string; tone: TagTone } | null;
 }
 
 export interface RowAction<T = any> {
@@ -24,7 +27,7 @@ export interface RowAction<T = any> {
 @Component({
   selector: 'app-data-table',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, EmptyComponent, SpinnerComponent],
+  imports: [CommonModule, LucideAngularModule, EmptyComponent, SpinnerComponent, TagComponent],
   templateUrl: './data-table.component.html',
 })
 export class DataTableComponent<T = any> {

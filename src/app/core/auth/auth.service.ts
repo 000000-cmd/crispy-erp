@@ -27,23 +27,50 @@ export class AuthService {
   readonly kind = computed<UserKind | null>(() => this._user()?.kind ?? null);
   readonly hasRole = (role: string) => (this._user()?.roles ?? []).includes(role);
 
+  private readonly _permissions = signal<string[]>([]);
+  readonly permissions = this._permissions.asReadonly();
+  readonly hasPermission = (code: string) => this._permissions().includes(code);
+
+  /** Carga los permisos efectivos del usuario (segun sus roles) desde system-service. */
+  loadPermissions(): void {
+    this.api.get<string[]>(ms(MICROSERVICES.SYSTEM, 'permissions/me')).pipe(
+      catchError(() => of([] as string[])),
+    ).subscribe(p => this._permissions.set(p ?? []));
+  }
+
   login(req: LoginRequest): Observable<AuthUser> {
     return this.api.post<LoginResponse>(ms(MICROSERVICES.AUTH, 'login'), req).pipe(
-      tap(res => {
-        this.storage.setAccess(res.tokens.accessToken);
-        if (res.tokens.refreshToken) this.storage.setRefresh(res.tokens.refreshToken);
-        const u = this.toAuthUser(res.user);
-        this.storage.setUser(u);
-        this._user.set(u);
-      }),
+      tap(res => this.establishSession(res)),
       map(res => this.toAuthUser(res.user)),
     );
+  }
+
+  /**
+   * Alta self-service de un dueño + su negocio. El back crea la cuenta con rol
+   * OWNER y devuelve los mismos tokens del login, así que dejamos la sesión
+   * establecida y el usuario entra directo a su panel.
+   */
+  registerOwner(req: unknown): Observable<AuthUser> {
+    return this.api.post<LoginResponse>(ms(MICROSERVICES.AUTH, 'register-owner'), req).pipe(
+      tap(res => this.establishSession(res)),
+      map(res => this.toAuthUser(res.user)),
+    );
+  }
+
+  /** Persiste tokens + usuario y carga permisos tras un login/registro exitoso. */
+  private establishSession(res: LoginResponse): void {
+    this.storage.setAccess(res.tokens.accessToken);
+    if (res.tokens.refreshToken) this.storage.setRefresh(res.tokens.refreshToken);
+    const u = this.toAuthUser(res.user);
+    this.storage.setUser(u);
+    this._user.set(u);
+    this.loadPermissions();
   }
 
   refreshMe(): Observable<AuthUser> {
     return this.api.get<UserResponse>(ms(MICROSERVICES.AUTH, 'users/me')).pipe(
       map(u => this.toAuthUser(u)),
-      tap(u => { this.storage.setUser(u); this._user.set(u); }),
+      tap(u => { this.storage.setUser(u); this._user.set(u); this.loadPermissions(); }),
     );
   }
 
@@ -86,6 +113,7 @@ export class AuthService {
   handleAuthFailure(navigate = true) {
     this.storage.clear();
     this._user.set(null);
+    this._permissions.set([]);
     if (navigate) this.router.navigate(['/login']);
   }
 
@@ -122,7 +150,9 @@ export class AuthService {
   homeRoute(): string {
     const u = this._user();
     if (!u) return '/login';
-    return u.kind === 'SYSTEM_ADMIN' ? '/admin' : '/tenant';
+    // El área tenant aún no tiene vistas; mientras tanto, los no-admin van al
+    // inicio. Cuando exista /tenant, se vuelve a apuntar allí.
+    return u.kind === 'SYSTEM_ADMIN' ? '/admin' : '/';
   }
 
   private toAuthUser(u: UserResponse): AuthUser {

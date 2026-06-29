@@ -7,13 +7,30 @@
         >
           <lucide-icon [img]="theme.mode() === 'dark' ? sunIcon : moonIcon" [size]="16"></lucide-icon>
         </button>
-        <div class="max-w-md text-white">
-          <div class="h-12 w-12 rounded-lg bg-white/20 flex items-center justify-center text-xl font-semibold mb-6">EM</div>
-          <h1 class="text-3xl font-semibold leading-tight mb-3">ERP Moda</h1>
-          <p class="text-white/85 text-sm leading-relaxed">
-            Plataforma de gestión integral para tu negocio. Inventario, citas, equipo y métricas en un solo lugar.
-          </p>
-        </div>
+        @if (branding.hasTenant()) {
+          <div class="max-w-md text-white">
+            @if (branding.branding()?.logoUrl) {
+              <img [src]="branding.branding()!.logoUrl" [alt]="branding.branding()!.name"
+                   class="h-14 w-14 rounded-lg object-cover bg-white/20 mb-6" />
+            } @else {
+              <div class="h-12 w-12 rounded-lg bg-white/20 flex items-center justify-center text-xl font-semibold mb-6">
+                {{ branding.branding()!.name.charAt(0) }}
+              </div>
+            }
+            <h1 class="text-3xl font-semibold leading-tight mb-3">{{ branding.branding()!.name }}</h1>
+            <p class="text-white/85 text-sm leading-relaxed">
+              Administra tu negocio: agenda, equipo, servicios y métricas en un solo lugar.
+            </p>
+          </div>
+        } @else {
+          <div class="max-w-md text-white">
+            <div class="h-12 w-12 rounded-lg bg-white/20 flex items-center justify-center text-xl font-semibold mb-6">EM</div>
+            <h1 class="text-3xl font-semibold leading-tight mb-3">ERP Moda</h1>
+            <p class="text-white/85 text-sm leading-relaxed">
+              Plataforma de gestión integral para tu negocio. Inventario, citas, equipo y métricas en un solo lugar.
+            </p>
+          </div>
+        }
       </div>
       <div class="flex-1 flex items-center justify-center p-8">
         <div class="w-full max-w-sm">
@@ -21,4 +38,3 @@
         </div>
       </div>
     </div>
-  

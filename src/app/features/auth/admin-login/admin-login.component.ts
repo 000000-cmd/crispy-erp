@@ -2,26 +2,24 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
-import { BrandingService } from '../../../core/branding/branding.service';
 import { DynamicFormComponent } from '../../../shared/forms/dynamic-form.component';
 import { FormSchema } from '../../../shared/forms/core/types';
-import { TPipe } from '../../../shared/pipes/t.pipe';
 
 /**
- * Login del DUEÑO / usuario de un negocio (tenant). Entrada por defecto
- * (`/login`). Refleja el branding resuelto por subdominio y enlaza al wizard de
- * registro. El acceso de administradores del sistema vive en `/login/admin`.
+ * Login de ADMINISTRADORES del sistema (`/login/admin`). Deliberadamente plano
+ * y SIN branding de tenant: el administrador no pertenece a ningún negocio, así
+ * que esta pantalla nunca se tematiza por subdominio. Reusa el mismo flujo de
+ * autenticación; el destino lo decide `homeRoute()` según el rol.
  */
 @Component({
-  selector: 'app-login-page',
+  selector: 'app-admin-login-page',
   standalone: true,
-  imports: [CommonModule, DynamicFormComponent, TPipe, RouterLink],
-  templateUrl: './login.component.html',
+  imports: [CommonModule, DynamicFormComponent, RouterLink],
+  templateUrl: './admin-login.component.html',
 })
-export class LoginComponent {
+export class AdminLoginComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
-  protected readonly branding = inject(BrandingService);
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
@@ -33,7 +31,7 @@ export class LoginComponent {
         key: 'usernameOrEmail',
         type: 'text',
         label: 'Usuario o correo',
-        placeholder: 'usuario  /  tu@empresa.com',
+        placeholder: 'admin  /  admin@sistema.com',
         validators: ['required'],
       },
       {
@@ -53,10 +51,10 @@ export class LoginComponent {
     this.auth.login({ usernameOrEmail: value['usernameOrEmail'], password: value['password'] }).subscribe({
       next: () => {
         this.loading.set(false);
-        // Separación de accesos: un administrador NO entra por la ruta común.
-        if (this.auth.kind() === 'SYSTEM_ADMIN') {
+        // Este acceso es EXCLUSIVO de administradores del sistema.
+        if (this.auth.kind() !== 'SYSTEM_ADMIN') {
           this.auth.handleAuthFailure(false);
-          this.error.set('Los administradores ingresan por su acceso dedicado.');
+          this.error.set('Este acceso es exclusivo para administradores.');
           return;
         }
         this.router.navigateByUrl(this.auth.homeRoute());
