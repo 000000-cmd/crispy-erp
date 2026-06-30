@@ -13,6 +13,9 @@ export class BusinessApi {
   /** Aprovisiona un negocio completo (empresa + slug + persona dueño + business_owner). */
   provision(p: ProvisionRequest): Observable<ProvisionResponse> { return this.api.post(path('provision'), p); }
 
+  /** Empresas del usuario logueado (dueño). Resuelve userId → persona → owner → empresa. */
+  mine(userId: string): Observable<Business[]> { return this.api.get(path('mine'), { userId }); }
+
   // ---- Empresa ----
   list(): Observable<Business[]> { return this.api.get(path('businesses')); }
   get(id: string): Observable<Business> { return this.api.get(path(`businesses/${id}`)); }

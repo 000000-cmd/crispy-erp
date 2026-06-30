@@ -1,0 +1,43 @@
+<div class="space-y-5">
+  <header class="flex items-end justify-between gap-3">
+    <div>
+      <h1 class="text-xl font-semibold text-text">Servicios</h1>
+      <p class="text-sm text-text-muted">Lo que ofrece tu negocio: cortes, tratamientos y más.</p>
+    </div>
+    @if (businessId()) {
+      <app-button [icon]="plusIcon" (onClick)="openCreate()">Nuevo servicio</app-button>
+    }
+  </header>
+
+  @if (loading()) {
+    <p class="text-sm text-text-muted">Cargando…</p>
+  } @else if (!businessId()) {
+    <div class="rounded-2xl border border-border bg-surface p-6 space-y-3">
+      <h2 class="text-base font-semibold text-text">Primero registra tu negocio</h2>
+      <p class="text-sm text-text-muted">Necesitas una empresa para gestionar servicios.</p>
+      <a routerLink="/tenant/onboarding"><app-button>Crear mi negocio</app-button></a>
+    </div>
+  } @else {
+    <app-data-table [columns]="columns()" [rows]="items()" [actions]="actions()" [loading]="loading()" />
+  }
+
+  <app-drawer
+    [open]="!!editing()"
+    [title]="editing()?.id ? 'Editar servicio' : 'Nuevo servicio'"
+    size="md"
+    [showActions]="true"
+    [dirty]="dirty()"
+    [saving]="saving()"
+    (save)="submitForm()"
+    (onClose)="close()">
+    @if (editing()) {
+      <app-dynamic-form
+        #dynForm
+        [schema]="schema"
+        [model]="editing()!"
+        [submitting]="saving()"
+        (submitValue)="onSubmit($event)"
+        (dirtyChange)="dirty.set($event)" />
+    }
+  </app-drawer>
+</div>

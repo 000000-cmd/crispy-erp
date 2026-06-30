@@ -67,7 +67,7 @@ export class ThirdPartyComponent {
   readonly reindexing = signal(false);
   readonly loadingCompare = signal(false);
   readonly elasticDoc = signal<Record<string, unknown> | null>(null);
-  readonly sourceDoc = signal<Record<string, unknown> | null>(null);
+  readonly dbDetail = signal<ThirdPartyDetail | null>(null);
   private reindexTargetId = '';
 
   readonly dynForm = viewChild<DynamicFormComponent>('dynForm');
@@ -165,14 +165,14 @@ export class ThirdPartyComponent {
     this.reindexing.set(false);
     this.loadingCompare.set(true);
     this.elasticDoc.set(null);
-    this.sourceDoc.set(null);
+    this.dbDetail.set(null);
     forkJoin({
       elastic: this.api.searchDoc(item.id),
-      source: this.api.indexPreview(item.id),
+      db: this.api.getFull(item.id),
     }).subscribe({
-      next: ({ elastic, source }) => {
+      next: ({ elastic, db }) => {
         this.elasticDoc.set(elastic);
-        this.sourceDoc.set(source);
+        this.dbDetail.set(db);
         this.loadingCompare.set(false);
       },
       error: () => this.loadingCompare.set(false),
@@ -193,7 +193,7 @@ export class ThirdPartyComponent {
     });
   }
 
-  closeReindex() { this.reindexOpen.set(false); this.elasticDoc.set(null); this.sourceDoc.set(null); }
+  closeReindex() { this.reindexOpen.set(false); this.elasticDoc.set(null); this.dbDetail.set(null); }
 
   onSubmit(value: any) {
     const editing = this.editing();

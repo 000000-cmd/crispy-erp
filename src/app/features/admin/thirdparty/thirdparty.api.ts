@@ -29,11 +29,6 @@ export class ThirdPartyApi {
     return this.api.get(ms(MICROSERVICES.ELASTIC, `third-parties/${id}`));
   }
 
-  /** Proyección de la fuente al read-model de ES: lo que el índice DEBERÍA tener. */
-  indexPreview(id: string): Observable<Record<string, unknown>> {
-    return this.api.get(path(`third-parties/${id}/full`));
-  }
-
   /** Fuerza un reindex completo del tercero (datos + contactos + direcciones). */
   reindex(id: string): Observable<void> {
     return this.api.post(path(`third-parties/${id}/reindex`));

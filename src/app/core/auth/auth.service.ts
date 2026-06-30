@@ -150,9 +150,8 @@ export class AuthService {
   homeRoute(): string {
     const u = this._user();
     if (!u) return '/login';
-    // El área tenant aún no tiene vistas; mientras tanto, los no-admin van al
-    // inicio. Cuando exista /tenant, se vuelve a apuntar allí.
-    return u.kind === 'SYSTEM_ADMIN' ? '/admin' : '/';
+    // Admin del sistema -> /admin (su propia área). Resto (dueños) -> /tenant.
+    return u.kind === 'SYSTEM_ADMIN' ? '/admin' : '/tenant';
   }
 
   private toAuthUser(u: UserResponse): AuthUser {

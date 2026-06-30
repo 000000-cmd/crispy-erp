@@ -1,0 +1,80 @@
+<div class="space-y-5">
+  <header class="flex items-end justify-between gap-3">
+    <div>
+      <h1 class="text-xl font-semibold text-text">Empleados</h1>
+      <p class="text-sm text-text-muted">Tu equipo por sede.</p>
+    </div>
+    @if (selectedBranchId()) {
+      <app-button [icon]="plusIcon" (onClick)="openCreate()">Nuevo empleado</app-button>
+    }
+  </header>
+
+  @if (loading() && !branches().length) {
+    <p class="text-sm text-text-muted">Cargando…</p>
+  } @else if (!businessId()) {
+    <div class="rounded-2xl border border-border bg-surface p-6 space-y-3">
+      <h2 class="text-base font-semibold text-text">Primero registra tu negocio</h2>
+      <a routerLink="/tenant/onboarding"><app-button>Crear mi negocio</app-button></a>
+    </div>
+  } @else if (!branches().length) {
+    <div class="rounded-2xl border border-border bg-surface p-6 space-y-3">
+      <h2 class="text-base font-semibold text-text">Aún no tienes sedes</h2>
+      <p class="text-sm text-text-muted">Crea una sede para asignar empleados.</p>
+      <a routerLink="/tenant/sedes"><app-button>Ir a sedes</app-button></a>
+    </div>
+  } @else {
+    <div class="max-w-xs">
+      <app-autocomplete
+        [options]="branchOptions()"
+        [ngModel]="selectedBranchId()"
+        (ngModelChange)="onBranch($event)"
+        [clearable]="false"
+        placeholder="Selecciona una sede" />
+    </div>
+
+    <app-data-table [columns]="columns()" [rows]="items()" [actions]="actions()" [loading]="loading()" />
+  }
+
+  <app-drawer
+    [open]="open()"
+    [title]="editingId() ? 'Editar empleado' : 'Nuevo empleado'"
+    size="md"
+    [showActions]="true"
+    [dirty]="formValid()"
+    [saving]="saving()"
+    (save)="save()"
+    (onClose)="close()">
+
+    <div class="space-y-4">
+      <app-field label="Persona" [required]="true"
+                 [hint]="editingId() ? 'La persona del empleado no se cambia desde aquí.' : 'Busca un tercero existente por nombre o documento.'">
+        @if (editingId()) {
+          <app-input [value]="form().personName" [disabled]="true" />
+        } @else {
+          <app-autocomplete
+            [searchFn]="personSearchFn"
+            [ngModel]="form().thirdPartyId"
+            (ngModelChange)="patch('thirdPartyId', $event)"
+            placeholder="Buscar persona…" />
+        }
+      </app-field>
+
+      <app-field label="Cargo" [required]="true">
+        <app-autocomplete
+          [options]="positionOptions()"
+          [ngModel]="form().positionId"
+          (ngModelChange)="patch('positionId', $event)"
+          placeholder="Selecciona el cargo" />
+      </app-field>
+
+      <div class="grid grid-cols-2 gap-3">
+        <app-field label="Código">
+          <app-input [value]="form().employeeCode" (valueChange)="patch('employeeCode', $event)" placeholder="Opcional" />
+        </app-field>
+        <app-field label="Fecha de ingreso" [required]="true">
+          <app-input type="date" [value]="form().hireDate" (valueChange)="patch('hireDate', $event)" />
+        </app-field>
+      </div>
+    </div>
+  </app-drawer>
+</div>

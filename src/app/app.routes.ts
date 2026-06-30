@@ -7,8 +7,8 @@ export const routes: Routes = [
   { path: '', pathMatch: 'full', loadComponent: () => import('./features/landing/landing.component').then(m => m.LandingComponent) },
   { path: 'login',  loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES) },
   { path: 'admin',  loadChildren: () => import('./features/admin/admin.routes').then(m => m.ADMIN_ROUTES) },
-  // El área tenant aún no tiene vistas reales; se reintroducirá su ruta cuando
-  // existan. Mantenerla aquí sin pantallas sólo agregaba ruido.
+  // Área del dueño (tenant): NO comparte rutas con el admin del sistema.
+  { path: 'tenant', loadChildren: () => import('./features/tenant/tenant.routes').then(m => m.TENANT_ROUTES) },
   // Cualquier ruta desconocida muestra la vista 404 (ya no manda al login).
   { path: '**', component: NotFoundComponent },
 ];

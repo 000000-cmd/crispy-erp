@@ -143,8 +143,8 @@
     } @else {
       <div class="space-y-4">
         <p class="text-sm text-text-muted">
-          Compara el documento indexado en Elasticsearch con la proyección de la fuente
-          (lo que el índice debería tener). Si hay diferencias, reindexa para sincronizar.
+          Compara el documento indexado en Elasticsearch (read-model de búsqueda) con el registro
+          completo en la base de datos (datos, contactos y direcciones). Si hay diferencias, reindexa.
         </p>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div class="rounded-lg border border-border overflow-hidden">
@@ -155,8 +155,8 @@
             <pre class="p-3 text-[11px] leading-relaxed overflow-auto max-h-[50vh] whitespace-pre-wrap">{{ elasticDoc() | json }}</pre>
           </div>
           <div class="rounded-lg border border-border overflow-hidden">
-            <div class="px-3 py-2 bg-surface-muted text-xs font-semibold">Fuente (debería indexarse)</div>
-            <pre class="p-3 text-[11px] leading-relaxed overflow-auto max-h-[50vh] whitespace-pre-wrap">{{ sourceDoc() | json }}</pre>
+            <div class="px-3 py-2 bg-surface-muted text-xs font-semibold">Base de datos (completo)</div>
+            <pre class="p-3 text-[11px] leading-relaxed overflow-auto max-h-[50vh] whitespace-pre-wrap">{{ dbDetail() | json }}</pre>
           </div>
         </div>
         <div class="flex items-center justify-end gap-2 pt-2">
