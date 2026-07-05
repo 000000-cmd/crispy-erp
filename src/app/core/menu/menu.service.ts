@@ -1,6 +1,7 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { tap } from 'rxjs';
-import { MenusApi, MenuNode } from './menus.api';
+import { MenusApi } from './menus.api';
+import { MenuNode } from './menu.model';
 import { resolveIcon } from '../../layouts/shell/icon-resolver';
 import { NavItem, NavSection } from '../../layouts/shell/sidebar.types';
 import { AuthService } from '../auth/auth.service';

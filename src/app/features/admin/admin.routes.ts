@@ -21,6 +21,7 @@ export const ADMIN_ROUTES: Routes = [
       { path: 'constants',     data: { crumb: 'Constantes' },   loadComponent: () => import('./constants/constants.component').then(m => m.AdminConstantsComponent) },
       { path: 'menus',         data: { crumb: 'Menús' },        loadComponent: () => import('./menus/menus.component').then(m => m.AdminMenusComponent) },
       { path: 'system-status', data: { crumb: 'Estado del sistema' }, loadComponent: () => import('./system-status/system-status.component').then(m => m.AdminSystemStatusComponent) },
+      { path: 'app-versions',  data: { crumb: 'Versiones del APK' }, loadComponent: () => import('./app-versions/app-versions.component').then(m => m.AdminAppVersionsComponent) },
       { path: 'roles',         data: { crumb: 'Roles' },        loadComponent: () => import('./roles/roles.component').then(m => m.AdminRolesComponent) },
       { path: 'permissions',   data: { crumb: 'Permisos' },     loadComponent: () => import('./permissions/permissions.component').then(m => m.AdminPermissionsComponent) },
       { path: 'audit',         data: { crumb: 'Auditoría' },    loadComponent: () => import('./audit/audit.component').then(m => m.AdminAuditComponent) },

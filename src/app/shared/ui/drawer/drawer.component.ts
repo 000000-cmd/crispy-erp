@@ -50,6 +50,9 @@ export class DrawerComponent implements AfterViewInit, OnDestroy {
   readonly showActions = input<boolean>(false);
   readonly saving = input<boolean>(false);
   readonly dirty = input<boolean>(false);
+  /** Deshabilita "Guardar" (formulario inválido/incompleto): feedback claro
+   *  en vez de un click que no hace nada. */
+  readonly saveDisabled = input<boolean>(false);
   readonly saveLabel = input<string>('common.save');
   readonly closeLabel = input<string>('common.close');
   readonly cancelLabel_ = input<string>('common.cancel', { alias: 'cancelLabel' });

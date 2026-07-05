@@ -8,7 +8,8 @@ import { DynamicFormComponent } from '../../../shared/forms/dynamic-form.compone
 import { FormSchema } from '../../../shared/forms/core/types';
 import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
-import { Constant, ConstantsApi } from './constants.api';
+import { ConstantsApi } from './constants.api';
+import { Constant } from './constants.model';
 import { TPipe } from '../../../shared/pipes/t.pipe';
 import { I18nService } from '../../../core/i18n/i18n.service';
 

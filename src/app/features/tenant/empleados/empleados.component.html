@@ -2,7 +2,7 @@
   <header class="flex items-end justify-between gap-3">
     <div>
       <h1 class="text-xl font-semibold text-text">Empleados</h1>
-      <p class="text-sm text-text-muted">Tu equipo por sede.</p>
+      <p class="text-sm text-text-muted">Tu equipo por sede. Sus cuentas entran por la app móvil.</p>
     </div>
     @if (selectedBranchId()) {
       <app-button [icon]="plusIcon" (onClick)="openCreate()">Nuevo empleado</app-button>
@@ -38,43 +38,52 @@
   <app-drawer
     [open]="open()"
     [title]="editingId() ? 'Editar empleado' : 'Nuevo empleado'"
-    size="md"
+    size="lg"
     [showActions]="true"
-    [dirty]="formValid()"
+    [dirty]="editingId() ? false : dirty()"
+    [saveDisabled]="editingId() ? !editValid() : false"
     [saving]="saving()"
-    (save)="save()"
+    (save)="submitDrawer()"
     (onClose)="close()">
 
-    <div class="space-y-4">
-      <app-field label="Persona" [required]="true"
-                 [hint]="editingId() ? 'La persona del empleado no se cambia desde aquí.' : 'Busca un tercero existente por nombre o documento.'">
-        @if (editingId()) {
-          <app-input [value]="form().personName" [disabled]="true" />
-        } @else {
-          <app-autocomplete
-            [searchFn]="personSearchFn"
-            [ngModel]="form().thirdPartyId"
-            (ngModelChange)="patch('thirdPartyId', $event)"
-            placeholder="Buscar persona…" />
-        }
-      </app-field>
-
-      <app-field label="Cargo" [required]="true">
-        <app-autocomplete
-          [options]="positionOptions()"
-          [ngModel]="form().positionId"
-          (ngModelChange)="patch('positionId', $event)"
-          placeholder="Selecciona el cargo" />
-      </app-field>
-
-      <div class="grid grid-cols-2 gap-3">
-        <app-field label="Código">
-          <app-input [value]="form().employeeCode" (valueChange)="patch('employeeCode', $event)" placeholder="Opcional" />
-        </app-field>
-        <app-field label="Fecha de ingreso" [required]="true">
-          <app-input type="date" [value]="form().hireDate" (valueChange)="patch('hireDate', $event)" />
-        </app-field>
+    @if (!editingId()) {
+      <!-- Alta completa: cuenta (rol EMPLOYEE) + persona + laboral. -->
+      <div class="mb-4 rounded-lg border border-primary-200 dark:border-primary-800 bg-primary-50/60 dark:bg-primary-900/20 px-3 py-2 text-xs text-primary-700 dark:text-primary-200">
+        Sede: <span class="font-semibold">{{ selectedBranchName() }}</span> ·
+        El empleado usará el correo y la contraseña para entrar a la app móvil;
+        en su primer ingreso completará el resto de sus datos.
       </div>
-    </div>
+      <app-dynamic-form
+        #dynForm
+        [schema]="provisionSchema"
+        [model]="provisionModel()"
+        [submitting]="saving()"
+        (submitValue)="onProvisionSubmit($event)"
+        (dirtyChange)="dirty.set($event)" />
+    } @else {
+      <!-- Edición laboral (la persona y la cuenta no se tocan desde aquí). -->
+      <div class="space-y-4">
+        <app-field label="Persona" hint="La persona del empleado no se cambia desde aquí.">
+          <app-input [value]="editForm().personName" [disabled]="true" />
+        </app-field>
+
+        <app-field label="Cargo" [required]="true">
+          <app-autocomplete
+            [options]="positionOptions()"
+            [ngModel]="editForm().positionId"
+            (ngModelChange)="patchEdit('positionId', $event)"
+            placeholder="Selecciona el cargo" />
+        </app-field>
+
+        <div class="grid grid-cols-2 gap-3">
+          <app-field label="Código">
+            <app-input [value]="editForm().employeeCode" (valueChange)="patchEdit('employeeCode', $event)" placeholder="Opcional" />
+          </app-field>
+          <app-field label="Fecha de ingreso" [required]="true">
+            <app-input type="date" [value]="editForm().hireDate" (valueChange)="patchEdit('hireDate', $event)" />
+          </app-field>
+        </div>
+      </div>
+    }
   </app-drawer>
 </div>

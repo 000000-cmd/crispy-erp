@@ -21,3 +21,36 @@ export interface EmployeePayload {
   terminationDate?: string | null;
   statusId?: string | null;
 }
+
+/**
+ * Alta COMPLETA de un empleado por el dueño: crea cuenta (rol EMPLOYEE),
+ * persona y registro laboral en una sola llamada. El empleado termina de
+ * completar sus datos en su primer ingreso al APK.
+ */
+export interface EmployeeProvisionPayload {
+  // Laboral
+  branchId: string;
+  positionId: string;
+  hireDate: string;
+  employeeCode?: string | null;
+  // Persona
+  documentTypeId: string;
+  documentNumber: string;
+  firstName: string;
+  secondName?: string | null;
+  firstLastName: string;
+  secondLastName?: string | null;
+  genderId?: string | null;
+  birthDate?: string | null;
+  // Cuenta (para la app móvil)
+  email: string;
+  username: string;
+  password: string;
+}
+
+export interface EmployeeProvisionResult {
+  employeeId: string;
+  thirdPartyId: string;
+  userId: string;
+  username: string;
+}

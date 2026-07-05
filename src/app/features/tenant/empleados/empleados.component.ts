@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { map } from 'rxjs';
@@ -8,38 +8,37 @@ import { Plus, Pencil, Trash2 } from 'lucide-angular';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { DrawerComponent } from '../../../shared/ui/drawer/drawer.component';
 import { DataTableComponent, ColumnDef, RowAction } from '../../../shared/table/data-table.component';
+import { DynamicFormComponent } from '../../../shared/forms/dynamic-form.component';
 import { FieldComponent } from '../../../shared/ui/field/field.component';
 import { InputComponent } from '../../../shared/ui/input/input.component';
 import { AutocompleteComponent } from '../../../shared/ui/autocomplete/autocomplete.component';
-import { AutocompleteOption, AutocompleteSearchFn } from '../../../shared/ui/autocomplete/autocomplete.types';
+import { AutocompleteOption } from '../../../shared/ui/autocomplete/autocomplete.types';
 import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { BusinessApi } from '../../admin/business/business.api';
-import { SystemListsApi, CatalogItem } from '../../admin/system-lists/system-lists.api';
-import { ThirdPartyApi } from '../../admin/thirdparty/thirdparty.api';
+import { SystemListsApi } from '../../admin/system-lists/system-lists.api';
+import { CatalogItem } from '../../admin/system-lists/system-lists.model';
 
 import { SedesApi } from '../sedes/sedes.api';
 import { Branch } from '../sedes/sedes.model';
 import { EmpleadosApi } from './empleados.api';
 import { EmployeeDetail } from './empleados.model';
+import { EmployeeEditForm, EMPTY_EMPLOYEE_EDIT_FORM, buildEmployeeProvisionSchema } from './empleados-form';
 
-interface EmpForm {
-  thirdPartyId: string | null;
-  personName: string;
-  positionId: string | null;
-  employeeCode: string;
-  hireDate: string;
-}
-const EMPTY: EmpForm = { thirdPartyId: null, personName: '', positionId: null, employeeCode: '', hireDate: '' };
-
-/** Empleados del negocio, por sede. CRUD scopeado a la empresa del dueño. */
+/**
+ * Empleados del negocio, por sede.
+ *
+ * ALTA: el dueño crea al empleado COMPLETO (cuenta con rol EMPLOYEE + persona +
+ * registro laboral) — el empleado entra por la app móvil y completa sus datos
+ * en su primer ingreso. EDICIÓN: sólo lo laboral (cargo/código/fecha).
+ */
 @Component({
   selector: 'app-tenant-empleados',
   standalone: true,
   imports: [
     CommonModule, FormsModule, RouterLink, ButtonComponent, DrawerComponent, DataTableComponent,
-    FieldComponent, InputComponent, AutocompleteComponent,
+    DynamicFormComponent, FieldComponent, InputComponent, AutocompleteComponent,
   ],
   templateUrl: './empleados.component.html',
 })
@@ -48,7 +47,6 @@ export class EmpleadosComponent {
   private readonly sedesApi = inject(SedesApi);
   private readonly businessApi = inject(BusinessApi);
   private readonly systemListsApi = inject(SystemListsApi);
-  private readonly tpApi = inject(ThirdPartyApi);
   private readonly confirm = inject(ConfirmService);
   private readonly toast = inject(ToastService);
   private readonly auth = inject(AuthService);
@@ -71,23 +69,26 @@ export class EmpleadosComponent {
   readonly branchOptions = computed<AutocompleteOption[]>(() =>
     this.branches().map(b => ({ value: b.id, label: b.name })));
 
+  readonly selectedBranchName = computed(() =>
+    this.branches().find(b => b.id === this.selectedBranchId())?.name ?? '');
+
+  // Drawer: 'create' = alta completa (dynamic form) | 'edit' = laboral (manual)
   readonly open = signal(false);
   readonly editingId = signal<string | null>(null);
   readonly saving = signal(false);
-  readonly form = signal<EmpForm>({ ...EMPTY });
+  readonly dirty = signal(false);
+  readonly editForm = signal<EmployeeEditForm>({ ...EMPTY_EMPLOYEE_EDIT_FORM });
+  private editingSnapshot: EmployeeDetail | null = null;
 
-  readonly formValid = computed(() => {
-    const f = this.form();
-    return !!f.thirdPartyId && !!f.positionId && !!f.hireDate;
+  readonly provisionSchema = buildEmployeeProvisionSchema(this.systemListsApi);
+  readonly provisionModel = signal<Record<string, unknown>>({});
+
+  readonly dynForm = viewChild<DynamicFormComponent>('dynForm');
+
+  readonly editValid = computed(() => {
+    const f = this.editForm();
+    return !!f.positionId && !!f.hireDate;
   });
-
-  readonly personSearchFn: AutocompleteSearchFn = (term: string) =>
-    this.tpApi.search({ q: term || undefined, size: 10 }).pipe(
-      map(r => r.items.map(t => ({
-        value: t.id,
-        label: t.fullName || [t.firstName, t.firstLastName].filter(Boolean).join(' ') || t.documentNumber,
-      }))),
-    );
 
   readonly columns = computed<ColumnDef<EmployeeDetail>[]>(() => [
     { key: 'personName', label: 'Empleado' },
@@ -144,34 +145,92 @@ export class EmpleadosComponent {
     });
   }
 
-  patch<K extends keyof EmpForm>(key: K, value: EmpForm[K]) { this.form.update(f => ({ ...f, [key]: value })); }
+  patchEdit<K extends keyof EmployeeEditForm>(key: K, value: EmployeeEditForm[K]) {
+    this.editForm.update(f => ({ ...f, [key]: value }));
+  }
 
-  openCreate() { this.form.set({ ...EMPTY }); this.editingId.set(null); this.open.set(true); }
-  openEdit(e: EmployeeDetail) {
-    this.form.set({
-      thirdPartyId: e.thirdPartyId, personName: e.personName, positionId: e.positionId,
-      employeeCode: e.employeeCode ?? '', hireDate: e.hireDate ?? '',
+  // ---- Alta completa ----
+  openCreate() {
+    this.provisionModel.set({});
+    this.dirty.set(false);
+    this.editingId.set(null);
+    this.open.set(true);
+  }
+
+  submitDrawer() {
+    if (this.editingId()) { this.saveEdit(); return; }
+    this.dynForm()?.submit();
+  }
+
+  onProvisionSubmit(v: any) {
+    const branchId = this.selectedBranchId();
+    if (!branchId) return;
+    this.saving.set(true);
+    this.api.provision({
+      branchId,
+      positionId: v.positionId,
+      hireDate: v.hireDate,
+      employeeCode: v.employeeCode || null,
+      documentTypeId: v.documentTypeId,
+      documentNumber: v.documentNumber,
+      firstName: v.firstName,
+      secondName: v.secondName || null,
+      firstLastName: v.firstLastName,
+      secondLastName: v.secondLastName || null,
+      genderId: v.genderId || null,
+      birthDate: v.birthDate || null,
+      email: v.email,
+      username: v.username,
+      password: v.password,
+    }).subscribe({
+      next: r => {
+        this.toast.success(`Empleado creado. Su usuario para la app es "${r.username}".`);
+        this.saving.set(false);
+        this.close();
+        this.refresh(branchId);
+      },
+      error: () => this.saving.set(false),
     });
+  }
+
+  // ---- Edición laboral ----
+  openEdit(e: EmployeeDetail) {
+    this.editingSnapshot = e;
+    this.editForm.set({
+      personName: e.personName,
+      positionId: e.positionId,
+      employeeCode: e.employeeCode ?? '',
+      hireDate: e.hireDate ?? '',
+    });
+    this.dirty.set(false);
     this.editingId.set(e.id);
     this.open.set(true);
   }
-  close() { this.open.set(false); this.editingId.set(null); }
 
-  save() {
-    const branchId = this.selectedBranchId();
-    if (!branchId || !this.formValid()) return;
-    const f = this.form();
-    this.saving.set(true);
-    const payload = {
-      thirdPartyId: f.thirdPartyId!, branchId, positionId: f.positionId!,
-      employeeCode: f.employeeCode || null, hireDate: f.hireDate,
-    };
+  private saveEdit() {
     const id = this.editingId();
-    const obs = id ? this.api.update(id, payload) : this.api.create(payload);
-    obs.subscribe({
-      next: () => { this.toast.success('Empleado guardado'); this.saving.set(false); this.close(); this.refresh(branchId); },
+    const branchId = this.selectedBranchId();
+    const snapshot = this.editingSnapshot;
+    if (!id || !branchId || !snapshot || !this.editValid()) return;
+    const f = this.editForm();
+    this.saving.set(true);
+    this.api.update(id, {
+      thirdPartyId: snapshot.thirdPartyId,
+      branchId,
+      positionId: f.positionId!,
+      employeeCode: f.employeeCode || null,
+      hireDate: f.hireDate,
+    }).subscribe({
+      next: () => { this.toast.success('Empleado actualizado'); this.saving.set(false); this.close(); this.refresh(branchId); },
       error: () => this.saving.set(false),
     });
+  }
+
+  close() {
+    this.open.set(false);
+    this.editingId.set(null);
+    this.dirty.set(false);
+    this.editingSnapshot = null;
   }
 
   async askDelete(e: EmployeeDetail) {

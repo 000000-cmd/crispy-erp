@@ -1,0 +1,57 @@
+<div class="space-y-5">
+  <header class="flex items-end justify-between gap-3">
+    <div>
+      <h1 class="text-xl font-semibold text-text">{{ 'admin.appVersions' | t }}</h1>
+      <p class="text-sm text-text-muted">{{ 'admin.appVersions.subtitle' | t }}</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <app-button variant="secondary" [icon]="linkIcon" (onClick)="copyLatestLink()">{{ 'admin.appVersions.copyLink' | t }}</app-button>
+      <app-button [icon]="plusIcon" (onClick)="openUpload()">{{ 'admin.appVersions.upload' | t }}</app-button>
+    </div>
+  </header>
+
+  <app-data-table [columns]="columns()" [rows]="items()" [actions]="actions()" [loading]="loading()" />
+
+  <p class="text-xs text-text-soft">{{ 'admin.appVersions.footNote' | t }}</p>
+
+  <app-drawer
+    [open]="open()"
+    [title]="'admin.appVersions.form.title' | t"
+    size="md"
+    [showActions]="true"
+    [saveDisabled]="!formValid()"
+    [saving]="saving()"
+    (save)="submit()"
+    (onClose)="close()">
+
+    <div class="space-y-4">
+      <app-field [label]="'admin.appVersions.form.file' | t" [required]="true" [hint]="'admin.appVersions.form.fileHint' | t">
+        <label class="flex items-center gap-3 rounded-md border border-dashed border-border bg-surface px-3 h-12 cursor-pointer transition hover:border-primary-400 hover:bg-primary-50/40 dark:hover:bg-primary-900/20">
+          <lucide-icon [img]="uploadIcon" [size]="18" class="text-primary-600 shrink-0" />
+          <span class="text-sm truncate" [class.text-text]="form().file" [class.text-text-muted]="!form().file">{{ fileLabel() }}</span>
+          <input type="file" accept=".apk" class="hidden" (change)="onFile($event)" />
+        </label>
+      </app-field>
+
+      <div class="grid grid-cols-2 gap-3">
+        <app-field [label]="'admin.appVersions.form.version' | t" [required]="true" [hint]="'admin.appVersions.form.versionHint' | t">
+          <app-input [value]="form().version" (valueChange)="patch('version', $event)" placeholder="1.0.1" />
+        </app-field>
+        <app-field [label]="'admin.appVersions.form.code' | t" [required]="true" [hint]="'admin.appVersions.form.codeHint' | t">
+          <app-input type="number" [value]="form().versionCode" (valueChange)="patch('versionCode', $event)" placeholder="2" />
+        </app-field>
+      </div>
+
+      <app-field [label]="'admin.appVersions.form.notes' | t" [hint]="'admin.appVersions.form.notesHint' | t">
+        <app-input [value]="form().notes" (valueChange)="patch('notes', $event)" placeholder="Correcciones y mejoras" />
+      </app-field>
+
+      <app-field [label]="'admin.appVersions.form.publishOnUpload' | t">
+        <label class="inline-flex items-center gap-2 h-9">
+          <app-switch [checked]="form().publish" (checkedChange)="patch('publish', $event)" />
+          <span class="text-sm text-text-muted">{{ 'admin.appVersions.form.publishHint' | t }}</span>
+        </label>
+      </app-field>
+    </div>
+  </app-drawer>
+</div>

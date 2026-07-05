@@ -18,25 +18,12 @@ import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { BusinessApi } from '../../admin/business/business.api';
-import { SystemListsApi, CatalogItem } from '../../admin/system-lists/system-lists.api';
+import { SystemListsApi } from '../../admin/system-lists/system-lists.api';
+import { CatalogItem } from '../../admin/system-lists/system-lists.model';
 
 import { SedesApi } from './sedes.api';
 import { Branch } from './sedes.model';
-
-interface BranchForm {
-  branchTypeId: string | null;
-  name: string;
-  code: string;
-  municipalityId: string | null;
-  neighborhoodId: string | null;
-  addressLine: string;
-  phone: string;
-  isMain: boolean;
-}
-const EMPTY: BranchForm = {
-  branchTypeId: null, name: '', code: '', municipalityId: null,
-  neighborhoodId: null, addressLine: '', phone: '', isMain: false,
-};
+import { BranchForm, EMPTY_BRANCH_FORM } from './sedes.form';
 
 /** Sedes (branch) del negocio del dueño. CRUD scopeado a su empresa. */
 @Component({
@@ -65,7 +52,7 @@ export class SedesComponent {
   readonly open = signal(false);
   readonly editingId = signal<string | null>(null);
   readonly saving = signal(false);
-  readonly form = signal<BranchForm>({ ...EMPTY });
+  readonly form = signal<BranchForm>({ ...EMPTY_BRANCH_FORM });
   readonly branchTypeOptions = signal<AutocompleteOption[]>([]);
 
   readonly formValid = computed(() => {
@@ -117,7 +104,7 @@ export class SedesComponent {
     this.form.update(f => ({ ...f, [key]: value }));
   }
 
-  openCreate() { this.form.set({ ...EMPTY }); this.editingId.set(null); this.open.set(true); }
+  openCreate() { this.form.set({ ...EMPTY_BRANCH_FORM }); this.editingId.set(null); this.open.set(true); }
 
   openEdit(b: Branch) {
     this.form.set({

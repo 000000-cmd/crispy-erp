@@ -11,7 +11,8 @@ import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { DynamicFormComponent } from '../../../shared/forms/dynamic-form.component';
 import { FormSchema } from '../../../shared/forms/core/types';
-import { CatalogItem, CatalogRequest, SystemList, SystemListsApi } from './system-lists.api';
+import { SystemListsApi } from './system-lists.api';
+import { CatalogItem, CatalogRequest, SystemList } from './system-lists.model';
 import { TPipe } from '../../../shared/pipes/t.pipe';
 import { I18nService } from '../../../core/i18n/i18n.service';
 

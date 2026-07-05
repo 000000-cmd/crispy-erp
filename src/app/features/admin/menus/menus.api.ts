@@ -2,31 +2,11 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../../core/http/api.service';
 import { MICROSERVICES, ms } from '../../../core/http/microservices';
+import { MenuNode, MenuPayload } from '../../../core/menu/menu.model';
 
 const path = (p: string) => ms(MICROSERVICES.SYSTEM, p);
 
-export interface MenuNode {
-  id: string;
-  code: string;
-  name: string;
-  icon?: string;
-  route?: string | null;
-  parentId?: string | null;
-  displayOrder: number;
-  enabled: boolean;
-  visible: boolean;
-  children: MenuNode[];
-}
-
-export interface MenuPayload {
-  code: string;
-  name: string;
-  icon?: string;
-  route?: string | null;
-  parentId?: string | null;
-  displayOrder: number;
-}
-
+/** CRUD de menús + asignación a roles (administración del sistema). */
 @Injectable({ providedIn: 'root' })
 export class AdminMenusApi {
   private readonly api = inject(ApiService);

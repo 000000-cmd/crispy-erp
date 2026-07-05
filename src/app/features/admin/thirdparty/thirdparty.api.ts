@@ -35,7 +35,8 @@ export class ThirdPartyApi {
   }
 
   // ---- Tercero ----
-  list(): Observable<ThirdParty[]> { return this.api.get(path('third-parties')); }
+  // El listado general va SIEMPRE por Elasticsearch (search()); no se duplica
+  // aqui un list() contra la BD.
   get(id: string): Observable<ThirdParty> { return this.api.get(path(`third-parties/${id}`)); }
 
   /** Info COMPLETA y anidada (tercero + contactos + direcciones). */
@@ -44,13 +45,6 @@ export class ThirdPartyApi {
   create(payload: ThirdPartyPayload): Observable<ThirdParty> { return this.api.post(path('third-parties'), payload); }
   update(id: string, payload: Partial<ThirdPartyPayload>): Observable<ThirdParty> { return this.api.put(path(`third-parties/${id}`), payload); }
   remove(id: string): Observable<void> { return this.api.delete(path(`third-parties/${id}`)); }
-
-  existsDocument(documentTypeId: string, documentNumber: string): Observable<boolean> {
-    return this.api.get(path('third-parties/document/exists'), { documentTypeId, documentNumber });
-  }
-  findByDocument(documentTypeId: string, documentNumber: string): Observable<ThirdParty> {
-    return this.api.get(path('third-parties/document'), { documentTypeId, documentNumber });
-  }
 
   // ---- Contactos (1:N) ----
   listContacts(thirdPartyId: string): Observable<ThirdPartyContact[]> {

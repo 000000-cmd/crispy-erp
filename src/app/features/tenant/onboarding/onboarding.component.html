@@ -1,0 +1,12 @@
+<div class="max-w-2xl mx-auto space-y-5">
+  <header>
+    <h1 class="text-xl font-semibold text-text">Crea tu negocio</h1>
+    <p class="text-sm text-text-muted">Registra los datos de tu empresa y los tuyos como dueño.</p>
+  </header>
+
+  <app-dynamic-form
+    [schema]="schema"
+    [model]="model"
+    [submitting]="saving()"
+    (submitValue)="onSubmit($event)" />
+</div>

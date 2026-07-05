@@ -5,7 +5,6 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { BrandingService } from '../../../core/branding/branding.service';
 import { DynamicFormComponent } from '../../../shared/forms/dynamic-form.component';
 import { FormSchema } from '../../../shared/forms/core/types';
-import { TPipe } from '../../../shared/pipes/t.pipe';
 
 /**
  * Login del DUEÑO / usuario de un negocio (tenant). Entrada por defecto
@@ -15,7 +14,7 @@ import { TPipe } from '../../../shared/pipes/t.pipe';
 @Component({
   selector: 'app-login-page',
   standalone: true,
-  imports: [CommonModule, DynamicFormComponent, TPipe, RouterLink],
+  imports: [CommonModule, DynamicFormComponent, RouterLink],
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
@@ -57,6 +56,13 @@ export class LoginComponent {
         if (this.auth.kind() === 'SYSTEM_ADMIN') {
           this.auth.handleAuthFailure(false);
           this.error.set('Los administradores ingresan por su acceso dedicado.');
+          return;
+        }
+        // La web es para dueños (y admins por su ruta): los empleados usan el APK.
+        const roles = this.auth.user()?.roles ?? [];
+        if (roles.includes('EMPLOYEE') && !roles.includes('OWNER')) {
+          this.auth.handleAuthFailure(false);
+          this.error.set('Las cuentas de empleado ingresan por la app móvil.');
           return;
         }
         this.router.navigateByUrl(this.auth.homeRoute());

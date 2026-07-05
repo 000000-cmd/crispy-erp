@@ -55,6 +55,7 @@
             <app-button
               variant="primary"
               [loading]="saving()"
+              [disabled]="saveDisabled()"
               (onClick)="onSaveClick()"
             >
               {{ saveLabel() | t }}

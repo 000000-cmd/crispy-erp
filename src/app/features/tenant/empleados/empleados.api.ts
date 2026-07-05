@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../../core/http/api.service';
 import { MICROSERVICES, ms } from '../../../core/http/microservices';
-import { EmployeeDetail, EmployeePayload } from './empleados.model';
+import { EmployeeDetail, EmployeePayload, EmployeeProvisionPayload, EmployeeProvisionResult } from './empleados.model';
 
 const path = (p: string) => ms(MICROSERVICES.BUSINESS, p);
 
@@ -14,6 +14,11 @@ export class EmpleadosApi {
     return this.api.get(path('employees/detailed'), { branchId });
   }
   create(p: EmployeePayload): Observable<EmployeeDetail> { return this.api.post(path('employees'), p); }
+
+  /** Alta completa: cuenta EMPLOYEE + persona + registro laboral. */
+  provision(p: EmployeeProvisionPayload): Observable<EmployeeProvisionResult> {
+    return this.api.post(path('employees/provision'), p);
+  }
   update(id: string, p: Partial<EmployeePayload>): Observable<EmployeeDetail> { return this.api.put(path(`employees/${id}`), p); }
   remove(id: string): Observable<void> { return this.api.delete(path(`employees/${id}`)); }
 }

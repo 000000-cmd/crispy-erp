@@ -3,7 +3,9 @@ import { Component, EventEmitter, Output, computed, inject, input, signal } from
 import { FormsModule } from '@angular/forms';
 import { AutocompleteComponent } from '../autocomplete/autocomplete.component';
 import { AutocompleteOption } from '../autocomplete/autocomplete.types';
-import { LocationsApi, NeighborhoodType } from '../../../core/location/locations.api';
+import { LocationsApi } from '../../../core/location/locations.api';
+import { NeighborhoodType } from '../../../core/location/locations.model';
+import { LocationLevel, LocationSelection } from './location-picker.types';
 
 /**
  * Picker jerarquico de localizacion (Pais > Departamento > Municipio > Barrio/Vereda).
@@ -19,20 +21,7 @@ import { LocationsApi, NeighborhoodType } from '../../../core/location/locations
  *
  * Emite `(change)` con la seleccion actual en codes y los hits crudos en `meta`.
  */
-export interface LocationSelection {
-  country?: string;
-  department?: string;
-  municipality?: string;
-  neighborhood?: string;
-  meta?: {
-    country?: AutocompleteOption | null;
-    department?: AutocompleteOption | null;
-    municipality?: AutocompleteOption | null;
-    neighborhood?: AutocompleteOption | null;
-  };
-}
-
-export type LocationLevel = 'country' | 'department' | 'municipality' | 'neighborhood';
+export type { LocationSelection, LocationLevel } from './location-picker.types';
 
 @Component({
   selector: 'app-location-picker',

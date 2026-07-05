@@ -2,18 +2,9 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../../core/http/api.service';
 import { MICROSERVICES, ms } from '../../../core/http/microservices';
+import { Constant } from './constants.model';
 
 const path = (p: string) => ms(MICROSERVICES.SYSTEM, p);
-
-export interface Constant {
-  id: string;
-  code: string;
-  name: string;
-  value: string;
-  type?: string;
-  description?: string;
-  enabled: boolean;
-}
 
 @Injectable({ providedIn: 'root' })
 export class ConstantsApi {

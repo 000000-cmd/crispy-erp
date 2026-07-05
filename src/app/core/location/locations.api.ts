@@ -2,108 +2,15 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { ApiService } from '../../core/http/api.service';
 import { MICROSERVICES, ms } from '../../core/http/microservices';
-import { AutocompleteOption} from '../../shared/ui/autocomplete/autocomplete.types';
+import { SearchResponse } from '../http/search';
+import { AutocompleteOption } from '../../shared/ui/autocomplete/autocomplete.types';
+import {
+  Country, CountryRequest, Department, DepartmentRequest, LocationHit,
+  Municipality, MunicipalityRequest, Neighborhood, NeighborhoodRequest, NeighborhoodType,
+} from './locations.model';
 
 const sysPath = (p: string) => ms(MICROSERVICES.SYSTEM, p);
 const elPath = (p: string) => ms(MICROSERVICES.ELASTIC, p);
-
-// =============== Tipos espejo del back (system-service CRUD) ===============
-
-export interface Country {
-  id: string;
-  code: string;
-  name: string;
-  officialName?: string;
-  isoCode3?: string;
-  numericCode?: string;
-  phoneCode?: string;
-  currencyCode?: string;
-  currencySymbol?: string;
-  continent?: string;
-  enabled: boolean;
-  visible: boolean;
-}
-
-export interface Department {
-  id: string;
-  code: string;
-  name: string;
-  countryId: string;
-  countryCode?: string;
-  countryName?: string;
-  enabled: boolean;
-  visible: boolean;
-}
-
-export interface Municipality {
-  id: string;
-  code: string;
-  name: string;
-  departmentId: string;
-  departmentCode?: string;
-  departmentName?: string;
-  countryId?: string;
-  countryCode?: string;
-  countryName?: string;
-  enabled: boolean;
-  visible: boolean;
-}
-
-export type NeighborhoodType = 'BARRIO' | 'VEREDA' | 'CORREGIMIENTO' | 'OTRO';
-
-export interface Neighborhood {
-  id: string;
-  code: string;
-  name: string;
-  type: NeighborhoodType;
-  municipalityId: string;
-  municipalityCode?: string;
-  municipalityName?: string;
-  departmentId?: string;
-  departmentCode?: string;
-  departmentName?: string;
-  countryId?: string;
-  countryCode?: string;
-  countryName?: string;
-  enabled: boolean;
-  visible: boolean;
-}
-
-export type CountryRequest = Pick<Country, 'code' | 'name' | 'officialName' | 'isoCode3' | 'numericCode' | 'phoneCode' | 'currencyCode' | 'currencySymbol' | 'continent'>;
-export type DepartmentRequest = Pick<Department, 'code' | 'name' | 'countryId'>;
-export type MunicipalityRequest = Pick<Municipality, 'code' | 'name' | 'departmentId'>;
-export type NeighborhoodRequest = Pick<Neighborhood, 'code' | 'name' | 'type' | 'municipalityId'>;
-
-// =============== Tipos del search-service (LocationDocument) ===============
-
-export interface LocationHit {
-  level: 'PAIS' | 'DEPARTAMENTO' | 'MUNICIPIO' | 'BARRIO';
-  countryId?: string;
-  countryCode?: string;
-  countryName?: string;
-  departmentId?: string;
-  departmentCode?: string;
-  departmentName?: string;
-  municipalityId?: string;
-  municipalityCode?: string;
-  municipalityName?: string;
-  neighborhoodId?: string;
-  neighborhoodCode?: string;
-  neighborhoodName?: string;
-  neighborhoodType?: NeighborhoodType;
-  fullPath?: string;
-  // Cualquier otro campo es ignorable.
-  [k: string]: unknown;
-}
-
-export interface SearchPage<T> {
-  items: T[];
-  totalHits: number;
-  page: number;
-  size: number;
-  totalPages: number;
-  hasNext: boolean;
-}
 
 @Injectable({ providedIn: 'root' })
 export class LocationsApi {
@@ -157,24 +64,24 @@ export class LocationsApi {
   // ===================== SEARCH (full-text, min 3 letras) =====================
   // El back devuelve `SearchResponse<LocationDocument>` (items/total/page/size).
 
-  searchCountries(q: string, page = 0, size = 20): Observable<SearchPage<LocationHit>> {
+  searchCountries(q: string, page = 0, size = 20): Observable<SearchResponse<LocationHit>> {
     return this.api.get(elPath(`locations/countries?q=${encodeURIComponent(q)}&page=${page}&size=${size}`));
   }
 
-  searchDepartments(q: string, country?: string, page = 0, size = 20): Observable<SearchPage<LocationHit>> {
+  searchDepartments(q: string, country?: string, page = 0, size = 20): Observable<SearchResponse<LocationHit>> {
     const parts = [`q=${encodeURIComponent(q ?? '')}`, `page=${page}`, `size=${size}`];
     if (country) parts.push(`country=${encodeURIComponent(country)}`);
     return this.api.get(elPath(`locations/departments?${parts.join('&')}`));
   }
 
-  searchMunicipalities(q: string, country?: string, department?: string, page = 0, size = 20): Observable<SearchPage<LocationHit>> {
+  searchMunicipalities(q: string, country?: string, department?: string, page = 0, size = 20): Observable<SearchResponse<LocationHit>> {
     const parts = [`q=${encodeURIComponent(q ?? '')}`, `page=${page}`, `size=${size}`];
     if (country) parts.push(`country=${encodeURIComponent(country)}`);
     if (department) parts.push(`department=${encodeURIComponent(department)}`);
     return this.api.get(elPath(`locations/municipalities?${parts.join('&')}`));
   }
 
-  searchNeighborhoods(q: string, country?: string, department?: string, municipality?: string, type?: string, page = 0, size = 20): Observable<SearchPage<LocationHit>> {
+  searchNeighborhoods(q: string, country?: string, department?: string, municipality?: string, type?: string, page = 0, size = 20): Observable<SearchResponse<LocationHit>> {
     const parts = [`q=${encodeURIComponent(q ?? '')}`, `page=${page}`, `size=${size}`];
     if (country) parts.push(`country=${encodeURIComponent(country)}`);
     if (department) parts.push(`department=${encodeURIComponent(department)}`);
@@ -184,7 +91,7 @@ export class LocationsApi {
   }
 
   /** Busca por nombre de barrio/vereda y trae la cadena padre completa. */
-  searchByNeighborhood(q: string, page = 0, size = 20): Observable<SearchPage<LocationHit>> {
+  searchByNeighborhood(q: string, page = 0, size = 20): Observable<SearchResponse<LocationHit>> {
     return this.api.get(elPath(`locations/by-neighborhood?q=${encodeURIComponent(q)}&page=${page}&size=${size}`));
   }
 

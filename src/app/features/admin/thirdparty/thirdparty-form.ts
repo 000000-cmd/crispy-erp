@@ -1,6 +1,7 @@
 import { map } from 'rxjs';
 import { FormSchema, Option } from '../../../shared/forms/core/types';
-import { SystemListsApi, CatalogItem } from '../system-lists/system-lists.api';
+import { SystemListsApi } from '../system-lists/system-lists.api';
+import { CatalogItem } from '../system-lists/system-lists.model';
 
 /**
  * Formulario de DATOS BASE del tercero (persona natural).

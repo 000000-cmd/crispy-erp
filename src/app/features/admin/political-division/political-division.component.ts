@@ -17,10 +17,11 @@ import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { collapse } from '../../../shared/animations';
+import { LocationsApi } from '../../../core/location/locations.api';
 import {
-  LocationsApi, LocationHit, Country, Department, Municipality, Neighborhood,
+  LocationHit, Country, Department, Municipality, Neighborhood,
   CountryRequest, DepartmentRequest, MunicipalityRequest, NeighborhoodRequest, NeighborhoodType,
-} from '../../../core/location/locations.api';
+} from '../../../core/location/locations.model';
 
 type Level = 'country' | 'department' | 'municipality' | 'neighborhood';
 

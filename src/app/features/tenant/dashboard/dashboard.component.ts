@@ -1,122 +1,96 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
-import {
-  LucideAngularModule, CalendarDays, Wallet, Users, TrendingUp, ArrowUp, ArrowDown,
-  CalendarPlus, UserPlus, Receipt, ChevronRight, AlertTriangle, Check, X, Clock,
-} from 'lucide-angular';
+import { Router, RouterLink } from '@angular/router';
+import { forkJoin, of, switchMap, map, catchError } from 'rxjs';
+import { LucideAngularModule, MapPin, Users, Scissors, ChevronRight, Building2, Smartphone } from 'lucide-angular';
 
-import { CardComponent } from '../../../shared/ui/card/card.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
-import { TagComponent } from '../../../shared/ui/tag/tag.component';
+import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { AppVersionsApi } from '../../admin/app-versions/app-versions.api';
 import { BusinessApi } from '../../admin/business/business.api';
-
-type Tab = 'overview' | 'agenda' | 'analitica';
-interface Kpi { key: string; label: string; value: string; delta: string; up: boolean; icon: any; }
-interface DayLoad { label: string; count: number; load: number; } // load 0..1
-interface Appt { time: string; name: string; service: string; staff: string; status: 'completed' | 'inProgress' | 'pending'; }
+import { Business } from '../../admin/business/business.model';
+import { SedesApi } from '../sedes/sedes.api';
+import { ServiciosApi } from '../servicios/servicios.api';
+import { EmpleadosApi } from '../empleados/empleados.api';
+import { Kpi } from './dashboard.model';
 
 /**
- * Panel del dueño. Estilo aprobado: cálido, limpio, con la operación del día de
- * un vistazo (KPIs, ocupación, próximo turno, acciones, alertas) sin saturar.
- * Reutiliza el shell/sidebar (config por rol) y los componentes del sistema.
- *
- * Las métricas operativas (citas, ingresos, ocupación, inventario) usan datos de
- * muestra mientras el back de agendamiento/inventario no exista; el nombre del
- * negocio sí se resuelve real vía /business/mine.
+ * Panel del dueño — SOLO datos reales del back: su negocio (/business/mine) y
+ * los conteos de sedes, empleados y servicios. Las métricas de operación
+ * (citas/ingresos) llegarán cuando exista el módulo de agendamiento.
  */
 @Component({
   selector: 'app-tenant-dashboard',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, CardComponent, ButtonComponent, TagComponent],
+  imports: [CommonModule, RouterLink, LucideAngularModule, ButtonComponent],
   templateUrl: './dashboard.component.html',
 })
 export class TenantDashboardComponent {
   private readonly auth = inject(AuthService);
   private readonly businessApi = inject(BusinessApi);
+  private readonly sedesApi = inject(SedesApi);
+  private readonly serviciosApi = inject(ServiciosApi);
+  private readonly empleadosApi = inject(EmpleadosApi);
+  private readonly appVersionsApi = inject(AppVersionsApi);
+  private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
 
-  readonly greeting = computed(() => this.auth.user()?.fullName?.split(' ')[0] ?? '');
-  readonly businessName = signal<string>('Mi estudio');
-
-  readonly tab = signal<Tab>('overview');
-  readonly tabs: { key: Tab; label: string }[] = [
-    { key: 'overview', label: 'Resumen' },
-    { key: 'agenda', label: 'Agenda' },
-    { key: 'analitica', label: 'Analítica' },
-  ];
-
-  readonly activeKpi = signal<string>('agendas');
-
-  // Icons
-  protected readonly upIcon = ArrowUp;
-  protected readonly downIcon = ArrowDown;
   protected readonly chevron = ChevronRight;
-  protected readonly alertIcon = AlertTriangle;
-  protected readonly checkIcon = Check;
-  protected readonly xIcon = X;
-  protected readonly clockIcon = Clock;
+  protected readonly businessIcon = Building2;
+  protected readonly appIcon = Smartphone;
 
-  readonly kpis: Kpi[] = [
-    { key: 'agendas',  label: 'Agendas hoy',   value: '34',     delta: '12.4% vs. semana pasada', up: true,  icon: CalendarDays },
-    { key: 'ingresos', label: 'Ingresos hoy',  value: '$612',   delta: '8.0% vs. semana pasada',  up: true,  icon: Wallet },
-    { key: 'clientes', label: 'Clientes hoy',  value: '28',     delta: '4.5% vs. semana pasada',  up: true,  icon: Users },
-    { key: 'ticket',   label: 'Ticket prom.',  value: '$21.8',  delta: '1.2% vs. semana pasada',  up: false, icon: TrendingUp },
-  ];
+  readonly greeting = computed(() => this.auth.user()?.fullName?.split(' ')[0] ?? '');
+  readonly loading = signal(true);
+  readonly business = signal<Business | null>(null);
+  readonly branchCount = signal(0);
+  readonly employeeCount = signal(0);
+  readonly offeringCount = signal(0);
 
-  // Ocupación de hoy
-  readonly ocupacion = 71;
-  readonly completadas = 5;
-  readonly restantes = 2;
-  readonly legend = [
-    { label: 'Completada', count: 5, tone: 'bg-primary-500' },
-    { label: 'Confirmada', count: 1, tone: 'bg-emerald-500' },
-    { label: 'Pendiente',  count: 1, tone: 'bg-amber-400' },
-  ];
-  readonly week: DayLoad[] = [
-    { label: 'Lun', count: 2, load: 0.25 }, { label: 'Mar', count: 2, load: 0.30 },
-    { label: 'Mié', count: 2, load: 0.35 }, { label: 'Jue', count: 2, load: 0.40 },
-    { label: 'Vie', count: 2, load: 0.45 }, { label: 'Sáb', count: 3, load: 0.70 },
-    { label: 'Dom', count: 4, load: 0.95 },
-  ];
+  readonly kpis = computed<Kpi[]>(() => [
+    { key: 'sedes', label: 'Sedes', value: this.branchCount(), icon: MapPin, route: '/tenant/sedes' },
+    { key: 'empleados', label: 'Empleados', value: this.employeeCount(), icon: Users, route: '/tenant/empleados' },
+    { key: 'servicios', label: 'Servicios', value: this.offeringCount(), icon: Scissors, route: '/tenant/servicios' },
+  ]);
 
-  // Próximo turno
-  readonly nextTurn = {
-    initials: 'DB', name: 'D. Benítez', service: 'Corte + barba', price: '$25', time: '08:45', inMin: 'En 5 min',
-  };
+  constructor() { this.load(); }
 
-  // Acciones rápidas
-  readonly actions = [
-    { key: 'cita',    label: 'Nueva cita',     sub: 'Agendar turno',    icon: CalendarPlus, route: '/tenant/dashboard' },
-    { key: 'cliente', label: 'Nuevo cliente',  sub: 'Agregar ficha',    icon: UserPlus,     route: '/tenant/dashboard' },
-    { key: 'venta',   label: 'Registrar venta',sub: 'Productos o extra', icon: Receipt,      route: '/tenant/dashboard' },
-  ];
-
-  // Agenda de hoy (timeline)
-  readonly unassigned = { service: 'Corte + Lavado', detail: '10:00 AM · Cliente nuevo' };
-  readonly agenda: Appt[] = [
-    { time: '08:00', name: 'M. Sánchez', service: 'Corte clásico · 45min', staff: 'Diego B.', status: 'completed' },
-    { time: '08:45', name: 'D. Benítez', service: 'Corte + barba · 1h',     staff: 'Carlos M.', status: 'inProgress' },
-    { time: '10:00', name: 'A. Rossi',   service: 'Coloración · 2h',        staff: 'Ana P.',   status: 'pending' },
-  ];
-
-  constructor() {
+  private load() {
     const userId = this.auth.user()?.id;
-    if (userId) {
-      this.businessApi.mine(userId).subscribe({
-        next: list => { if (list[0]?.name) this.businessName.set(list[0].name); },
-      });
-    }
-  }
+    if (!userId) { this.loading.set(false); return; }
 
-  statusTag(s: Appt['status']) {
-    switch (s) {
-      case 'completed':  return { label: 'Completada', tone: 'neutral' as const };
-      case 'inProgress': return { label: 'En curso',   tone: 'primary' as const };
-      default:           return { label: 'Pendiente',  tone: 'warning' as const };
-    }
+    this.businessApi.mine(userId).pipe(
+      switchMap(list => {
+        const b = list[0] ?? null;
+        this.business.set(b);
+        if (!b) return of(null);
+        return forkJoin({
+          branches: this.sedesApi.list(b.id).pipe(catchError(() => of([]))),
+          offerings: this.serviciosApi.list(b.id).pipe(catchError(() => of([]))),
+        }).pipe(
+          switchMap(({ branches, offerings }) => {
+            this.branchCount.set(branches.length);
+            this.offeringCount.set(offerings.length);
+            if (!branches.length) return of(null);
+            // Total de empleados = suma de las sedes (endpoint es por sede).
+            return forkJoin(
+              branches.map(br => this.empleadosApi.listDetailed(br.id).pipe(catchError(() => of([])))),
+            ).pipe(map(lists => this.employeeCount.set(lists.flat().length)));
+          }),
+        );
+      }),
+      catchError(() => of(null)),
+    ).subscribe({
+      next: () => this.loading.set(false),
+      error: () => this.loading.set(false),
+    });
   }
 
   go(route: string) { this.router.navigateByUrl(route); }
+
+  /** Link estable de descarga del APK (siempre la versión vigente). */
+  copyAppLink() {
+    navigator.clipboard.writeText(this.appVersionsApi.latestDownloadUrl())
+      .then(() => this.toast.success('Link de la app copiado. Compártelo con tu equipo.'));
+  }
 }

@@ -12,21 +12,12 @@ import { CheckboxComponent } from '../../../../shared/ui/checkbox/checkbox.compo
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { ConfirmService } from '../../../../shared/ui/confirm/confirm.service';
 import { LocationsApi } from '../../../../core/location/locations.api';
-import { SystemListsApi, CatalogItem } from '../../system-lists/system-lists.api';
+import { SystemListsApi } from '../../system-lists/system-lists.api';
+import { CatalogItem } from '../../system-lists/system-lists.model';
 import { ThirdPartyApi } from '../thirdparty.api';
 import { ThirdPartyAddress, ThirdPartyContact } from '../thirdparty.model';
 
-/** Reglas de validación/máscara por CÓDIGO de tipo de contacto (estable, migrado). */
-interface ContactRule { mask: 'phone' | 'none'; pattern: RegExp; placeholder: string; help: string; }
-const CONTACT_RULES: Record<string, ContactRule> = {
-  MOBILE:    { mask: 'phone', pattern: /^3\d{2} \d{3} \d{4}$/, placeholder: '300 123 4567', help: 'Celular de 10 dígitos (empieza por 3).' },
-  WHATSAPP:  { mask: 'phone', pattern: /^3\d{2} \d{3} \d{4}$/, placeholder: '300 123 4567', help: 'Número de WhatsApp (10 dígitos).' },
-  PHONE:     { mask: 'phone', pattern: /^\d{3} \d{3} \d{4}$/, placeholder: '601 234 5678', help: 'Teléfono fijo de 10 dígitos.' },
-  EMAIL:     { mask: 'none',  pattern: /^[^@\s]+@[^@\s]+\.[^@\s]+$/, placeholder: 'correo@dominio.com', help: 'Correo electrónico válido.' },
-  INSTAGRAM: { mask: 'none',  pattern: /^@?[A-Za-z0-9._]{2,30}$/, placeholder: '@usuario', help: 'Usuario de Instagram.' },
-  OTHER:     { mask: 'none',  pattern: /^.{2,}$/, placeholder: 'Valor del contacto', help: '' },
-};
-const DEFAULT_RULE: ContactRule = CONTACT_RULES['OTHER'];
+import { CONTACT_RULES, ContactRule, DEFAULT_CONTACT_RULE } from './contact-rules';
 
 /**
  * CRUD hijos de un Tercero: CONTACTOS y DIRECCIONES (1:N).
@@ -82,7 +73,7 @@ export class ThirdPartyRelationsComponent {
 
   // Código del tipo de contacto seleccionado (gobierna máscara/validación/placeholder).
   readonly contactCode = signal<string>('');
-  readonly contactRule = computed<ContactRule>(() => CONTACT_RULES[this.contactCode()] ?? DEFAULT_RULE);
+  readonly contactRule = computed<ContactRule>(() => CONTACT_RULES[this.contactCode()] ?? DEFAULT_CONTACT_RULE);
   private reformatting = false;
 
   // Ubicación: búsqueda con app-autocomplete; el UUID se captura en (selected).

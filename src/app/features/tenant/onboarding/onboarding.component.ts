@@ -3,7 +3,8 @@ import { Router } from '@angular/router';
 import { map } from 'rxjs';
 import { DynamicFormComponent } from '../../../shared/forms/dynamic-form.component';
 import { FormSchema, Option } from '../../../shared/forms/core/types';
-import { SystemListsApi, CatalogItem } from '../../admin/system-lists/system-lists.api';
+import { SystemListsApi } from '../../admin/system-lists/system-lists.api';
+import { CatalogItem } from '../../admin/system-lists/system-lists.model';
 import { BusinessApi } from '../../admin/business/business.api';
 import { ProvisionRequest } from '../../admin/business/business.model';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
@@ -17,15 +18,7 @@ import { AuthService } from '../../../core/auth/auth.service';
   selector: 'app-tenant-onboarding',
   standalone: true,
   imports: [DynamicFormComponent],
-  template: `
-    <div class="max-w-2xl mx-auto space-y-5">
-      <header>
-        <h1 class="text-xl font-semibold text-text">Crea tu negocio</h1>
-        <p class="text-sm text-text-muted">Registra los datos de tu empresa y los tuyos como dueño.</p>
-      </header>
-      <app-dynamic-form [schema]="schema" [model]="model" [submitting]="saving()" (submitValue)="onSubmit($event)" />
-    </div>
-  `,
+  templateUrl: './onboarding.component.html',
 })
 export class OnboardingComponent {
   private readonly systemListsApi = inject(SystemListsApi);

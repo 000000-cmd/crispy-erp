@@ -26,7 +26,7 @@
     [title]="editingId() ? 'Editar sede' : 'Nueva sede'"
     size="lg"
     [showActions]="true"
-    [dirty]="formValid()"
+    [saveDisabled]="!formValid()"
     [saving]="saving()"
     (save)="save()"
     (onClose)="close()">

@@ -2,49 +2,9 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../../core/http/api.service';
 import { MICROSERVICES, ms } from '../../../core/http/microservices';
+import { CatalogItem, CatalogRequest, SystemList, SystemListRequest } from './system-lists.model';
 
 const path = (p: string) => ms(MICROSERVICES.SYSTEM, p);
-
-/**
- * Meta-registro de un catalogo (declara que existe). Corresponde a
- * {@code SystemListResponse} del back (`/system-lists`).
- */
-export interface SystemList {
-  id: string;
-  code: string;
-  name: string;
-  description?: string;
-  enabled: boolean;
-  visible: boolean;
-}
-
-export interface SystemListRequest {
-  code: string;
-  name: string;
-  description?: string;
-}
-
-/**
- * Item dentro de un catalogo. Corresponde a {@code CatalogResponse} del back
- * (`/list/{catalogName}`). Cada catalogo tiene su propia tabla pero todos
- * comparten esta forma porque heredan de {@code BaseCatalogDomain}.
- */
-export interface CatalogItem {
-  id: string;
-  code: string;
-  name: string;
-  value?: string;
-  displayOrder: number;
-  enabled: boolean;
-  visible: boolean;
-}
-
-export interface CatalogRequest {
-  code: string;
-  name: string;
-  value?: string;
-  displayOrder: number;
-}
 
 /**
  * Consumo unificado del subsistema de listas de catalogo del back:
