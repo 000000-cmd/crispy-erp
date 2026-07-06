@@ -12,6 +12,7 @@ export interface UserResponse {
   theme?: string;
   languageCode?: string;
   lastLoginAt?: string;
+  isFirstLogin?: boolean;
   enabled?: boolean;
   visible?: boolean;
   roleCodes?: string[];
@@ -40,7 +41,11 @@ export interface AuthUser {
   id: string;
   email: string;
   username?: string;
+  firstName?: string;
+  lastName?: string;
   fullName?: string;
+  /** Primer ingreso: dispara el modal de bienvenida una sola vez. */
+  isFirstLogin?: boolean;
   roles: string[];
   kind: UserKind;
   tenantId?: string | null;

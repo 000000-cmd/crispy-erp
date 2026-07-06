@@ -7,16 +7,14 @@
       <div class="space-y-1">
         <h1 class="text-2xl font-semibold text-text">
           @switch (step()) {
-            @case (1) { ¡Hola! Empecemos por tu negocio 👋 }
-            @case (2) { Cuéntanos quién eres }
-            @case (3) { Todo listo, revisa y confirma }
+            @case (1) { ¡Hola! Creemos tu cuenta 👋 }
+            @case (2) { Todo listo, revisa y confirma }
           }
         </h1>
         <p class="text-sm text-text-muted">
           @switch (step()) {
-            @case (1) { Paso 1 de 3 · Nombre y dirección web de tu local. }
-            @case (2) { Paso 2 de 3 · Los datos de tu cuenta de dueño. }
-            @case (3) { Paso 3 de 3 · Confirma y crea tu cuenta. }
+            @case (1) { Paso 1 de 2 · Tus datos de acceso. Los del negocio los completas después. }
+            @case (2) { Paso 2 de 2 · Confirma y crea tu cuenta. }
           }
         </p>
       </div>
@@ -52,33 +50,15 @@
         }
       </div>
 
-      <!-- Paso 1: Negocio -->
+      <!-- Paso 1: Cuenta -->
       @if (step() === 1) {
         <div class="space-y-4">
-          <app-field label="Nombre del negocio">
-            <app-input [value]="model().businessName" (valueChange)="onBusinessName($event)"
-                       placeholder="Barbería El Estilo" />
+          <app-field label="Nombre">
+            <app-input [value]="model().firstName" (valueChange)="patch('firstName', $event)" autocomplete="given-name" />
           </app-field>
-
-          <app-field label="Subdominio"
-                     hint="Tu dirección web (ej. mi-negocio.tuapp.com). Solo minúsculas, números y guiones (3–63).">
-            <app-input [value]="model().slug" (valueChange)="patch('slug', $event)"
-                       placeholder="mi-negocio" suffix=".tuapp.com" />
+          <app-field label="Apellido">
+            <app-input [value]="model().lastName" (valueChange)="patch('lastName', $event)" autocomplete="family-name" />
           </app-field>
-        </div>
-      }
-
-      <!-- Paso 2: Dueño -->
-      @if (step() === 2) {
-        <div class="space-y-4">
-          <div class="grid grid-cols-2 gap-3">
-            <app-field label="Nombre">
-              <app-input [value]="model().firstName" (valueChange)="patch('firstName', $event)" autocomplete="given-name" />
-            </app-field>
-            <app-field label="Apellido">
-              <app-input [value]="model().lastName" (valueChange)="patch('lastName', $event)" autocomplete="family-name" />
-            </app-field>
-          </div>
           <app-field label="Correo">
             <app-input type="email" [value]="model().email" (valueChange)="patch('email', $event)"
                        placeholder="tu@correo.com" autocomplete="email" />
@@ -93,18 +73,12 @@
         </div>
       }
 
-      <!-- Paso 3: Confirmar -->
-      @if (step() === 3) {
+      <!-- Paso 2: Confirmar -->
+      @if (step() === 2) {
         <div class="space-y-3 text-sm">
           <div class="rounded-lg border border-border divide-y divide-border">
             <div class="flex justify-between px-3 py-2">
-              <span class="text-text-muted">Negocio</span><span class="text-text font-medium">{{ model().businessName }}</span>
-            </div>
-            <div class="flex justify-between px-3 py-2">
-              <span class="text-text-muted">Subdominio</span><span class="text-text font-medium">{{ model().slug }}.tuapp.com</span>
-            </div>
-            <div class="flex justify-between px-3 py-2">
-              <span class="text-text-muted">Dueño</span><span class="text-text font-medium">{{ model().firstName }} {{ model().lastName }}</span>
+              <span class="text-text-muted">Nombre</span><span class="text-text font-medium">{{ model().firstName }} {{ model().lastName }}</span>
             </div>
             <div class="flex justify-between px-3 py-2">
               <span class="text-text-muted">Correo</span><span class="text-text font-medium">{{ model().email }}</span>
@@ -113,6 +87,7 @@
               <span class="text-text-muted">Usuario</span><span class="text-text font-medium">{{ model().username }}</span>
             </div>
           </div>
+          <p class="text-text-muted">Después de entrar te guiamos para completar los datos de tu negocio.</p>
         </div>
       }
 
@@ -128,9 +103,9 @@
           <a routerLink="/login" class="px-1 py-2 text-sm text-text-muted hover:text-text">← Volver</a>
         }
 
-        @if (step() < 3) {
+        @if (step() < 2) {
           <app-button (onClick)="next()" [loading]="advancing()"
-                      [disabled]="advancing() || (step() === 1 && !step1Valid()) || (step() === 2 && !step2Valid())">
+                      [disabled]="advancing() || !step1Valid()">
             Continuar
           </app-button>
         } @else {

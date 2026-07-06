@@ -3,7 +3,6 @@
 export interface BranchForm {
   branchTypeId: string | null;
   name: string;
-  code: string;
   municipalityId: string | null;
   neighborhoodId: string | null;
   addressLine: string;
@@ -14,7 +13,6 @@ export interface BranchForm {
 export const EMPTY_BRANCH_FORM: BranchForm = {
   branchTypeId: null,
   name: '',
-  code: '',
   municipalityId: null,
   neighborhoodId: null,
   addressLine: '',

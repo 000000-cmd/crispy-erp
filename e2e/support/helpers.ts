@@ -33,12 +33,14 @@ export async function loginAdmin(page: Page): Promise<void> {
   await page.waitForURL('**/admin/**');
 }
 
-/** Wizard público de registro de dueño. Devuelve las credenciales creadas. */
+/**
+ * Wizard público de registro de dueño (MÍNIMO, solo cuenta). Devuelve las
+ * credenciales creadas. Los datos del negocio ya NO se piden aquí: se completan
+ * en el onboarding / widget del dashboard.
+ */
 export async function registerOwner(page: Page) {
   const suffix = unique('e2e');
   const creds = {
-    businessName: `Barbería E2E ${suffix}`,
-    slug: `bar-${suffix}`,
     firstName: 'Owner',
     lastName: `Prueba ${suffix}`,
     email: `${suffix}@e2e.local`,
@@ -46,18 +48,15 @@ export async function registerOwner(page: Page) {
     password: 'Password123!',
   };
   await page.goto('/login/register');
-  await byPlaceholder(page, 'Barbería El Estilo').fill(creds.businessName);
-  await byPlaceholder(page, 'mi-negocio').fill(creds.slug);
-  await page.getByRole('button', { name: 'Continuar' }).click();
-  // Paso 2 (el stepper anima ~650ms antes de montar los campos)
-  await expect(byPlaceholder(page, 'tu@correo.com')).toBeVisible();
+  // Paso 1 (Cuenta): nombre, apellido, correo, usuario, contraseña (una columna).
   const inputs = page.locator('input');
-  await inputs.nth(0).fill(creds.firstName);      // Nombre
-  await inputs.nth(1).fill(creds.lastName);       // Apellido
+  await inputs.nth(0).fill(creds.firstName);   // Nombre
+  await inputs.nth(1).fill(creds.lastName);    // Apellido
   await byPlaceholder(page, 'tu@correo.com').fill(creds.email);
-  await inputs.nth(3).fill(creds.username);       // Usuario
+  await inputs.nth(3).fill(creds.username);    // Usuario
   await byPlaceholder(page, 'Mínimo 8 caracteres').fill(creds.password);
   await page.getByRole('button', { name: 'Continuar' }).click();
+  // Paso 2 (Confirmar) → crear (el stepper anima ~650ms; el getByRole auto-espera).
   await page.getByRole('button', { name: 'Crear cuenta' }).click();
   await page.waitForURL('**/tenant/**', { timeout: 20_000 });
   return creds;

@@ -1,5 +1,13 @@
-import { AbstractControl, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, AsyncValidatorFn, ValidatorFn, Validators } from '@angular/forms';
 import { FieldValidator, ValidatorBuiltin } from './types';
+
+/** Extrae los validators ASÍNCRONOS (`{ async }`) de la lista del schema. */
+export function buildAsyncValidators(list: FieldValidator[] | undefined): AsyncValidatorFn[] {
+  if (!list?.length) return [];
+  return list
+    .filter(v => v && typeof v === 'object' && 'async' in (v as any))
+    .map(v => (v as { async: AsyncValidatorFn }).async);
+}
 
 export function buildValidators(list: FieldValidator[] | undefined): ValidatorFn[] {
   if (!list?.length) return [];

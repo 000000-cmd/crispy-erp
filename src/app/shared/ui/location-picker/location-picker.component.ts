@@ -4,22 +4,20 @@ import { FormsModule } from '@angular/forms';
 import { AutocompleteComponent } from '../autocomplete/autocomplete.component';
 import { AutocompleteOption } from '../autocomplete/autocomplete.types';
 import { LocationsApi } from '../../../core/location/locations.api';
-import { NeighborhoodType } from '../../../core/location/locations.model';
+import { LocationHit, NeighborhoodType } from '../../../core/location/locations.model';
 import { LocationLevel, LocationSelection } from './location-picker.types';
 
 /**
- * Picker jerarquico de localizacion (Pais > Departamento > Municipio > Barrio/Vereda).
+ * Picker de localización. Dos modos:
  *
- * Reutiliza `app-autocomplete` para cada nivel y conecta cada uno con el
- * `LocationsApi` correspondiente. Cada vez que el user cambia un nivel,
- * limpia los hijos automaticamente.
+ *  - `search` (default): el usuario busca el MUNICIPIO directamente y el país y
+ *    el departamento se derivan del resultado (evita llenar país/departamento a
+ *    mano — el hit de ES ya trae toda la cadena). Opcionalmente pide barrio.
+ *  - `hierarchy`: cascada clásica País > Departamento > Municipio > Barrio, para
+ *    navegación jerárquica (CRUD/filtros de división política).
  *
- * Casos de uso:
- *  - Filtros (cualquier subconjunto de niveles activos).
- *  - Formularios: usa los inputs `levels` para limitar los niveles visibles
- *    (por ej. solo "country" + "department" si esa es la granularidad).
- *
- * Emite `(change)` con la seleccion actual en codes y los hits crudos en `meta`.
+ * Siempre apilado en columna (una sola por fila) para que el texto de nombres
+ * largos se lea completo. Emite `(change)` con codes + hits crudos en `meta`.
  */
 export type { LocationSelection, LocationLevel } from './location-picker.types';
 
@@ -32,12 +30,12 @@ export type { LocationSelection, LocationLevel } from './location-picker.types';
 export class LocationPickerComponent {
   private readonly api = inject(LocationsApi);
 
-  /** Niveles a mostrar. Default: los 4. */
+  /** `search` (municipio primero) | `hierarchy` (cascada de 4 niveles). */
+  readonly mode = input<'search' | 'hierarchy'>('search');
+  /** Niveles a mostrar (aplica al modo hierarchy y a si se pide barrio en search). Default: los 4. */
   readonly levels = input<LocationLevel[]>(['country', 'department', 'municipality', 'neighborhood']);
   /** Filtra barrios por tipo (BARRIO|VEREDA|CORREGIMIENTO|OTRO). */
   readonly neighborhoodType = input<NeighborhoodType | null>(null);
-  /** Layout en filas (responsive grid) vs apilado vertical. */
-  readonly inline = input<boolean>(true);
   /** Labels por nivel (opcional). */
   readonly labels = input<Partial<Record<LocationLevel, string>>>({
     country: 'País',
@@ -58,6 +56,11 @@ export class LocationPickerComponent {
   private selectedDepartment: AutocompleteOption | null = null;
   private selectedMunicipality: AutocompleteOption | null = null;
   private selectedNeighborhood: AutocompleteOption | null = null;
+
+  /** Contexto derivado del municipio elegido (para mostrarlo, modo search). */
+  readonly derivedContext = signal<string | null>(null);
+
+  readonly askNeighborhood = computed(() => this.levels().includes('neighborhood'));
 
   readonly show = computed<Record<LocationLevel, boolean>>(() => {
     const l = this.levels();
@@ -80,10 +83,29 @@ export class LocationPickerComponent {
     this.neighborhoodType() ?? undefined,
   ));
 
+  // ---- Modo search: municipio directo, deriva país + departamento ----
+  onMunicipalitySearch(opt: AutocompleteOption | null) {
+    this.selectedMunicipality = opt;
+    const hit = (opt?.meta?.['hit'] as LocationHit | undefined) ?? undefined;
+    this.municipality.set((hit?.municipalityCode ?? (opt?.value as string)) ?? null);
+    // Derivar cadena padre desde el hit (ES ya la trae).
+    this.selectedCountry = null;
+    this.selectedDepartment = null;
+    this.country.set(hit?.countryCode ?? null);
+    this.department.set(hit?.departmentCode ?? null);
+    this.derivedContext.set(hit
+      ? [hit.departmentName, hit.countryName].filter(Boolean).join(' · ') || null
+      : null);
+    // Cambiar de municipio invalida el barrio.
+    this.selectedNeighborhood = null;
+    this.neighborhood.set(null);
+    this.emit();
+  }
+
+  // ---- Modo hierarchy: cascada ----
   onCountry(opt: AutocompleteOption | null) {
     this.selectedCountry = opt;
     this.country.set((opt?.value as string) ?? null);
-    // Reset cascada
     this.selectedDepartment = this.selectedMunicipality = this.selectedNeighborhood = null;
     this.department.set(null); this.municipality.set(null); this.neighborhood.set(null);
     this.emit();

@@ -2,6 +2,7 @@ import { map } from 'rxjs';
 import { FormSchema, Option } from '../../../shared/forms/core/types';
 import { SystemListsApi } from '../../admin/system-lists/system-lists.api';
 import { CatalogItem } from '../../admin/system-lists/system-lists.model';
+import { ConstantsService } from '../../../core/constants/constants.service';
 
 /** Estado del formulario de edición laboral (cargo/código/fecha). */
 export interface EmployeeEditForm {
@@ -23,7 +24,7 @@ export const EMPTY_EMPLOYEE_EDIT_FORM: EmployeeEditForm = {
  * datos laborales + persona + cuenta para la app móvil. La sede viene del
  * contexto de la vista (selector), no del formulario.
  */
-export function buildEmployeeProvisionSchema(systemListsApi: SystemListsApi): FormSchema {
+export function buildEmployeeProvisionSchema(systemListsApi: SystemListsApi, constants: ConstantsService): FormSchema {
   const catalog = (name: string) => () =>
     systemListsApi.itemsEnabled(name).pipe(
       map<CatalogItem[], Option[]>(items => items.map(i => ({ value: i.id, label: i.name })))
@@ -45,7 +46,8 @@ export function buildEmployeeProvisionSchema(systemListsApi: SystemListsApi): Fo
       { key: 'firstLastName', type: 'text', label: 'Primer apellido', width: 'half', validators: ['required', { kind: 'maxLength', value: 80 }] },
       { key: 'secondLastName', type: 'text', label: 'Segundo apellido', width: 'half', validators: [{ kind: 'maxLength', value: 80 }] },
       { key: 'genderId', type: 'select', label: 'Género', width: 'half', options: catalog('gender') },
-      { key: 'birthDate', type: 'date', label: 'Fecha de nacimiento', width: 'half' },
+      // Mayoría de edad por constante MAYEDAD (si está inhabilitada/no existe, se omite).
+      { key: 'birthDate', type: 'date', label: 'Fecha de nacimiento', validators: [{ async: constants.legalAgeValidator() }] },
 
       // ---- Cuenta para la app móvil ----
       {

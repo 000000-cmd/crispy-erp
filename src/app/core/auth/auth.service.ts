@@ -161,11 +161,27 @@ export class AuthService {
       id: u.id,
       email: u.email,
       username: u.username,
+      firstName: u.firstName,
+      lastName: u.lastName,
       fullName: u.fullName ?? ([u.firstName, u.lastName].filter(Boolean).join(' ') || undefined),
+      isFirstLogin: u.isFirstLogin,
       roles,
       kind,
       theme: u.theme,
       languageCode: u.languageCode,
     };
+  }
+
+  /**
+   * Marca visto el modal de bienvenida (primer ingreso) y apaga el flag local
+   * para que no reaparezca. Tolerante a fallo de red (es un detalle de UX).
+   */
+  markWelcomeSeen(): void {
+    const u = this._user();
+    if (!u?.isFirstLogin) return;
+    const updated = { ...u, isFirstLogin: false };
+    this._user.set(updated);
+    this.storage.setUser(updated);
+    this.api.patch(ms(MICROSERVICES.AUTH, 'users/me/welcome-seen')).subscribe({ error: () => {} });
   }
 }

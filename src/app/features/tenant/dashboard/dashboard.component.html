@@ -55,11 +55,36 @@
       </div>
     </div>
 
-    @if (!branchCount()) {
-      <div class="rounded-2xl border border-primary-200 dark:border-primary-800 bg-primary-50/60 dark:bg-primary-900/20 p-4 max-w-xl">
-        <p class="text-sm font-medium text-primary-700 dark:text-primary-200">Siguiente paso: crea tu primera sede</p>
-        <p class="text-xs text-primary-700/80 dark:text-primary-200/70 mt-1">Con una sede podrás registrar a tu equipo.</p>
-        <a routerLink="/tenant/sedes" class="inline-block mt-2"><app-button size="sm">Ir a sedes</app-button></a>
+    <!-- Completar empresa: aparece solo mientras falte algún paso -->
+    @if (showCompletion()) {
+      <div class="rounded-2xl border border-primary-200 dark:border-primary-800 bg-primary-50/60 dark:bg-primary-900/20 p-5 space-y-4 max-w-xl">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-semibold text-primary-800 dark:text-primary-100">Termina de configurar tu negocio</h2>
+            <p class="text-xs text-primary-700/80 dark:text-primary-200/70 mt-0.5">{{ doneCount() }} de {{ steps().length }} pasos · lo mínimo para operar</p>
+          </div>
+          <span class="text-lg font-semibold text-primary-700 dark:text-primary-200">{{ progressPct() }}%</span>
+        </div>
+        <div class="h-2 rounded-full bg-primary-100 dark:bg-primary-900/40 overflow-hidden">
+          <div class="h-full bg-primary-500 transition-all duration-500" [style.width.%]="progressPct()"></div>
+        </div>
+        <ul class="space-y-1">
+          @for (s of steps(); track s.label) {
+            <li class="flex items-center gap-3 rounded-lg px-1 py-1.5">
+              <lucide-icon [img]="s.done ? stepDoneIcon : stepTodoIcon" [size]="18" class="shrink-0"
+                           [class.text-primary-500]="s.done" [class.text-primary-400]="!s.done" />
+              <div class="min-w-0 flex-1">
+                <p class="text-sm" [class.line-through]="s.done"
+                   [class.text-primary-600]="s.done" [class.text-primary-900]="!s.done" [class.dark:text-primary-100]="!s.done">{{ s.label }}</p>
+                <p class="text-[11px] text-primary-700/70 dark:text-primary-200/60">{{ s.hint }}</p>
+              </div>
+              @if (!s.done) {
+                <button type="button" (click)="go(s.route)"
+                        class="text-xs font-medium text-primary-600 dark:text-primary-300 hover:underline shrink-0">Completar</button>
+              }
+            </li>
+          }
+        </ul>
       </div>
     }
 
@@ -83,4 +108,38 @@
       Las métricas de operación (citas e ingresos) aparecerán aquí cuando el módulo de agenda esté disponible.
     </p>
   }
+
+  <!-- Bienvenida (primer ingreso): pasos + llenar más tarde. Tour guiado: a futuro. -->
+  <app-modal [open]="showWelcome()" title="¡Te damos la bienvenida! 🎉" size="md" (onClose)="closeWelcome()">
+    <div class="space-y-4">
+      <div class="flex items-start gap-3">
+        <span class="h-10 w-10 rounded-lg bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 inline-flex items-center justify-center shrink-0">
+          <lucide-icon [img]="welcomeIcon" [size]="18" />
+        </span>
+        <p class="text-sm text-text-muted">
+          Estos son los pasos mínimos para operar. Hazlos ahora o más tarde, a tu ritmo — te acompañamos desde el panel.
+        </p>
+      </div>
+      <ul class="space-y-2">
+        @for (s of steps(); track s.label) {
+          <li class="flex items-center gap-3 rounded-lg border border-border p-2.5">
+            <lucide-icon [img]="s.done ? stepDoneIcon : stepTodoIcon" [size]="18" class="shrink-0"
+                         [class.text-primary-500]="s.done" [class.text-text-soft]="!s.done" />
+            <div class="min-w-0 flex-1">
+              <p class="text-sm text-text" [class.line-through]="s.done">{{ s.label }}</p>
+              <p class="text-[11px] text-text-muted">{{ s.hint }}</p>
+            </div>
+            @if (!s.done) {
+              <button type="button" (click)="startStep(s.route)"
+                      class="text-xs font-medium text-primary-600 dark:text-primary-300 hover:underline shrink-0">Ir</button>
+            }
+          </li>
+        }
+      </ul>
+      <div class="flex items-center justify-end gap-2 pt-1">
+        <app-button variant="ghost" (onClick)="closeWelcome()">Llenar más tarde</app-button>
+        <app-button (onClick)="startStep(firstPending()?.route ?? '/tenant/onboarding')">Empezar ahora</app-button>
+      </div>
+    </div>
+  </app-modal>
 </div>

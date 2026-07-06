@@ -24,7 +24,10 @@ export class ThirdPartyApi {
     return this.api.get(ms(MICROSERVICES.ELASTIC, 'third-parties'), { ...params });
   }
 
-  /** Documento del tercero ALMACENADO en Elasticsearch (lado izquierdo del comparador). */
+  /**
+   * Documento COMPLETO almacenado en Elasticsearch (base + contactos + direcciones).
+   * Lado "ES" del comparador de reindex; se contrasta contra {@link getFull} (BD).
+   */
   searchDoc(id: string): Observable<Record<string, unknown>> {
     return this.api.get(ms(MICROSERVICES.ELASTIC, `third-parties/${id}`));
   }

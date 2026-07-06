@@ -6,3 +6,11 @@ export interface Kpi {
   icon: any;
   route: string;
 }
+
+/** Paso del checklist de "completar empresa" (mínimo para operar). */
+export interface CompletionStep {
+  label: string;
+  hint: string;
+  done: boolean;
+  route: string;
+}

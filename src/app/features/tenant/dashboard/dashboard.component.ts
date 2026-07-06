@@ -2,9 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { forkJoin, of, switchMap, map, catchError } from 'rxjs';
-import { LucideAngularModule, MapPin, Users, Scissors, ChevronRight, Building2, Smartphone } from 'lucide-angular';
+import { LucideAngularModule, MapPin, Users, Scissors, ChevronRight, Building2, Smartphone, CheckCircle2, Circle, Sparkles } from 'lucide-angular';
 
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
+import { ModalComponent } from '../../../shared/ui/modal/modal.component';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { AppVersionsApi } from '../../admin/app-versions/app-versions.api';
@@ -13,7 +14,7 @@ import { Business } from '../../admin/business/business.model';
 import { SedesApi } from '../sedes/sedes.api';
 import { ServiciosApi } from '../servicios/servicios.api';
 import { EmpleadosApi } from '../empleados/empleados.api';
-import { Kpi } from './dashboard.model';
+import { CompletionStep, Kpi } from './dashboard.model';
 
 /**
  * Panel del dueño — SOLO datos reales del back: su negocio (/business/mine) y
@@ -23,7 +24,7 @@ import { Kpi } from './dashboard.model';
 @Component({
   selector: 'app-tenant-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, LucideAngularModule, ButtonComponent],
+  imports: [CommonModule, RouterLink, LucideAngularModule, ButtonComponent, ModalComponent],
   templateUrl: './dashboard.component.html',
 })
 export class TenantDashboardComponent {
@@ -39,6 +40,9 @@ export class TenantDashboardComponent {
   protected readonly chevron = ChevronRight;
   protected readonly businessIcon = Building2;
   protected readonly appIcon = Smartphone;
+  protected readonly stepDoneIcon = CheckCircle2;
+  protected readonly stepTodoIcon = Circle;
+  protected readonly welcomeIcon = Sparkles;
 
   readonly greeting = computed(() => this.auth.user()?.fullName?.split(' ')[0] ?? '');
   readonly loading = signal(true);
@@ -46,6 +50,23 @@ export class TenantDashboardComponent {
   readonly branchCount = signal(0);
   readonly employeeCount = signal(0);
   readonly offeringCount = signal(0);
+
+  // ----- Completar empresa: pasos mínimos para operar -----
+  readonly steps = computed<CompletionStep[]>(() => [
+    { label: 'Datos de tu negocio', hint: 'Tipo, nombre y subdominio', done: !!this.business(), route: '/tenant/onboarding' },
+    { label: 'Registra una sede',   hint: 'Dónde atiendes',           done: this.branchCount() > 0,   route: '/tenant/sedes' },
+    { label: 'Agrega un servicio',  hint: 'Qué ofreces',              done: this.offeringCount() > 0, route: '/tenant/servicios' },
+    { label: 'Suma un empleado',    hint: 'Tu equipo',                done: this.employeeCount() > 0, route: '/tenant/empleados' },
+  ]);
+  readonly doneCount = computed(() => this.steps().filter(s => s.done).length);
+  readonly progressPct = computed(() => Math.round((this.doneCount() / this.steps().length) * 100));
+  readonly companyComplete = computed(() => this.doneCount() === this.steps().length);
+  readonly firstPending = computed(() => this.steps().find(s => !s.done) ?? null);
+  /** El widget de progreso solo aparece mientras falte algo (y ya cargó). */
+  readonly showCompletion = computed(() => !this.loading() && !this.companyComplete());
+
+  // Modal de bienvenida: una sola vez, al primer ingreso.
+  readonly showWelcome = signal(!!this.auth.user()?.isFirstLogin);
 
   readonly kpis = computed<Kpi[]>(() => [
     { key: 'sedes', label: 'Sedes', value: this.branchCount(), icon: MapPin, route: '/tenant/sedes' },
@@ -87,6 +108,12 @@ export class TenantDashboardComponent {
   }
 
   go(route: string) { this.router.navigateByUrl(route); }
+
+  /** Cierra el modal de bienvenida y lo marca visto (no reaparece). */
+  closeWelcome() { this.showWelcome.set(false); this.auth.markWelcomeSeen(); }
+
+  /** Desde el modal: ir a un paso ahora (marca visto y navega). */
+  startStep(route: string) { this.closeWelcome(); this.router.navigateByUrl(route); }
 
   /** Link estable de descarga del APK (siempre la versión vigente). */
   copyAppLink() {

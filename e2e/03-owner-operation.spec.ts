@@ -48,7 +48,11 @@ test.describe('Operación del dueño (ciclo completo)', () => {
     await expectToast(page, '¡Negocio creado correctamente!');
     await page.waitForURL('**/tenant/dashboard');
     await expect(page.getByText(`Negocio ${owner.username}`).first()).toBeVisible();
-    await expect(page.getByText('Siguiente paso: crea tu primera sede')).toBeVisible();
+    // Primer ingreso: aparece el modal de bienvenida con los pasos mínimos.
+    await expect(page.getByText('Te damos la bienvenida')).toBeVisible();
+    await page.getByRole('button', { name: 'Llenar más tarde' }).click();
+    // Ya en el dashboard: el widget de completitud (header único) pide los pasos que faltan.
+    await expect(page.getByText('Termina de configurar tu negocio')).toBeVisible();
 
     // ---------- 3. Servicio vía UI (drawer) ----------
     await page.goto('/tenant/servicios');

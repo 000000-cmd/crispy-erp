@@ -1,13 +1,10 @@
 /**
- * Alta de un dueño + su negocio (registro mínimo, self-service).
- * Espejo de `RegisterOwnerRequest` del auth-service. El back crea la cuenta del
- * dueño con rol OWNER y devuelve los tokens para iniciar sesión de inmediato.
+ * Alta self-service de un dueño — registro MÍNIMO (solo cuenta).
+ * Espejo de `RegisterOwnerRequest` del auth-service. El back crea la cuenta con
+ * rol OWNER y devuelve los tokens para iniciar sesión de inmediato. Los datos del
+ * negocio se completan luego (modal + widget de completar-empresa), no aquí.
  */
 export interface RegisterOwnerRequest {
-  // Negocio
-  businessName: string;
-  slug: string;
-  // Dueño
   firstName: string;
   lastName: string;
   email: string;

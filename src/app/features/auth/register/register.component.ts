@@ -8,18 +8,16 @@ import { FieldComponent } from '../../../shared/ui/field/field.component';
 import { InputComponent } from '../../../shared/ui/input/input.component';
 import { RegisterOwnerRequest } from './register.model';
 
-type Step = 1 | 2 | 3;
+type Step = 1 | 2;
 
 /**
- * Wizard de registro de negocio (alta de dueño) — `/login/register`.
+ * Wizard de registro del dueño — `/login/register`. Registro MÍNIMO (solo cuenta):
+ *   1. Cuenta   : nombre, apellido, correo, usuario, contraseña.
+ *   2. Confirmar: revisión y envío.
  *
- * Por pasos y con info mínima:
- *   1. Negocio  : nombre + subdominio (se sugiere a partir del nombre).
- *   2. Dueño    : nombre, apellido, correo, usuario, contraseña.
- *   3. Confirmar: revisión y envío.
- *
- * Al enviar, `auth.registerOwner` crea la cuenta con rol OWNER y deja la sesión
- * lista, así que navegamos directo al panel del dueño.
+ * Los datos del negocio NO se piden aquí: al primer ingreso, el modal de
+ * bienvenida + el widget del dashboard guían a completarlos (y pre-rellenan el
+ * nombre desde esta cuenta), evitando pedir dos veces lo mismo.
  */
 @Component({
   selector: 'app-register-page',
@@ -42,14 +40,11 @@ export class RegisterComponent {
   /** Paso que está "completándose" (muestra spinner sobre el número). */
   readonly advancing = signal(false);
   readonly steps = [
-    { n: 1 as Step, label: 'Negocio' },
-    { n: 2 as Step, label: 'Dueño' },
-    { n: 3 as Step, label: 'Confirmar' },
+    { n: 1 as Step, label: 'Cuenta' },
+    { n: 2 as Step, label: 'Confirmar' },
   ];
 
   readonly model = signal<RegisterOwnerRequest>({
-    businessName: '',
-    slug: '',
     firstName: '',
     lastName: '',
     email: '',
@@ -62,30 +57,7 @@ export class RegisterComponent {
     this.model.update(m => ({ ...m, [key]: value }));
   }
 
-  /** Al escribir el nombre del negocio sugerimos un slug. */
-  onBusinessName(value: string) {
-    this.model.update(m => ({
-      ...m,
-      businessName: value,
-      slug: m.slug && m.slug !== this.toSlug(m.businessName) ? m.slug : this.toSlug(value),
-    }));
-  }
-
-  private toSlug(text: string): string {
-    return text
-      .toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quita acentos
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
-      .slice(0, 63);
-  }
-
   readonly step1Valid = computed(() => {
-    const m = this.model();
-    return m.businessName.trim().length >= 2 && /^[a-z0-9-]{3,63}$/.test(m.slug);
-  });
-
-  readonly step2Valid = computed(() => {
     const m = this.model();
     return m.firstName.trim().length >= 2
       && m.lastName.trim().length >= 2
@@ -99,12 +71,11 @@ export class RegisterComponent {
    * luego se marca como completado (check) y avanza suave al siguiente.
    */
   next() {
-    const s = this.step();
     if (this.advancing()) return;
-    if ((s === 1 && !this.step1Valid()) || (s === 2 && !this.step2Valid())) return;
+    if (this.step() === 1 && !this.step1Valid()) return;
     this.advancing.set(true);
     setTimeout(() => {
-      this.step.update(v => Math.min(3, v + 1) as Step);
+      this.step.update(v => Math.min(2, v + 1) as Step);
       this.advancing.set(false);
     }, 650);
   }
@@ -122,7 +93,7 @@ export class RegisterComponent {
   }
 
   submit() {
-    if (!this.step1Valid() || !this.step2Valid()) return;
+    if (!this.step1Valid()) return;
     this.error.set(null);
     this.loading.set(true);
     this.auth.registerOwner(this.model()).subscribe({

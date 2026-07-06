@@ -8,7 +8,7 @@ import { Subscription, isObservable, Observable, from, of } from 'rxjs';
 import { ButtonComponent } from '../ui/button/button.component';
 import { TPipe } from '../pipes/t.pipe';
 import { FieldConfig, FormSchema, Option, OptionsSource } from './core/types';
-import { buildValidators } from './core/validators';
+import { buildAsyncValidators, buildValidators } from './core/validators';
 
 import { TextFieldComponent } from './fields/text-field.component';
 import { SelectFieldComponent } from './fields/select-field.component';
@@ -75,7 +75,13 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
 
   }
 
+  /**
+   * Layout por defecto = 'stack' (una sola columna): el texto de labels y
+   * valores largos (municipios, razones sociales) se ve completo. Un schema
+   * puede optar por rejilla multi-columna con `layout: 'grid'` + `cols`.
+   */
   readonly gridCols = computed(() => {
+    if (this.schema().layout !== 'grid') return '1fr';
     const c = this.schema().cols ?? 12;
     return `repeat(${c}, minmax(0, 1fr))`;
   });
@@ -118,6 +124,9 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
   }
 
   span(f: FieldConfig): string {
+    // En 'stack' (default) cada campo ocupa la única columna. El `width` solo
+    // aplica en 'grid'.
+    if (this.schema().layout !== 'grid') return 'span 1';
     const cols = this.schema().cols ?? 12;
     if (typeof f.width === 'number') return `span ${f.width}`;
     const w = f.width ?? 'full';
@@ -178,9 +187,11 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
   private buildForm() {
     for (const f of this.schema().fields) {
       const validators: ValidatorFn[] = buildValidators(f.validators);
+      const asyncValidators = buildAsyncValidators(f.validators);
       const ctrl = new FormControl(
         { value: this.model()[f.key] ?? f.defaultValue ?? this.defaultFor(f), disabled: !!f.disabled },
-        { validators },
+        // recomputeRequired usa setValidators (solo síncronos) → los async persisten.
+        { validators, asyncValidators },
       );
       this.form.addControl(f.key, ctrl);
 

@@ -40,17 +40,12 @@
           placeholder="Selecciona el tipo" />
       </app-field>
 
-      <div class="grid grid-cols-2 gap-3">
-        <app-field label="Nombre" [required]="true">
-          <app-input [value]="form().name" (valueChange)="patch('name', $event)" placeholder="Sede centro" />
-        </app-field>
-        <app-field label="Código">
-          <app-input [value]="form().code" (valueChange)="patch('code', $event)" placeholder="Opcional" />
-        </app-field>
-      </div>
+      <app-field label="Nombre" [required]="true">
+        <app-input [value]="form().name" (valueChange)="patch('name', $event)" placeholder="Sede centro" />
+      </app-field>
 
       <app-field label="Ubicación" [required]="true"
-                 hint="Elige país, departamento y municipio. El barrio es opcional.">
+                 hint="Busca tu municipio; el departamento y el país se completan solos. El barrio es opcional.">
         <app-location-picker (change)="onLocation($event)" />
       </app-field>
 
@@ -58,17 +53,15 @@
         <app-input [value]="form().addressLine" (valueChange)="patch('addressLine', $event)" placeholder="Calle 1 # 2-3" />
       </app-field>
 
-      <div class="grid grid-cols-2 gap-3">
-        <app-field label="Teléfono">
-          <app-input type="tel" [value]="form().phone" (valueChange)="patch('phone', $event)" placeholder="3001234567" />
-        </app-field>
-        <app-field label="Principal">
-          <label class="inline-flex items-center gap-2 h-9">
-            <app-switch [checked]="form().isMain" (checkedChange)="patch('isMain', $event)" />
-            <span class="text-sm text-text-muted">Es la sede principal</span>
-          </label>
-        </app-field>
-      </div>
+      <app-field label="Teléfono">
+        <app-input type="tel" [value]="form().phone" (valueChange)="patch('phone', $event)" placeholder="3001234567" />
+      </app-field>
+      <app-field label="Principal">
+        <label class="inline-flex items-center gap-2 h-9">
+          <app-switch [checked]="form().isMain" (checkedChange)="patch('isMain', $event)" />
+          <span class="text-sm text-text-muted">Es la sede principal</span>
+        </label>
+      </app-field>
     </div>
   </app-drawer>
 </div>

@@ -62,7 +62,6 @@ export class SedesComponent {
 
   readonly columns = computed<ColumnDef<Branch>[]>(() => [
     { key: 'name', label: 'Sede' },
-    { key: 'code', label: 'Código', width: '140px', format: r => r.code || '—' },
     { key: 'phone', label: 'Teléfono', width: '160px', format: r => r.phone || '—' },
     {
       key: 'isMain', label: 'Principal', align: 'center', width: '120px',
@@ -108,7 +107,7 @@ export class SedesComponent {
 
   openEdit(b: Branch) {
     this.form.set({
-      branchTypeId: b.branchTypeId, name: b.name, code: b.code ?? '',
+      branchTypeId: b.branchTypeId, name: b.name,
       municipalityId: b.municipalityId, neighborhoodId: b.neighborhoodId ?? null,
       addressLine: b.addressLine ?? '', phone: b.phone ?? '', isMain: !!b.isMain,
     });
@@ -134,7 +133,6 @@ export class SedesComponent {
       businessId,
       branchTypeId: f.branchTypeId!,
       name: f.name.trim(),
-      code: f.code || null,
       municipalityId: f.municipalityId!,
       neighborhoodId: f.neighborhoodId || null,
       addressLine: f.addressLine || null,

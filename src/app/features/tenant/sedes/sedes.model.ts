@@ -4,7 +4,6 @@ export interface Branch {
   businessId: string;
   branchTypeId: string;
   name: string;
-  code?: string | null;
   municipalityId: string;
   neighborhoodId?: string | null;
   addressLine?: string | null;
@@ -18,7 +17,6 @@ export interface BranchPayload {
   businessId: string;
   branchTypeId: string;
   name: string;
-  code?: string | null;
   municipalityId: string;
   neighborhoodId?: string | null;
   addressLine?: string | null;

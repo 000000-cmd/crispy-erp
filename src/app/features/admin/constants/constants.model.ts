@@ -1,12 +1,5 @@
 /**
- * Constante del sistema (espejo de `ConstantResponse`). El valor viaja como
- * string; los condicionales de negocio comparan por CÓDIGO (patrón MAYEDAD).
+ * Constante del sistema. La definición vive en core (fuente única), porque las
+ * constantes se consumen en toda la app por código (ver `core/constants`).
  */
-export interface Constant {
-  id: string;
-  code: string;
-  name: string;
-  value: string;
-  description?: string;
-  enabled: boolean;
-}
+export type { Constant } from '../../../core/constants/constant.model';

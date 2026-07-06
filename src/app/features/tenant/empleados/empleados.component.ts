@@ -16,6 +16,7 @@ import { AutocompleteOption } from '../../../shared/ui/autocomplete/autocomplete
 import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { ConstantsService } from '../../../core/constants/constants.service';
 import { BusinessApi } from '../../admin/business/business.api';
 import { SystemListsApi } from '../../admin/system-lists/system-lists.api';
 import { CatalogItem } from '../../admin/system-lists/system-lists.model';
@@ -47,6 +48,7 @@ export class EmpleadosComponent {
   private readonly sedesApi = inject(SedesApi);
   private readonly businessApi = inject(BusinessApi);
   private readonly systemListsApi = inject(SystemListsApi);
+  private readonly constants = inject(ConstantsService);
   private readonly confirm = inject(ConfirmService);
   private readonly toast = inject(ToastService);
   private readonly auth = inject(AuthService);
@@ -80,7 +82,7 @@ export class EmpleadosComponent {
   readonly editForm = signal<EmployeeEditForm>({ ...EMPTY_EMPLOYEE_EDIT_FORM });
   private editingSnapshot: EmployeeDetail | null = null;
 
-  readonly provisionSchema = buildEmployeeProvisionSchema(this.systemListsApi);
+  readonly provisionSchema = buildEmployeeProvisionSchema(this.systemListsApi, this.constants);
   readonly provisionModel = signal<Record<string, unknown>>({});
 
   readonly dynForm = viewChild<DynamicFormComponent>('dynForm');

@@ -257,6 +257,7 @@ export const DICTIONARIES: Record<Locale, Dictionary> = {
     'validation.minLength': 'Al menos {n} caracteres',
     'validation.maxLength': 'Máximo {n} caracteres',
     'validation.pattern': 'Formato no válido',
+    'validation.legalAge': 'Debe ser mayor de {min} años',
   },
 
   en: {
@@ -491,5 +492,6 @@ export const DICTIONARIES: Record<Locale, Dictionary> = {
     'validation.minLength': 'At least {n} characters',
     'validation.maxLength': 'At most {n} characters',
     'validation.pattern': 'Invalid format',
+    'validation.legalAge': 'Must be at least {min} years old',
   },
 };

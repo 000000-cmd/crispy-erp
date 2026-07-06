@@ -62,12 +62,19 @@ export class ThirdPartyComponent {
   readonly viewing = signal(false);
   readonly loadingDetail = signal(false);
 
-  // Reindex (comparación Elastic vs BD)
+  // Reindex: compara el documento COMPLETO en ES (base + contactos + direcciones)
+  // vs el mismo detalle en BD (/full). Si difieren, ES está desactualizado.
   readonly reindexOpen = signal(false);
   readonly reindexing = signal(false);
   readonly loadingCompare = signal(false);
   readonly elasticDoc = signal<Record<string, unknown> | null>(null);
-  readonly dbDetail = signal<ThirdPartyDetail | null>(null);
+  readonly dbFull = signal<ThirdPartyDetail | null>(null);
+  readonly reindexStale = computed(() => {
+    const es = this.elasticDoc(), db = this.dbFull();
+    if (!db) return false;
+    if (!es) return true; // no indexado todavía
+    return JSON.stringify(this.esCanon(es)) !== JSON.stringify(this.dbCanon(db));
+  });
   private reindexTargetId = '';
 
   readonly dynForm = viewChild<DynamicFormComponent>('dynForm');
@@ -158,25 +165,55 @@ export class ThirdPartyComponent {
   }
   closeView() { this.viewing.set(false); this.detail.set(null); }
 
-  /** Abre el comparador: trae el doc de Elastic y la info de BD del tercero. */
+  /** Abre el comparador: documento COMPLETO en ES vs el mismo detalle en BD. */
   openReindex(item: ThirdParty) {
     this.reindexTargetId = item.id;
     this.reindexOpen.set(true);
     this.reindexing.set(false);
     this.loadingCompare.set(true);
     this.elasticDoc.set(null);
-    this.dbDetail.set(null);
+    this.dbFull.set(null);
     forkJoin({
       elastic: this.api.searchDoc(item.id),
       db: this.api.getFull(item.id),
     }).subscribe({
       next: ({ elastic, db }) => {
         this.elasticDoc.set(elastic);
-        this.dbDetail.set(db);
+        this.dbFull.set(db);
         this.loadingCompare.set(false);
       },
       error: () => this.loadingCompare.set(false),
     });
+  }
+
+  // Forma canónica común (base + hijos ordenados) para comparar ES vs BD
+  // ignorando metadatos de ES (score, docVersion, updatedAt) y el orden de listas.
+  private esCanon(doc: Record<string, unknown>): unknown {
+    const d = doc as any;
+    return this.canon(d.documentNumber, d.documentTypeId, d.fullName, d.genderId, d.enabled, d.contacts, d.addresses);
+  }
+  private dbCanon(detail: ThirdPartyDetail): unknown {
+    const t = detail.thirdParty as any;
+    return this.canon(t.documentNumber, t.documentTypeId, t.fullName, t.genderId, t.enabled, detail.contacts, detail.addresses);
+  }
+  private canon(documentNumber: unknown, documentTypeId: unknown, fullName: unknown,
+                genderId: unknown, enabled: unknown, contacts: any[] = [], addresses: any[] = []): unknown {
+    const byId = (a: any, b: any) => String(a.id ?? '').localeCompare(String(b.id ?? ''));
+    return {
+      documentNumber: documentNumber ?? null,
+      documentTypeId: documentTypeId ?? null,
+      fullName: fullName ?? null,
+      genderId: genderId ?? null,
+      enabled: !!enabled,
+      contacts: (contacts ?? []).slice().sort(byId).map(c => ({
+        contactTypeId: c.contactTypeId ?? null, value: c.value ?? null,
+        isPrimary: !!c.isPrimary, isVerified: !!c.isVerified,
+      })),
+      addresses: (addresses ?? []).slice().sort(byId).map(a => ({
+        addressTypeId: a.addressTypeId ?? null, municipalityId: a.municipalityId ?? null,
+        neighborhoodId: a.neighborhoodId ?? null, line: a.line ?? null, isPrimary: !!a.isPrimary,
+      })),
+    };
   }
 
   confirmReindex() {
@@ -193,7 +230,7 @@ export class ThirdPartyComponent {
     });
   }
 
-  closeReindex() { this.reindexOpen.set(false); this.elasticDoc.set(null); this.dbDetail.set(null); }
+  closeReindex() { this.reindexOpen.set(false); this.elasticDoc.set(null); this.dbFull.set(null); }
 
   onSubmit(value: any) {
     const editing = this.editing();
