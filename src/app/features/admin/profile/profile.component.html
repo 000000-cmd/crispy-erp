@@ -8,7 +8,7 @@
           {{ initials() }}
         </div>
         <div class="min-w-0 flex-1">
-          <h1 class="text-xl font-semibold text-text truncate">{{ auth.user()?.fullName || auth.user()?.email }}</h1>
+          <h1 class="text-h1 text-text truncate">{{ auth.user()?.fullName || auth.user()?.email }}</h1>
           <p class="text-sm text-text-muted truncate">{{ auth.user()?.email }}</p>
           @if (roles().length) {
             <div class="flex flex-wrap gap-2 mt-3">
@@ -16,7 +16,7 @@
                 <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-surface border"
                       [class.border-primary-300]="first" [class.text-primary-700]="first"
                       [class.border-border]="!first" [class.text-text-muted]="!first"
-                      [class.font-mono]="!first" [class.text-[11px]]="!first">
+                      [class.font-mono]="!first" [class.text-caption]="!first">
                   @if (first) { <span class="h-1.5 w-1.5 rounded-full bg-primary-500"></span> }
                   {{ r }}
                 </span>

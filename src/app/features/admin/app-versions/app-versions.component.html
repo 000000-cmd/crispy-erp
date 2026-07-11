@@ -1,14 +1,8 @@
 <div class="space-y-5">
-  <header class="flex items-end justify-between gap-3">
-    <div>
-      <h1 class="text-xl font-semibold text-text">{{ 'admin.appVersions' | t }}</h1>
-      <p class="text-sm text-text-muted">{{ 'admin.appVersions.subtitle' | t }}</p>
-    </div>
-    <div class="flex items-center gap-2">
-      <app-button variant="secondary" [icon]="linkIcon" (onClick)="copyLatestLink()">{{ 'admin.appVersions.copyLink' | t }}</app-button>
-      <app-button [icon]="plusIcon" (onClick)="openUpload()">{{ 'admin.appVersions.upload' | t }}</app-button>
-    </div>
-  </header>
+  <app-page-header [title]="'admin.appVersions' | t" [subtitle]="'admin.appVersions.subtitle' | t">
+    <app-button variant="secondary" [icon]="linkIcon" (onClick)="copyLatestLink()">{{ 'admin.appVersions.copyLink' | t }}</app-button>
+    <app-button [icon]="plusIcon" (onClick)="openUpload()">{{ 'admin.appVersions.upload' | t }}</app-button>
+  </app-page-header>
 
   <app-data-table [columns]="columns()" [rows]="items()" [actions]="actions()" [loading]="loading()" />
 

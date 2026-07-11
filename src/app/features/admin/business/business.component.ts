@@ -3,6 +3,7 @@ import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { Plus, Pencil, Trash2, Star } from 'lucide-angular';
 
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
+import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 import { DrawerComponent } from '../../../shared/ui/drawer/drawer.component';
 import { DataTableComponent, ColumnDef, RowAction } from '../../../shared/table/data-table.component';
 import { DynamicFormComponent } from '../../../shared/forms/dynamic-form.component';
@@ -22,7 +23,7 @@ import { buildBusinessSchema } from './business-form';
   standalone: true,
   imports: [
     CommonModule, ButtonComponent, DrawerComponent, DataTableComponent,
-    DynamicFormComponent, InputComponent, TagComponent,
+    DynamicFormComponent, InputComponent, TagComponent, PageHeaderComponent,
   ],
   templateUrl: './business.component.html',
 })

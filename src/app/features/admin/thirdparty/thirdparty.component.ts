@@ -4,6 +4,7 @@ import { Eye, Pencil, Plus, RefreshCcw, Trash2 } from 'lucide-angular';
 import { Subject, debounceTime, distinctUntilChanged, forkJoin } from 'rxjs';
 
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
+import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 import { DrawerComponent } from '../../../shared/ui/drawer/drawer.component';
 import { DynamicFormComponent } from '../../../shared/forms/dynamic-form.component';
 import { TagComponent } from '../../../shared/ui/tag/tag.component';
@@ -29,7 +30,7 @@ import { ThirdPartyRelationsComponent } from './relations/thirdparty-relations.c
   imports: [
     CommonModule, ButtonComponent, DrawerComponent,
     DataTableComponent, DynamicFormComponent, TagComponent, PaginatorComponent, TPipe,
-    SearchFieldComponent, ThirdPartyRelationsComponent,
+    SearchFieldComponent, ThirdPartyRelationsComponent, PageHeaderComponent,
   ],
   templateUrl: './thirdparty.component.html',
 })

@@ -2,7 +2,7 @@
      [class]="boxClasses()"
      [class.opacity-50]="disabled()">
   <input
-    [type]="type()"
+    [type]="effectiveType()"
     [value]="value()"
     [placeholder]="placeholder()"
     [disabled]="disabled()"
@@ -10,6 +10,19 @@
     (input)="onInput($any($event.target).value)"
     (blur)="touched()"
     class="w-full h-9 bg-transparent px-3 text-sm text-text placeholder:text-text-muted focus:outline-none disabled:cursor-not-allowed" />
+  @if (effectiveState() !== 'idle') {
+    <app-field-status [state]="effectiveState()" class="shrink-0 grid place-items-center pl-1 pr-2.5" />
+  }
+  @if (isPassword()) {
+    <button
+      type="button"
+      (click)="toggleReveal()"
+      [attr.aria-label]="revealed() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+      [attr.aria-pressed]="revealed()"
+      class="shrink-0 grid place-items-center h-9 w-9 text-text-soft hover:text-text-muted rounded-r-md focus:outline-none focus-visible:text-primary-600">
+      <lucide-icon [img]="revealed() ? eyeOffIcon : eyeIcon" [size]="16" />
+    </button>
+  }
   @if (suffix()) {
     <span class="pl-1 pr-3 text-sm text-text-muted whitespace-nowrap select-none">{{ suffix() }}</span>
   }

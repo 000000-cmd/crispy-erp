@@ -2,9 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
+import { AuthMascotService } from '../../../core/auth/auth-mascot.service';
+import { I18nService } from '../../../core/i18n/i18n.service';
 import { BrandingService } from '../../../core/branding/branding.service';
 import { DynamicFormComponent } from '../../../shared/forms/dynamic-form.component';
 import { FormSchema } from '../../../shared/forms/core/types';
+import { TPipe } from '../../../shared/pipes/t.pipe';
 
 /**
  * Login del DUEÑO / usuario de un negocio (tenant). Entrada por defecto
@@ -14,16 +17,20 @@ import { FormSchema } from '../../../shared/forms/core/types';
 @Component({
   selector: 'app-login-page',
   standalone: true,
-  imports: [CommonModule, DynamicFormComponent, RouterLink],
+  imports: [CommonModule, DynamicFormComponent, RouterLink, TPipe],
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   protected readonly branding = inject(BrandingService);
+  protected readonly mascot = inject(AuthMascotService);
+  private readonly i18n = inject(I18nService);
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+
+  constructor() { this.mascot.reset(); }
 
   readonly schema: FormSchema = {
     cols: 1,
@@ -49,27 +56,34 @@ export class LoginComponent {
   onSubmit(value: Record<string, any>) {
     this.error.set(null);
     this.loading.set(true);
+    this.mascot.setLoading(true);
     this.auth.login({ usernameOrEmail: value['usernameOrEmail'], password: value['password'] }).subscribe({
       next: () => {
         this.loading.set(false);
+        this.mascot.setLoading(false);
         // Separación de accesos: un administrador NO entra por la ruta común.
         if (this.auth.kind() === 'SYSTEM_ADMIN') {
           this.auth.handleAuthFailure(false);
-          this.error.set('Los administradores ingresan por su acceso dedicado.');
+          this.mascot.reject();
+          this.error.set(this.i18n.t('auth.error.adminUseDedicated'));
           return;
         }
         // La web es para dueños (y admins por su ruta): los empleados usan el APK.
         const roles = this.auth.user()?.roles ?? [];
         if (roles.includes('EMPLOYEE') && !roles.includes('OWNER')) {
           this.auth.handleAuthFailure(false);
-          this.error.set('Las cuentas de empleado ingresan por la app móvil.');
+          this.mascot.reject();
+          this.error.set(this.i18n.t('auth.error.employeeUseApp'));
           return;
         }
+        this.mascot.celebrate();
         this.router.navigateByUrl(this.auth.homeRoute());
       },
       error: () => {
         this.loading.set(false);
-        this.error.set('Credenciales inválidas');
+        this.mascot.setLoading(false);
+        this.mascot.reject();
+        this.error.set(this.i18n.t('auth.error.invalidCredentials'));
       },
     });
   }

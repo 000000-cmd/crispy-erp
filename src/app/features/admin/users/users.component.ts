@@ -3,6 +3,7 @@ import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { LucideAngularModule, Plus, Pencil, Trash2 } from 'lucide-angular';
 import { switchMap, tap } from 'rxjs';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
+import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 import { DrawerComponent } from '../../../shared/ui/drawer/drawer.component';
 import { TPipe } from '../../../shared/pipes/t.pipe';
 import { I18nService } from '../../../core/i18n/i18n.service';
@@ -17,7 +18,7 @@ import { buildUserSchema } from './user-form';
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, ButtonComponent, DrawerComponent, DataTableComponent, DynamicFormComponent, TPipe],
+  imports: [CommonModule, LucideAngularModule, ButtonComponent, DrawerComponent, DataTableComponent, DynamicFormComponent, TPipe, PageHeaderComponent],
   templateUrl: './users.component.html',
 })
 export class AdminUsersComponent {

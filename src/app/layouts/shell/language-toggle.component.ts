@@ -23,7 +23,7 @@ export class LanguageToggleComponent {
     // El fondo del activo lo pinta el pill deslizante (.app-lang-pill); el
     // boton solo transiciona color de texto, encima del pill (z-10).
     const base =
-      'relative z-10 inline-flex items-center justify-center px-2.5 h-6 rounded text-[11px] font-semibold ' +
+      'relative z-10 inline-flex items-center justify-center px-2.5 h-6 rounded text-caption font-semibold ' +
       'transition-colors duration-200 cursor-pointer ' +
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40';
     return active

@@ -3,7 +3,7 @@ import { Component, computed, input, output } from '@angular/core';
 import { LucideAngularModule, Pencil, Trash2 } from 'lucide-angular';
 import { EmptyComponent } from '../ui/empty/empty.component';
 import { TagComponent } from '../ui/tag/tag.component';
-import { SpinnerComponent } from '../ui/spinner/spinner.component';
+import { SkeletonComponent } from '../ui/skeleton/skeleton.component';
 import { ColumnDef, RowAction } from './data-table.types';
 
 // Tipos del contrato en ./data-table.types (archivo propio); se re-exportan
@@ -13,10 +13,12 @@ export type { ColumnDef, RowAction } from './data-table.types';
 @Component({
   selector: 'app-data-table',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, EmptyComponent, SpinnerComponent, TagComponent],
+  imports: [CommonModule, LucideAngularModule, EmptyComponent, SkeletonComponent, TagComponent],
   templateUrl: './data-table.component.html',
 })
 export class DataTableComponent<T = any> {
+  /** Filas de esqueleto mientras carga (silueta de la tabla). */
+  readonly skeletonRows = [1, 2, 3, 4, 5];
   readonly columns = input.required<ColumnDef<T>[]>();
   readonly rows = input<T[]>([]);
   readonly actions = input<RowAction<T>[]>([]);

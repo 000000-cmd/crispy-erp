@@ -7,6 +7,7 @@ import { I18nService } from '../../core/i18n/i18n.service';
 import { LayoutStateService } from './layout-state.service';
 import { NavItem, NavSection } from './sidebar.types';
 import { TPipe } from '../../shared/pipes/t.pipe';
+import { AvatarComponent } from '../../shared/ui/avatar/avatar.component';
 
 interface FlyoutState {
   rootKey: string;
@@ -18,7 +19,7 @@ interface FlyoutState {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, LucideAngularModule, TPipe],
+  imports: [CommonModule, RouterLink, RouterLinkActive, LucideAngularModule, TPipe, AvatarComponent],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
 })
@@ -26,6 +27,16 @@ export class SidebarComponent {
   readonly brand = input<string>('ERP Moda');
   readonly subtitle = input<string>('');
   readonly sections = input.required<NavSection[]>();
+
+  /** Iniciales de la marca para el logotipo (deriva del nombre, sin hardcode). */
+  readonly brandInitials = computed(() =>
+    this.brand().split(/\s+/).slice(0, 2).map(s => s.charAt(0).toUpperCase()).join('') || 'S');
+
+  /** Nombre visible del usuario para el avatar/footer. */
+  readonly userName = computed(() => {
+    const u = this.auth.user();
+    return u?.fullName || u?.email || '';
+  });
 
   protected readonly layout = inject(LayoutStateService);
   protected readonly auth = inject(AuthService);
@@ -48,12 +59,6 @@ export class SidebarComponent {
   private readonly openKeys = signal<Record<string, boolean>>({});
   protected readonly flyout = signal<FlyoutState | null>(null);
   private closeTimer: any = null;
-
-  readonly initials = computed(() => {
-    const u = this.auth.user();
-    const name = u?.fullName || u?.email || '?';
-    return name.split(/\s+|@/).slice(0, 2).map(s => s.charAt(0).toUpperCase()).join('');
-  });
 
   isOpen(key: string): boolean {
     const o = this.openKeys();

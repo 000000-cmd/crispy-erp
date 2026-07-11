@@ -33,16 +33,17 @@ test.describe('Operación del dueño (ciclo completo)', () => {
     // ---------- 1. Registro del dueño ----------
     const owner = await registerOwner(page);
 
-    // ---------- 2. Onboarding del negocio (formulario en página, sin drawer) ----------
+    // ---------- 2. Onboarding del negocio (wizard 2 pasos: Negocio → Tus datos) ----------
     await page.goto('/tenant/onboarding');
+    // Paso 1: Negocio (tipo, nombre, subdominio).
     await pickSelect(page, page, 0);                    // Tipo de negocio
-    const texts = page.locator('form input[type="text"]');
-    await texts.nth(0).fill(`Negocio ${owner.username}`);
-    await texts.nth(1).fill(unique('neg'));             // slug único
-    await pickSelect(page, page, 1);                    // Tu tipo de documento
-    await texts.nth(2).fill(unique('9'));               // número de documento
-    await texts.nth(3).fill('Owner');
-    await texts.nth(4).fill('Operativo');
+    const bizTexts = page.locator('form input[type="text"]');
+    await bizTexts.nth(0).fill(`Negocio ${owner.username}`);
+    await bizTexts.nth(1).fill(unique('neg'));          // slug único
+    await page.locator('form').getByRole('button', { name: 'Continuar' }).click();
+    // Paso 2: Tus datos (nombre/apellido pre-rellenados desde la cuenta).
+    await pickSelect(page, page, 0);                    // Tu tipo de documento
+    await page.locator('form input[type="text"]').first().fill(unique('9')); // número de documento
     // OJO: el sidebar del dueño también tiene un ítem "Crear mi negocio" → scope al form.
     await page.locator('form').getByRole('button', { name: 'Crear mi negocio' }).click();
     await expectToast(page, '¡Negocio creado correctamente!');
@@ -71,9 +72,12 @@ test.describe('Operación del dueño (ciclo completo)', () => {
     await page.getByRole('button', { name: 'Nueva sede' }).click();
     const d2 = drawer(page);
     const guardarSede = d2.getByRole('button', { name: /Guardar|Save/ });
-    await expect(guardarSede).toBeDisabled(); // sin tipo+nombre+municipio no se puede
+    // El botón ya NO se bloquea: al intentar guardar vacío, muestra la validación y no cierra.
+    await expect(guardarSede).toBeEnabled();
+    await guardarSede.click();
+    await expect(d2.getByText(/Selecciona el tipo de sede/)).toBeVisible();
+    await expect(d2).toBeVisible();                       // sigue abierto, no guardó
     await byPlaceholder(d2, 'Sede centro').fill('Sede E2E');
-    await expect(guardarSede).toBeDisabled(); // sigue faltando tipo y municipio
     await page.keyboard.press('Escape'); // cierra (se re-navega igual abajo)
 
     const { token, userId } = await apiLogin(request, owner.email, owner.password);

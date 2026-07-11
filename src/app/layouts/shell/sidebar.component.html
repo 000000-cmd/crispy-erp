@@ -14,11 +14,11 @@
     >
       <!-- Brand -->
       <div class="h-14 px-3 flex items-center gap-2.5 border-b border-border shrink-0">
-        <div class="h-9 w-9 rounded-md bg-primary-500 text-white inline-flex items-center justify-center text-sm font-semibold shrink-0">EM</div>
+        <div class="h-9 w-9 rounded-lg bg-primary-500 text-white inline-flex items-center justify-center text-sm font-semibold shrink-0 elev-1">{{ brandInitials() }}</div>
         @if (!layout.isCollapsed()) {
           <div class="min-w-0 transition-opacity duration-150">
             <p class="text-sm font-semibold text-text truncate leading-tight">{{ brand() }}</p>
-            <p class="text-[11px] text-text-muted truncate leading-tight">{{ subtitle() }}</p>
+            <p class="text-caption text-text-muted truncate leading-tight">{{ subtitle() }}</p>
           </div>
         }
       </div>
@@ -30,7 +30,7 @@
             @if (!layout.isCollapsed()) {
               <button
                 type="button"
-                class="w-full flex items-center justify-between px-3 py-1.5 text-[10px] uppercase tracking-wider text-text-soft hover:text-text-muted"
+                class="w-full flex items-center justify-between px-3 py-1.5 text-overline text-text-soft hover:text-text-muted"
                 (click)="toggleSection(section.key)"
               >
                 <span>{{ lbl(section.label) }}</span>
@@ -64,13 +64,11 @@
           (click)="goProfile()"
           [title]="layout.isCollapsed() ? (auth.user()?.fullName || auth.user()?.email || '') : ''"
         >
-          <div class="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-200 inline-flex items-center justify-center text-[11px] font-semibold shrink-0">
-            {{ initials() }}
-          </div>
+          <app-avatar [name]="userName()" size="sm" />
           @if (!layout.isCollapsed()) {
             <div class="min-w-0 flex-1">
               <p class="text-xs font-medium text-text truncate leading-tight">{{ auth.user()?.fullName || auth.user()?.email }}</p>
-              <p class="text-[10px] text-text-muted truncate leading-tight">{{ auth.user()?.email }}</p>
+              <p class="text-caption text-text-muted truncate leading-tight">{{ auth.user()?.email }}</p>
             </div>
             <button class="text-text-muted hover:text-rose-600 p-1 rounded-md" (click)="$event.stopPropagation(); auth.logout()" [title]="'common.logout' | t">
               <lucide-icon [img]="logoutIcon" [size]="14"></lucide-icon>
@@ -83,13 +81,13 @@
     <!-- Flyout: solo en modo collapsed cuando hay hover sobre un item -->
     @if (layout.isCollapsed() && flyout(); as fly) {
       <div
-        class="fixed z-[60] left-[64px] ml-2 w-56 bg-surface border border-border rounded-lg shadow-lg py-2 animate-fadeIn"
+        class="fixed z-[60] left-[64px] ml-2 w-56 bg-surface border border-border rounded-lg elev-3 py-2 animate-fadeIn"
         [style.top.px]="fly.topPx"
         (mouseenter)="cancelClose()"
         (mouseleave)="onItemLeave()"
       >
         <div class="px-3 pb-2 border-b border-border mb-1">
-          <p class="text-[11px] uppercase tracking-wider text-text-soft">{{ lbl(fly.label) }}</p>
+          <p class="text-overline text-text-soft">{{ lbl(fly.label) }}</p>
         </div>
         <ul class="space-y-0.5 px-1.5">
           @for (item of fly.items; track item.key) {

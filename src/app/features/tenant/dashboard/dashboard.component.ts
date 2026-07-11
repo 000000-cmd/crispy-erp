@@ -1,13 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { forkJoin, of, switchMap, map, catchError } from 'rxjs';
-import { LucideAngularModule, MapPin, Users, Scissors, ChevronRight, Building2, Smartphone, CheckCircle2, Circle, Sparkles } from 'lucide-angular';
+import { LucideAngularModule, MapPin, Users, Scissors, ChevronRight, Building2, Smartphone, CheckCircle2, Circle } from 'lucide-angular';
 
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { ModalComponent } from '../../../shared/ui/modal/modal.component';
+import { MascotComponent } from '../../../shared/ui/mascot/mascot.component';
+import { SkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { I18nService } from '../../../core/i18n/i18n.service';
 import { AppVersionsApi } from '../../admin/app-versions/app-versions.api';
 import { BusinessApi } from '../../admin/business/business.api';
 import { Business } from '../../admin/business/business.model';
@@ -24,7 +27,7 @@ import { CompletionStep, Kpi } from './dashboard.model';
 @Component({
   selector: 'app-tenant-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, LucideAngularModule, ButtonComponent, ModalComponent],
+  imports: [CommonModule, RouterLink, LucideAngularModule, ButtonComponent, ModalComponent, MascotComponent, SkeletonComponent],
   templateUrl: './dashboard.component.html',
 })
 export class TenantDashboardComponent {
@@ -36,15 +39,29 @@ export class TenantDashboardComponent {
   private readonly appVersionsApi = inject(AppVersionsApi);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
+  private readonly i18n = inject(I18nService);
 
   protected readonly chevron = ChevronRight;
   protected readonly businessIcon = Building2;
   protected readonly appIcon = Smartphone;
   protected readonly stepDoneIcon = CheckCircle2;
   protected readonly stepTodoIcon = Circle;
-  protected readonly welcomeIcon = Sparkles;
 
   readonly greeting = computed(() => this.auth.user()?.fullName?.split(' ')[0] ?? '');
+
+  /**
+   * Mensaje de bienvenida "generativo" del lado del cliente: compone saludo por
+   * hora del día + nombre + una apertura que rota por día. Sin llamadas externas.
+   */
+  readonly welcomeMessage = computed(() => {
+    const name = this.greeting();
+    const hi = name ? `, ${name}` : '';
+    const h = new Date().getHours();
+    const daypart = this.i18n.t(h < 12 ? 'welcome.morning' : h < 19 ? 'welcome.afternoon' : 'welcome.evening');
+    const openers = ['welcome.opener1', 'welcome.opener2', 'welcome.opener3'];
+    return this.i18n.t(openers[new Date().getDate() % openers.length], { daypart, hi });
+  });
+
   readonly loading = signal(true);
   readonly business = signal<Business | null>(null);
   readonly branchCount = signal(0);
@@ -74,7 +91,20 @@ export class TenantDashboardComponent {
     { key: 'servicios', label: 'Servicios', value: this.offeringCount(), icon: Scissors, route: '/tenant/servicios' },
   ]);
 
-  constructor() { this.load(); }
+  private readonly welcomeMascot = viewChild(MascotComponent);
+  private welcomed = false;
+
+  constructor() {
+    this.load();
+    // El orb celebra una vez al abrir el modal de bienvenida.
+    effect(() => {
+      const cmp = this.welcomeMascot();
+      if (this.showWelcome() && cmp && !this.welcomed) {
+        this.welcomed = true;
+        cmp.celebrate();
+      }
+    });
+  }
 
   private load() {
     const userId = this.auth.user()?.id;

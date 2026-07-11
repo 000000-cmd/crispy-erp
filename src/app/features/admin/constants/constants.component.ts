@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { LucideAngularModule, Plus, Pencil, Trash2 } from 'lucide-angular';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
+import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 import { DrawerComponent } from '../../../shared/ui/drawer/drawer.component';
 import { ColumnDef, DataTableComponent, RowAction } from '../../../shared/table/data-table.component';
 import { DynamicFormComponent } from '../../../shared/forms/dynamic-form.component';
@@ -16,7 +17,7 @@ import { I18nService } from '../../../core/i18n/i18n.service';
 @Component({
   selector: 'app-admin-constants',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, ButtonComponent, DrawerComponent, DataTableComponent, DynamicFormComponent, TPipe],
+  imports: [CommonModule, LucideAngularModule, ButtonComponent, DrawerComponent, DataTableComponent, DynamicFormComponent, TPipe, PageHeaderComponent],
   templateUrl: './constants.component.html',
 })
 export class AdminConstantsComponent {

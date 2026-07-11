@@ -25,6 +25,17 @@
   --color-text-muted:     var(--s-text-muted);
   --color-text-soft:      var(--s-text-soft);
   --color-bg:             var(--s-bg);
+
+  /* ── Escala tipográfica (Geist) ──────────────────────────────────────────
+     Jerarquía intencional: headings con tracking negativo (más seguros), body
+     legible, caption/overline consistentes. Reemplaza los text-xl/2xl/[11px]
+     ad-hoc. Se usan como utilidades Tailwind: text-display / text-h1 / …       */
+  --text-display: 1.875rem;    --text-display--line-height: 2.2rem;   --text-display--font-weight: 700;  --text-display--letter-spacing: -0.021em;
+  --text-h1: 1.5rem;           --text-h1--line-height: 1.9rem;        --text-h1--font-weight: 600;       --text-h1--letter-spacing: -0.017em;
+  --text-h2: 1.125rem;         --text-h2--line-height: 1.55rem;       --text-h2--font-weight: 600;       --text-h2--letter-spacing: -0.011em;
+  --text-h3: 0.9375rem;        --text-h3--line-height: 1.35rem;       --text-h3--font-weight: 600;       --text-h3--letter-spacing: -0.006em;
+  --text-caption: 0.6875rem;   --text-caption--line-height: 1rem;     --text-caption--font-weight: 500;   --text-caption--letter-spacing: 0.005em;
+  --text-overline: 0.6875rem;  --text-overline--line-height: 1rem;    --text-overline--font-weight: 600;  --text-overline--letter-spacing: 0.07em;
 }
 
 :root {
@@ -49,11 +60,25 @@
   --s-surface:       #ffffff;
   --s-surface-muted: #f5f4f0;
   --s-surface-hover: #f0efe9;
-  --s-border:        #e6e4dd;
+  --s-border:        #e7e5de;
   --s-border-strong: #d6d3c8;
   --s-text:          #1c1917;
   --s-text-muted:    #57534e;
   --s-text-soft:     #a8a29e;
+
+  /* Elevación theme-aware (sombras suaves premium). Se aplican con .elev-1/2/3
+     — no con shadow-* de Tailwind, que es estático y no cambia en dark. */
+  --elev-1: 0 1px 2px rgba(28, 25, 23, 0.05), 0 1px 1px rgba(28, 25, 23, 0.03);
+  --elev-2: 0 2px 4px rgba(28, 25, 23, 0.05), 0 4px 12px rgba(28, 25, 23, 0.06);
+  --elev-3: 0 8px 24px rgba(28, 25, 23, 0.10), 0 2px 6px rgba(28, 25, 23, 0.06);
+
+  /* Ritmo/densidad (se aplican de lleno en Fase 2: PageContainer/SectionCard). */
+  --page-pad: 1.5rem;      /* padding de página */
+  --section-gap: 1.25rem;  /* separación entre secciones */
+  --card-pad: 1.25rem;     /* padding interno de cards */
+
+  /* Anillo de foco accesible (visible en teclado). */
+  --focus-ring: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--p-500);
 }
 
 html.dark {
@@ -66,6 +91,11 @@ html.dark {
   --s-text:          #f4f4f5;
   --s-text-muted:    #a1a1aa;
   --s-text-soft:     #71717a;
+
+  /* En oscuro las sombras son más profundas (la luz "cae" más). */
+  --elev-1: 0 1px 2px rgba(0, 0, 0, 0.40), 0 1px 1px rgba(0, 0, 0, 0.30);
+  --elev-2: 0 2px 6px rgba(0, 0, 0, 0.45), 0 6px 16px rgba(0, 0, 0, 0.40);
+  --elev-3: 0 10px 30px rgba(0, 0, 0, 0.55), 0 3px 8px rgba(0, 0, 0, 0.40);
 }
 
 html, body { height: 100%; }
@@ -97,6 +127,43 @@ input, select, textarea, button {
     background-color .15s var(--ease-out),
     color           .15s var(--ease-out),
     box-shadow      .15s var(--ease-out);
+}
+
+/* ── Elevación (theme-aware) ────────────────────────────────────────────────
+   Superficies premium: usar .elev-1 (cards en reposo), .elev-2 (hover/popover),
+   .elev-3 (drawer/modal). Cambia solo la sombra según el tema. */
+.elev-1 { box-shadow: var(--elev-1); }
+.elev-2 { box-shadow: var(--elev-2); }
+.elev-3 { box-shadow: var(--elev-3); }
+
+/* ── Foco accesible por teclado ─────────────────────────────────────────────
+   Baseline consistente para elementos interactivos que no traen su propio
+   anillo (links del sidebar, íconos-botón, filas clicables). Los componentes
+   que ya definen focus-visible (app-btn, inputs) mandan sobre esto. */
+a[href]:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible,
+summary:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius, 0.5rem);
+}
+
+/* ── Skeleton (carga) ───────────────────────────────────────────────────────
+   Shimmer sutil de izquierda a derecha; se apaga con reduced-motion. */
+@keyframes app-skeleton {
+  100% { background-position: -200% 0; }
+}
+.app-skeleton {
+  background: linear-gradient(90deg,
+    var(--color-surface-muted) 0%,
+    var(--color-surface-hover) 50%,
+    var(--color-surface-muted) 100%);
+  background-size: 200% 100%;
+  animation: app-skeleton 1.4s var(--ease-in-out) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-skeleton { animation: none; }
 }
 
 /* Switch: thumb se desliza con translateX en GPU y un toque elastico
@@ -295,4 +362,129 @@ router-outlet + * {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
+}
+
+/* ── Auth: escenario de la mascota (orb) ───────────────────────────────────
+   Fondo cálido y VIVO derivado del primary OKLCH del tenant: base templada +
+   una aurora que deriva lentamente + un halo que respira detrás del orb. Busca
+   sentirse amigable y con vida (no un bloque plano). Siempre cálido-oscuro
+   (independiente de light/dark) para que el orb siga siendo el héroe.          */
+.auth-stage {
+  isolation: isolate;
+  background:
+    radial-gradient(120% 82% at 50% 6%,
+      color-mix(in oklab, var(--color-primary-600) 42%, transparent), transparent 60%),
+    linear-gradient(155deg,
+      color-mix(in oklab, var(--color-primary-800) 90%, #1c130d),
+      color-mix(in oklab, var(--color-primary-900) 76%, #150e09));
+}
+
+/* Aurora: manchas suaves de color del tenant que se desplazan muy lento. */
+.auth-stage__aurora {
+  position: absolute;
+  inset: -25%;
+  pointer-events: none;
+  background:
+    radial-gradient(30% 30% at 28% 30%, color-mix(in oklab, var(--color-primary-300) 60%, transparent), transparent 70%),
+    radial-gradient(34% 34% at 74% 36%, color-mix(in oklab, var(--color-primary-500) 55%, transparent), transparent 70%),
+    radial-gradient(42% 42% at 55% 82%, color-mix(in oklab, var(--color-primary-400) 48%, transparent), transparent 72%);
+  filter: blur(42px) saturate(1.1);
+  animation: auth-aurora 22s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+/* Halo que respira justo detrás del orb — lo "abraza" con la luz del tenant. */
+.auth-stage__halo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(80%, 72vh);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  pointer-events: none;
+  background: radial-gradient(circle,
+    color-mix(in oklab, var(--color-primary-400) 50%, transparent) 0%,
+    color-mix(in oklab, var(--color-primary-500) 20%, transparent) 44%,
+    transparent 66%);
+  filter: blur(20px);
+  animation: auth-halo 7s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* Anillos de órbita, apenas insinuados sobre la aurora (eco de la forma). */
+.auth-stage__rings {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-radial-gradient(circle at 50% 46%,
+      transparent 0 62px,
+      color-mix(in oklab, var(--color-primary-100) 7%, transparent) 62px 63px);
+  -webkit-mask-image: radial-gradient(60% 60% at 50% 46%, #000, transparent 80%);
+          mask-image: radial-gradient(60% 60% at 50% 46%, #000, transparent 80%);
+}
+
+@keyframes auth-aurora {
+  0%   { transform: translate3d(-4%, -3%, 0) scale(1.08) rotate(0deg); }
+  50%  { transform: translate3d(3%, 2%, 0)  scale(1.16) rotate(4deg); }
+  100% { transform: translate3d(4%, -2%, 0) scale(1.10) rotate(-3deg); }
+}
+@keyframes auth-halo {
+  0%, 100% { opacity: .5;  transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: .9;  transform: translate(-50%, -50%) scale(1.09); }
+}
+
+/* La aurora/halo se congelan si el usuario pidió menos movimiento. */
+@media (prefers-reduced-motion: reduce) {
+  .auth-stage__aurora,
+  .auth-stage__halo { animation: none !important; }
+}
+
+/* ── Nube de texto (app-text-cloud) ────────────────────────────────────────
+   Speech-bubble flotante que aparece con un pop suave tras un hover prolongado.
+   Se posiciona con la propiedad `translate` (centrado) y anima con `scale`, que
+   son propiedades independientes de `transform` → no se pisan.                 */
+.text-cloud {
+  position: absolute;
+  z-index: 40;
+  width: max-content;
+  max-width: 18rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 1.15rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--elev-3);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  pointer-events: none;
+  animation: text-cloud-in 300ms var(--ease-out) both;
+}
+.text-cloud[data-placement="top"]    { bottom: calc(100% + 12px); left: 50%; translate: -50% 0; transform-origin: bottom center; }
+.text-cloud[data-placement="bottom"] { top: calc(100% + 12px);    left: 50%; translate: -50% 0; transform-origin: top center; }
+.text-cloud[data-placement="left"]   { right: calc(100% + 12px);  top: 50%;  translate: 0 -50%; transform-origin: right center; }
+.text-cloud[data-placement="right"]  { left: calc(100% + 12px);   top: 50%;  translate: 0 -50%; transform-origin: left center; }
+
+/* Colita de la nube (cuadrado rotado que hereda fondo/borde). */
+.text-cloud::after {
+  content: "";
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  background: var(--color-surface);
+  transform: rotate(45deg);
+}
+.text-cloud[data-placement="top"]::after    { bottom: -6px; left: 50%; margin-left: -5px; border-right: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); }
+.text-cloud[data-placement="bottom"]::after { top: -6px;    left: 50%; margin-left: -5px; border-left: 1px solid var(--color-border);  border-top: 1px solid var(--color-border); }
+.text-cloud[data-placement="left"]::after   { right: -6px;  top: 50%;  margin-top: -5px;  border-top: 1px solid var(--color-border);   border-right: 1px solid var(--color-border); }
+.text-cloud[data-placement="right"]::after  { left: -6px;   top: 50%;  margin-top: -5px;  border-bottom: 1px solid var(--color-border);border-left: 1px solid var(--color-border); }
+
+@keyframes text-cloud-in {
+  0%   { opacity: 0; scale: 0.8; }
+  60%  { opacity: 1; scale: 1.04; }
+  100% { opacity: 1; scale: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .text-cloud { animation: opacity 120ms linear both; }
 }

@@ -1,11 +1,7 @@
 <div class="space-y-5">
-  <header class="flex items-end justify-between gap-3">
-    <div>
-      <h1 class="text-xl font-semibold text-text">Empresas</h1>
-      <p class="text-sm text-text-muted">Locales registrados (barberías, salones, spas) y sus dominios.</p>
-    </div>
+  <app-page-header title="Empresas" subtitle="Locales registrados (barberías, salones, spas) y sus dominios.">
     <app-button [icon]="plusIcon" (onClick)="openCreate()">Nueva empresa</app-button>
-  </header>
+  </app-page-header>
 
   <app-data-table
     [columns]="columns()"

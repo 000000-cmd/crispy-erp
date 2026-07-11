@@ -1,12 +1,8 @@
 
     <div class="space-y-5">
-      <header class="flex items-end justify-between gap-3">
-        <div>
-          <h1 class="text-xl font-semibold text-text tracking-tight">{{ 'admin.roles' | t }}</h1>
-          <p class="text-sm text-text-muted mt-0.5">{{ 'admin.roles.subtitle' | t }}</p>
-        </div>
+      <app-page-header [title]="'admin.roles' | t" [subtitle]="'admin.roles.subtitle' | t">
         <app-button [icon]="plusIcon" (onClick)="open(null)">{{ 'admin.roles.new' | t }}</app-button>
-      </header>
+      </app-page-header>
 
       <app-data-table [columns]="columns()" [rows]="items()" [actions]="actions()" [loading]="loading()" />
 
@@ -52,9 +48,9 @@
                     </span>
                     <span class="min-w-0">
                       <span class="block text-sm font-medium text-text">{{ p.name }}</span>
-                      <span class="block text-[11px] text-text-muted font-mono">{{ p.code }}</span>
+                      <span class="block text-caption text-text-muted font-mono">{{ p.code }}</span>
                       @if (p.description) {
-                        <span class="block text-[11px] text-text-muted mt-0.5 line-clamp-2">{{ p.description }}</span>
+                        <span class="block text-caption text-text-muted mt-0.5 line-clamp-2">{{ p.description }}</span>
                       }
                     </span>
                   </label>

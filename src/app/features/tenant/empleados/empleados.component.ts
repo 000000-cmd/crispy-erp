@@ -6,6 +6,10 @@ import { map } from 'rxjs';
 import { Plus, Pencil, Trash2 } from 'lucide-angular';
 
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
+import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
+import { FormCompanionComponent } from '../../../shared/ui/form-companion/form-companion.component';
+import { TPipe } from '../../../shared/pipes/t.pipe';
+import { SkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { DrawerComponent } from '../../../shared/ui/drawer/drawer.component';
 import { DataTableComponent, ColumnDef, RowAction } from '../../../shared/table/data-table.component';
 import { DynamicFormComponent } from '../../../shared/forms/dynamic-form.component';
@@ -38,8 +42,8 @@ import { EmployeeEditForm, EMPTY_EMPLOYEE_EDIT_FORM, buildEmployeeProvisionSchem
   selector: 'app-tenant-empleados',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, RouterLink, ButtonComponent, DrawerComponent, DataTableComponent,
-    DynamicFormComponent, FieldComponent, InputComponent, AutocompleteComponent,
+    CommonModule, FormsModule, RouterLink, ButtonComponent, DrawerComponent, DataTableComponent, PageHeaderComponent, SkeletonComponent,
+    DynamicFormComponent, FieldComponent, InputComponent, AutocompleteComponent, FormCompanionComponent, TPipe,
   ],
   templateUrl: './empleados.component.html',
 })
@@ -80,6 +84,8 @@ export class EmpleadosComponent {
   readonly saving = signal(false);
   readonly dirty = signal(false);
   readonly editForm = signal<EmployeeEditForm>({ ...EMPTY_EMPLOYEE_EDIT_FORM });
+  /** Se activa al intentar guardar con datos inválidos → muestra los errores. */
+  readonly editTried = signal(false);
   private editingSnapshot: EmployeeDetail | null = null;
 
   readonly provisionSchema = buildEmployeeProvisionSchema(this.systemListsApi, this.constants);
@@ -205,6 +211,7 @@ export class EmpleadosComponent {
       hireDate: e.hireDate ?? '',
     });
     this.dirty.set(false);
+    this.editTried.set(false);
     this.editingId.set(e.id);
     this.open.set(true);
   }
@@ -213,7 +220,8 @@ export class EmpleadosComponent {
     const id = this.editingId();
     const branchId = this.selectedBranchId();
     const snapshot = this.editingSnapshot;
-    if (!id || !branchId || !snapshot || !this.editValid()) return;
+    if (!id || !branchId || !snapshot) return;
+    if (!this.editValid()) { this.editTried.set(true); return; }
     const f = this.editForm();
     this.saving.set(true);
     this.api.update(id, {
@@ -232,6 +240,7 @@ export class EmpleadosComponent {
     this.open.set(false);
     this.editingId.set(null);
     this.dirty.set(false);
+    this.editTried.set(false);
     this.editingSnapshot = null;
   }
 

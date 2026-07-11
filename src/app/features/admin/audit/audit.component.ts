@@ -3,6 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, RefreshCw, Eye, ChevronLeft, ChevronRight, Filter } from 'lucide-angular';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
+import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 import { DrawerComponent } from '../../../shared/ui/drawer/drawer.component';
 import { SpinnerComponent } from '../../../shared/ui/spinner/spinner.component';
 import { EmptyComponent } from '../../../shared/ui/empty/empty.component';
@@ -13,7 +14,7 @@ import { AuditApi, AuditAction, AuditLog, AuditFilters } from './audit.api';
   standalone: true,
   imports: [
     CommonModule, FormsModule, LucideAngularModule,
-    ButtonComponent, DrawerComponent, SpinnerComponent, EmptyComponent, DatePipe,
+    ButtonComponent, DrawerComponent, SpinnerComponent, EmptyComponent, DatePipe, PageHeaderComponent,
   ],
   templateUrl: './audit.component.html',
 })

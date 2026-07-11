@@ -2,14 +2,14 @@ import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { LucideAngularModule, Bell, PanelLeftClose, PanelLeftOpen } from 'lucide-angular';
 import { LayoutStateService } from './layout-state.service';
-import { ThemeToggleComponent } from './theme-toggle.component';
+import { ThemeSwitchComponent } from '../../shared/ui/theme-switch/theme-switch.component';
 import { LanguageToggleComponent } from './language-toggle.component';
 import { TPipe } from '../../shared/pipes/t.pipe';
 
 @Component({
   selector: 'app-topbar',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, ThemeToggleComponent, LanguageToggleComponent, TPipe],
+  imports: [CommonModule, LucideAngularModule, ThemeSwitchComponent, LanguageToggleComponent, TPipe],
   templateUrl: './topbar.component.html',
 })
 export class TopbarComponent {

@@ -1,16 +1,12 @@
 <div class="space-y-5">
-  <header class="flex items-end justify-between gap-3">
-    <div>
-      <h1 class="text-xl font-semibold text-text">Empleados</h1>
-      <p class="text-sm text-text-muted">Tu equipo por sede. Sus cuentas entran por la app móvil.</p>
-    </div>
+  <app-page-header title="Empleados" subtitle="Tu equipo por sede. Sus cuentas entran por la app móvil.">
     @if (selectedBranchId()) {
       <app-button [icon]="plusIcon" (onClick)="openCreate()">Nuevo empleado</app-button>
     }
-  </header>
+  </app-page-header>
 
   @if (loading() && !branches().length) {
-    <p class="text-sm text-text-muted">Cargando…</p>
+    <app-skeleton [lines]="4" />
   } @else if (!businessId()) {
     <div class="rounded-2xl border border-border bg-surface p-6 space-y-3">
       <h2 class="text-base font-semibold text-text">Primero registra tu negocio</h2>
@@ -32,6 +28,10 @@
         placeholder="Selecciona una sede" />
     </div>
 
+    @if (!items().length && !loading()) {
+      <app-form-companion [message]="'companion.empleado' | t" />
+    }
+
     <app-data-table [columns]="columns()" [rows]="items()" [actions]="actions()" [loading]="loading()" />
   }
 
@@ -41,7 +41,6 @@
     size="lg"
     [showActions]="true"
     [dirty]="editingId() ? false : dirty()"
-    [saveDisabled]="editingId() ? !editValid() : false"
     [saving]="saving()"
     (save)="submitDrawer()"
     (onClose)="close()">
@@ -67,7 +66,8 @@
           <app-input [value]="editForm().personName" [disabled]="true" />
         </app-field>
 
-        <app-field label="Cargo" [required]="true">
+        <app-field label="Cargo" [required]="true"
+                   [error]="editTried() && !editForm().positionId ? ('validation.position' | t) : ''">
           <app-autocomplete
             [options]="positionOptions()"
             [ngModel]="editForm().positionId"
@@ -75,14 +75,14 @@
             placeholder="Selecciona el cargo" />
         </app-field>
 
-        <div class="grid grid-cols-2 gap-3">
-          <app-field label="Código">
-            <app-input [value]="editForm().employeeCode" (valueChange)="patchEdit('employeeCode', $event)" placeholder="Opcional" />
-          </app-field>
-          <app-field label="Fecha de ingreso" [required]="true">
-            <app-input type="date" [value]="editForm().hireDate" (valueChange)="patchEdit('hireDate', $event)" />
-          </app-field>
-        </div>
+        <app-field label="Código">
+          <app-input [value]="editForm().employeeCode" (valueChange)="patchEdit('employeeCode', $event)" placeholder="Opcional" />
+        </app-field>
+        <app-field label="Fecha de ingreso" [required]="true"
+                   [error]="editTried() && !editForm().hireDate ? ('validation.hireDate' | t) : ''">
+          <app-input type="date" [value]="editForm().hireDate" (valueChange)="patchEdit('hireDate', $event)"
+                     [state]="editTried() && !editForm().hireDate ? 'error' : (editForm().hireDate ? 'valid' : 'idle')" />
+        </app-field>
       </div>
     }
   </app-drawer>

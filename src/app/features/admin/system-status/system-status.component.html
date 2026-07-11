@@ -1,10 +1,6 @@
 
     <div class="space-y-6">
-      <header class="flex items-end justify-between gap-3">
-        <div>
-          <h1 class="text-xl font-semibold text-text tracking-tight">Estado del sistema</h1>
-          <p class="text-sm text-text-muted mt-1">Salud de los microservicios y sus dependencias en tiempo real.</p>
-        </div>
+      <app-page-header title="Estado del sistema" subtitle="Salud de los microservicios y sus dependencias en tiempo real.">
         <button
           type="button"
           (click)="refresh()"
@@ -14,7 +10,7 @@
           <lucide-icon [img]="refreshIcon" [size]="15" [class.animate-spin]="loading()"></lucide-icon>
           Actualizar
         </button>
-      </header>
+      </app-page-header>
 
       <!-- Resumen -->
       <div class="grid grid-cols-2 sm:grid-cols-4 rounded-xl border border-border bg-surface overflow-hidden">
@@ -49,7 +45,7 @@
               </span>
               <div class="flex-1 min-w-0">
                 <h3 class="text-sm font-semibold text-text truncate">{{ svc.label }}</h3>
-                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 mt-1 rounded-full text-[11px] font-medium" [class]="statusClass(st)">
+                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 mt-1 rounded-full text-caption font-medium" [class]="statusClass(st)">
                   <span class="h-1.5 w-1.5 rounded-full" [class]="dotClass(st)" [class.animate-pulse]="st === 'UNKNOWN'"></span>
                   {{ st }}
                 </span>
@@ -83,7 +79,7 @@
                   <p class="text-[10px] uppercase tracking-wide text-text-soft mb-2">Dependencias</p>
                   <ul class="flex flex-wrap gap-1.5">
                     @for (d of info!.dependencies!; track d.name) {
-                      <li class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] border" [class]="depClass(d.status)" [title]="d.detail || (d.type + ' · ' + d.status)">
+                      <li class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-caption border" [class]="depClass(d.status)" [title]="d.detail || (d.type + ' · ' + d.status)">
                         <lucide-icon [img]="depIcon(d.type)" [size]="11"></lucide-icon>
                         <span class="font-medium">{{ d.type }}</span>
                         <span class="opacity-50">·</span>
@@ -93,7 +89,7 @@
                   </ul>
                 </div>
               } @else if (!info && st === 'DOWN') {
-                <p class="mt-4 text-[11px] text-rose-600 dark:text-rose-400">Sin respuesta del servicio.</p>
+                <p class="mt-4 text-caption text-rose-600 dark:text-rose-400">Sin respuesta del servicio.</p>
               }
             </div>
           </div>

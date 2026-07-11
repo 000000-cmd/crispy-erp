@@ -1,12 +1,8 @@
 
     <div class="space-y-5">
-      <header class="flex items-end justify-between gap-3">
-        <div>
-          <h1 class="text-xl font-semibold text-text">{{ 'admin.users' | t }}</h1>
-          <p class="text-sm text-text-muted">{{ 'admin.users.subtitle' | t }}</p>
-        </div>
+      <app-page-header [title]="'admin.users' | t" [subtitle]="'admin.users.subtitle' | t">
         <app-button [icon]="plusIcon" (onClick)="openCreate()">{{ 'admin.users.new' | t }}</app-button>
-      </header>
+      </app-page-header>
 
       <app-data-table
         [columns]="columns()"

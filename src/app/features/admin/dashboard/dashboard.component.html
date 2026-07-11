@@ -5,25 +5,25 @@
                       dark:border-primary-800/40 dark:bg-primary-900/15
                       flex flex-col lg:flex-row lg:items-center justify-between gap-5">
         <div>
-          <h1 class="text-xl sm:text-2xl font-semibold text-text tracking-tight">Hola, {{ greeting() }}</h1>
+          <h1 class="text-display text-text">Hola, {{ greeting() }}</h1>
           <p class="text-sm text-text-muted mt-1 first-letter:uppercase">{{ todayLabel }} · resumen general de la plataforma.</p>
         </div>
         <div class="grid grid-cols-4 gap-px rounded-xl overflow-hidden bg-primary-200/40 dark:bg-primary-800/30 lg:flex lg:gap-0 lg:bg-transparent rounded-xl p-2">
           <div class="bg-primary-50 dark:bg-primary-900/15 px-3 py-2.5 text-center lg:bg-transparent lg:dark:bg-transparent lg:px-5 lg:py-0 lg:text-right">
-            <p class="text-lg sm:text-xl font-semibold text-text">{{ userCount() }}</p>
-            <p class="text-[11px] text-text-muted">Usuarios</p>
+            <p class="text-lg sm:text-h1 text-text">{{ userCount() }}</p>
+            <p class="text-caption text-text-muted">Usuarios</p>
           </div>
           <div class="bg-primary-50 dark:bg-primary-900/15 px-3 py-2.5 text-center lg:bg-transparent lg:dark:bg-transparent lg:px-5 lg:py-0 lg:text-right lg:border-l lg:border-primary-300/40 lg:dark:border-primary-700/40">
-            <p class="text-lg sm:text-xl font-semibold text-text">{{ superAdminCount() }}</p>
-            <p class="text-[11px] text-text-muted">Super admins</p>
+            <p class="text-lg sm:text-h1 text-text">{{ superAdminCount() }}</p>
+            <p class="text-caption text-text-muted">Super admins</p>
           </div>
           <div class="bg-primary-50 dark:bg-primary-900/15 px-3 py-2.5 text-center lg:bg-transparent lg:dark:bg-transparent lg:px-5 lg:py-0 lg:text-right lg:border-l lg:border-primary-300/40 lg:dark:border-primary-700/40">
-            <p class="text-lg sm:text-xl font-semibold text-text">{{ roleCount() }}</p>
-            <p class="text-[11px] text-text-muted">Roles</p>
+            <p class="text-lg sm:text-h1 text-text">{{ roleCount() }}</p>
+            <p class="text-caption text-text-muted">Roles</p>
           </div>
           <div class="bg-primary-50 dark:bg-primary-900/15 px-3 py-2.5 text-center lg:bg-transparent lg:dark:bg-transparent lg:pl-5 lg:py-0 lg:text-right lg:border-l lg:border-primary-300/40 lg:dark:border-primary-700/40">
             <p class="text-lg sm:text-xl font-semibold" [class.text-emerald-600]="allUp()" [class.text-text]="!allUp()">{{ servicesUp() }}/{{ services.length }}</p>
-            <p class="text-[11px] text-text-muted">Servicios</p>
+            <p class="text-caption text-text-muted">Servicios</p>
           </div>
         </div>
       </section>
@@ -50,10 +50,10 @@
                       <span class="font-medium">{{ a.aggregateType }}</span>
                     </p>
                     @if (a.changedFields?.length) {
-                      <p class="text-[11px] text-text-soft truncate">{{ a.changedFields!.join(', ') }}</p>
+                      <p class="text-caption text-text-soft truncate">{{ a.changedFields!.join(', ') }}</p>
                     }
                   </div>
-                  <span class="text-[11px] text-text-soft whitespace-nowrap">{{ a.occurredAt | date:'dd/MM HH:mm' }}</span>
+                  <span class="text-caption text-text-soft whitespace-nowrap">{{ a.occurredAt | date:'dd/MM HH:mm' }}</span>
                 </div>
               }
             </div>
@@ -95,7 +95,7 @@
                 <lucide-icon [img]="s.icon" [size]="16" class="text-text-muted shrink-0"></lucide-icon>
                 <div class="flex-1 min-w-0">
                   <p class="text-[13px] font-medium text-text">{{ s.label }}</p>
-                  <p class="text-[11px] text-text-soft font-mono">{{ s.health()?.info?.version || '—' }}</p>
+                  <p class="text-caption text-text-soft font-mono">{{ s.health()?.info?.version || '—' }}</p>
                 </div>
                 <span class="h-2 w-2 rounded-full" [class]="dotClass(st)" [class.animate-pulse]="st === 'UNKNOWN'"></span>
               </div>
@@ -106,7 +106,7 @@
           <div class="rounded-xl border border-border bg-surface">
             <header class="px-5 py-3.5 border-b border-border flex items-center justify-between">
               <h2 class="text-sm font-semibold text-text">Accesos rápidos</h2>
-              <span class="text-[11px] text-text-soft">desde tus menús</span>
+              <span class="text-caption text-text-soft">desde tus menús</span>
             </header>
             @for (q of quickLinks(); track q.path) {
               <a [routerLink]="q.path"

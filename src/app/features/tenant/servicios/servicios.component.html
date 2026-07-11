@@ -1,16 +1,12 @@
 <div class="space-y-5">
-  <header class="flex items-end justify-between gap-3">
-    <div>
-      <h1 class="text-xl font-semibold text-text">Servicios</h1>
-      <p class="text-sm text-text-muted">Lo que ofrece tu negocio: cortes, tratamientos y más.</p>
-    </div>
+  <app-page-header title="Servicios" subtitle="Lo que ofrece tu negocio: cortes, tratamientos y más.">
     @if (businessId()) {
       <app-button [icon]="plusIcon" (onClick)="openCreate()">Nuevo servicio</app-button>
     }
-  </header>
+  </app-page-header>
 
   @if (loading()) {
-    <p class="text-sm text-text-muted">Cargando…</p>
+    <app-skeleton [lines]="4" />
   } @else if (!businessId()) {
     <div class="rounded-2xl border border-border bg-surface p-6 space-y-3">
       <h2 class="text-base font-semibold text-text">Primero registra tu negocio</h2>
@@ -18,6 +14,9 @@
       <a routerLink="/tenant/onboarding"><app-button>Crear mi negocio</app-button></a>
     </div>
   } @else {
+    @if (!items().length) {
+      <app-form-companion [message]="'companion.servicio' | t" />
+    }
     <app-data-table [columns]="columns()" [rows]="items()" [actions]="actions()" [loading]="loading()" />
   }
 

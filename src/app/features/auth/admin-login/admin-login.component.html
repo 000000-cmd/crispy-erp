@@ -1,24 +1,26 @@
 
-    <div class="space-y-6">
-      <div class="space-y-1">
-        <span class="inline-flex items-center gap-1 rounded-full bg-surface-muted px-2 py-0.5 text-[11px] font-medium text-text-muted">
-          Panel de administración
+    <div class="space-y-7">
+      <div class="space-y-2">
+        <span class="inline-flex items-center gap-1 rounded-full bg-surface-muted px-2 py-0.5 text-caption font-medium text-text-muted">
+          {{ 'auth.admin.badge' | t }}
         </span>
-        <h1 class="text-2xl font-semibold text-text">Acceso administradores</h1>
-        <p class="text-sm text-text-muted">Ingresa con tu cuenta de administrador del sistema.</p>
+        <h1 class="text-display text-text">{{ 'auth.admin.title' | t }}</h1>
+        <p class="text-sm text-text-muted">{{ 'auth.admin.subtitle' | t }}</p>
       </div>
 
-      <app-dynamic-form
-        [schema]="schema"
-        [submitting]="loading()"
-        (submitValue)="onSubmit($event)"
-      />
+      <div (focusin)="mascot.setTyping(true)" (focusout)="mascot.setTyping(false)" (mouseenter)="mascot.jump()">
+        <app-dynamic-form
+          [schema]="schema"
+          [submitting]="loading()"
+          (submitValue)="onSubmit($event)"
+        />
+      </div>
 
       @if (error()) {
-        <p class="text-sm text-rose-600">{{ error() }}</p>
+        <p role="alert" class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300">{{ error() }}</p>
       }
 
-      <div class="pt-2 border-t border-border text-sm">
-        <a routerLink="/login" class="text-text-muted hover:text-text">← Volver al acceso de negocios</a>
+      <div class="border-t border-border pt-4 text-sm">
+        <a routerLink="/login" class="text-text-muted transition-colors hover:text-text">{{ 'auth.admin.back' | t }}</a>
       </div>
     </div>

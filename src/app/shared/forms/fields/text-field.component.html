@@ -1,24 +1,49 @@
 
     @if (field().type === 'textarea') {
-      <textarea
-        [formControl]="ctrl()"
-        [placeholder]="field().placeholder || ''"
-        [readonly]="field().readonly || false"
-        rows="4"
-        [class]="inputClass()"
-      ></textarea>
+      <div class="relative">
+        <textarea
+          [formControl]="ctrl()"
+          [placeholder]="field().placeholder || ''"
+          [readonly]="field().readonly || false"
+          rows="4"
+          [class]="inputClass()"
+        ></textarea>
+        <app-field-status [state]="state()" class="pointer-events-none absolute right-2.5 top-2.5" />
+      </div>
+    } @else if (isPassword()) {
+      <div class="relative">
+        <input
+          [type]="effectiveType()"
+          [formControl]="ctrl()"
+          [placeholder]="field().placeholder || ''"
+          [readonly]="field().readonly || false"
+          [class]="inputClass()"
+        />
+        <app-field-status [state]="state()" class="pointer-events-none absolute inset-y-0 right-10 grid place-items-center" />
+        <button
+          type="button"
+          (click)="toggleReveal()"
+          tabindex="0"
+          [attr.aria-label]="revealed() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+          [attr.aria-pressed]="revealed()"
+          class="absolute inset-y-0 right-0 grid place-items-center w-10 text-text-soft hover:text-text-muted focus:outline-none focus-visible:text-primary-600">
+          <lucide-icon [img]="revealed() ? eyeOffIcon : eyeIcon" [size]="16" />
+        </button>
+      </div>
     } @else {
-      <input
-        [type]="htmlType()"
-        [formControl]="ctrl()"
-        [placeholder]="field().placeholder || ''"
-        [readonly]="field().readonly || false"
-        [class]="inputClass()"
-      />
+      <div class="relative">
+        <input
+          [type]="htmlType()"
+          [formControl]="ctrl()"
+          [placeholder]="field().placeholder || ''"
+          [readonly]="field().readonly || false"
+          [class]="inputClass()"
+        />
+        <app-field-status [state]="state()" class="pointer-events-none absolute inset-y-0 right-2.5 grid place-items-center" />
+      </div>
     }
     @if (showError()) {
-      <p class="text-[11px] text-rose-600 mt-1">{{ errorMsg().key | t : errorMsg().params }}</p>
+      <p class="text-caption text-rose-600 mt-1">{{ errorMsg().key | t : errorMsg().params }}</p>
     } @else if (hint()) {
-      <p class="text-[11px] text-text-muted mt-1">{{ hint() }}</p>
+      <p class="text-caption text-text-muted mt-1">{{ hint() }}</p>
     }
-  

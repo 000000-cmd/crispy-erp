@@ -1,38 +1,47 @@
 
-    <div class="min-h-screen flex bg-bg text-text">
-      <div class="hidden lg:flex flex-1 bg-primary-500 items-center justify-center p-12 relative">
-        <button
-          class="absolute top-5 right-5 h-9 w-9 rounded-full bg-white/15 hover:bg-white/25 text-white inline-flex items-center justify-center"
-          (click)="theme.toggleMode()"
-        >
-          <lucide-icon [img]="theme.mode() === 'dark' ? sunIcon : moonIcon" [size]="16"></lucide-icon>
-        </button>
-        @if (branding.hasTenant()) {
-          <div class="max-w-md text-white">
-            @if (branding.branding()?.logoUrl) {
+    <div class="min-h-screen bg-bg text-text lg:flex">
+      <!-- Escenario de la mascota: franja superior en móvil, columna izquierda (sticky) en desktop.
+           Layout en columna: el orb ocupa el espacio central disponible y nunca se solapa
+           ni se corta, sea cual sea la altura del viewport. -->
+      <div class="auth-stage relative flex h-60 shrink-0 flex-col overflow-hidden lg:h-screen lg:w-[48%] lg:sticky lg:top-0 lg:self-start">
+        <!-- Fondo animado (Rive) detrás del orb, mezclado con la base cálida del tenant -->
+        <app-rive-background src="/mascot/background-effect.riv" class="pointer-events-none absolute inset-0 block opacity-80 mix-blend-screen" />
+        <div class="auth-stage__halo"></div>
+
+        <!-- Barra superior: wordmark + toggle de tema -->
+        <div class="relative z-10 flex shrink-0 items-center justify-between p-5 lg:p-8">
+          <div class="flex items-center gap-2.5">
+            @if (branding.hasTenant() && branding.branding()?.logoUrl) {
               <img [src]="branding.branding()!.logoUrl" [alt]="branding.branding()!.name"
-                   class="h-14 w-14 rounded-lg object-cover bg-white/20 mb-6" />
+                   class="h-8 w-8 rounded-lg object-cover ring-1 ring-white/25" />
             } @else {
-              <div class="h-12 w-12 rounded-lg bg-white/20 flex items-center justify-center text-xl font-semibold mb-6">
-                {{ branding.branding()!.name.charAt(0) }}
-              </div>
+              <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-white/15 text-sm font-semibold text-white ring-1 ring-white/25">
+                {{ brandInitial() }}
+              </span>
             }
-            <h1 class="text-3xl font-semibold leading-tight mb-3">{{ branding.branding()!.name }}</h1>
-            <p class="text-white/85 text-sm leading-relaxed">
-              Administra tu negocio: agenda, equipo, servicios y métricas en un solo lugar.
-            </p>
+            <span class="text-h3 font-semibold text-white">{{ brandName() }}</span>
           </div>
-        } @else {
-          <div class="max-w-md text-white">
-            <div class="h-12 w-12 rounded-lg bg-white/20 flex items-center justify-center text-xl font-semibold mb-6">EM</div>
-            <h1 class="text-3xl font-semibold leading-tight mb-3">ERP Moda</h1>
-            <p class="text-white/85 text-sm leading-relaxed">
-              Plataforma de gestión integral para tu negocio. Inventario, citas, equipo y métricas en un solo lugar.
-            </p>
-          </div>
-        }
+
+          <app-theme-switch class="block h-9 w-16" />
+        </div>
+
+        <!-- Centro: la mascota ocupa el espacio restante (nunca desborda gracias a max-h-full) -->
+        <div class="relative z-[1] flex min-h-0 flex-1 items-center justify-center px-4 pb-2 lg:px-8">
+          <app-mascot
+            class="block aspect-square h-full max-h-full max-w-full"
+            [typing]="mascot.typing()"
+            [loading]="mascot.loading()"
+          />
+        </div>
+
+        <!-- Tagline (sólo desktop, para no saturar la franja móvil) -->
+        <p class="relative z-10 hidden shrink-0 max-w-sm p-8 pt-0 text-sm leading-relaxed text-white/70 lg:block">
+          {{ tagline() }}
+        </p>
       </div>
-      <div class="flex-1 flex items-center justify-center p-8">
+
+      <!-- Formulario -->
+      <div class="flex flex-1 items-center justify-center px-6 py-10 sm:px-8">
         <div class="w-full max-w-sm">
           <router-outlet />
         </div>

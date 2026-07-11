@@ -6,6 +6,10 @@ import { map } from 'rxjs';
 import { Plus, Pencil, Trash2 } from 'lucide-angular';
 
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
+import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
+import { FormCompanionComponent } from '../../../shared/ui/form-companion/form-companion.component';
+import { TPipe } from '../../../shared/pipes/t.pipe';
+import { SkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { DrawerComponent } from '../../../shared/ui/drawer/drawer.component';
 import { DataTableComponent, ColumnDef, RowAction } from '../../../shared/table/data-table.component';
 import { FieldComponent } from '../../../shared/ui/field/field.component';
@@ -30,8 +34,8 @@ import { BranchForm, EMPTY_BRANCH_FORM } from './sedes.form';
   selector: 'app-tenant-sedes',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, RouterLink, ButtonComponent, DrawerComponent, DataTableComponent,
-    FieldComponent, InputComponent, SwitchComponent, AutocompleteComponent, LocationPickerComponent,
+    CommonModule, FormsModule, RouterLink, ButtonComponent, DrawerComponent, DataTableComponent, PageHeaderComponent, SkeletonComponent,
+    FieldComponent, InputComponent, SwitchComponent, AutocompleteComponent, LocationPickerComponent, FormCompanionComponent, TPipe,
   ],
   templateUrl: './sedes.component.html',
 })
@@ -53,6 +57,8 @@ export class SedesComponent {
   readonly editingId = signal<string | null>(null);
   readonly saving = signal(false);
   readonly form = signal<BranchForm>({ ...EMPTY_BRANCH_FORM });
+  /** Se activa al intentar guardar con datos inválidos → muestra los errores. */
+  readonly tried = signal(false);
   readonly branchTypeOptions = signal<AutocompleteOption[]>([]);
 
   readonly formValid = computed(() => {
@@ -103,7 +109,7 @@ export class SedesComponent {
     this.form.update(f => ({ ...f, [key]: value }));
   }
 
-  openCreate() { this.form.set({ ...EMPTY_BRANCH_FORM }); this.editingId.set(null); this.open.set(true); }
+  openCreate() { this.form.set({ ...EMPTY_BRANCH_FORM }); this.editingId.set(null); this.tried.set(false); this.open.set(true); }
 
   openEdit(b: Branch) {
     this.form.set({
@@ -112,10 +118,11 @@ export class SedesComponent {
       addressLine: b.addressLine ?? '', phone: b.phone ?? '', isMain: !!b.isMain,
     });
     this.editingId.set(b.id);
+    this.tried.set(false);
     this.open.set(true);
   }
 
-  close() { this.open.set(false); this.editingId.set(null); }
+  close() { this.open.set(false); this.editingId.set(null); this.tried.set(false); }
 
   onLocation(sel: LocationSelection) {
     const m = sel.meta?.municipality as any;
@@ -126,7 +133,8 @@ export class SedesComponent {
 
   save() {
     const businessId = this.businessId();
-    if (!businessId || !this.formValid()) return;
+    if (!businessId) return;
+    if (!this.formValid()) { this.tried.set(true); return; }
     const f = this.form();
     this.saving.set(true);
     const payload = {

@@ -19,9 +19,12 @@ const path = (p: string) => ms(MICROSERVICES.THIRDPARTY, p);
 export class ThirdPartyApi {
   private readonly api = inject(ApiService);
 
-  /** Búsqueda paginada vía Elasticsearch (GET principal + buscador). */
+  /**
+   * Búsqueda paginada vía Elasticsearch. Los filtros/paginación van por el CUERPO
+   * (POST) — no por query params — para peticiones más limpias.
+   */
   search(params: { q?: string; enabled?: boolean; page?: number; size?: number; sort?: string }): Observable<SearchResponse<ThirdParty>> {
-    return this.api.get(ms(MICROSERVICES.ELASTIC, 'third-parties'), { ...params });
+    return this.api.post(ms(MICROSERVICES.ELASTIC, 'third-parties'), { ...params });
   }
 
   /**
