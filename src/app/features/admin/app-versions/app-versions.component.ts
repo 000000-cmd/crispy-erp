@@ -3,6 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { LucideAngularModule, Plus, UploadCloud, Link2, Rocket, Trash2 } from 'lucide-angular';
 
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
+import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 import { DrawerComponent } from '../../../shared/ui/drawer/drawer.component';
 import { DataTableComponent } from '../../../shared/table/data-table.component';
 import { ColumnDef, RowAction } from '../../../shared/table/data-table.types';
@@ -28,7 +29,7 @@ import { UploadForm, EMPTY_UPLOAD_FORM } from './app-versions.form';
   standalone: true,
   imports: [
     CommonModule, LucideAngularModule, ButtonComponent, DrawerComponent, DataTableComponent,
-    FieldComponent, InputComponent, SwitchComponent, TPipe,
+    FieldComponent, InputComponent, SwitchComponent, TPipe, PageHeaderComponent,
   ],
   templateUrl: './app-versions.component.html',
 })

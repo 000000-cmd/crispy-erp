@@ -2,7 +2,7 @@
 <div class="space-y-5">
   <header class="flex items-end justify-between gap-3">
     <div>
-      <h1 class="text-xl font-semibold text-text tracking-tight flex items-center gap-2">
+      <h1 class="text-h1 text-text flex items-center gap-2">
         <lucide-icon [img]="pinIcon" [size]="18"></lucide-icon>
         División política
       </h1>
@@ -13,7 +13,7 @@
 
   <!-- Filtro nivel país -->
   <div class="max-w-sm">
-    <label class="block text-[11px] font-medium text-text-muted mb-1">Filtrar por país</label>
+    <label class="block text-caption font-medium text-text-muted mb-1">Filtrar por país</label>
     <app-autocomplete
       [searchFn]="countriesSearchFn"
       [minSearchChars]="3"
@@ -45,7 +45,7 @@
             </span>
             <span class="flex-1 min-w-0">
               <span class="block text-sm font-semibold text-text truncate">{{ c.name }}</span>
-              <span class="text-[11px] font-mono text-text-muted">{{ c.code }}</span>
+              <span class="text-caption font-mono text-text-muted">{{ c.code }}</span>
               @if (!c.enabled) { <span class="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-600">inhabilitado</span> }
             </span>
             <div class="flex items-center gap-1">
@@ -78,7 +78,7 @@
                 <div class="py-4 text-center text-xs text-text-muted">Sin departamentos. Usa <kbd>+</kbd> arriba para crear uno.</div>
               } @else {
                 <div class="pt-3 max-w-sm">
-                  <label class="block text-[11px] font-medium text-text-muted mb-1">Filtrar departamento</label>
+                  <label class="block text-caption font-medium text-text-muted mb-1">Filtrar departamento</label>
                   <app-autocomplete
                     [searchFn]="departmentsSearchFn(c.code)"
                     [minSearchChars]="3"
@@ -134,7 +134,7 @@
                             <div class="py-3 text-center text-xs text-text-muted">Sin municipios.</div>
                           } @else {
                             <div class="pt-2 max-w-sm">
-                              <label class="block text-[11px] font-medium text-text-muted mb-1">Filtrar municipio</label>
+                              <label class="block text-caption font-medium text-text-muted mb-1">Filtrar municipio</label>
                               <app-autocomplete
                                 [searchFn]="municipalitiesSearchFn(c.code, d.code)"
                                 [minSearchChars]="3"
@@ -189,7 +189,7 @@
                                         <div class="py-3 text-center text-xs text-text-muted">Sin barrios / veredas.</div>
                                       } @else {
                                         <div class="pt-2 max-w-sm">
-                                          <label class="block text-[11px] font-medium text-text-muted mb-1">Filtrar barrio / vereda</label>
+                                          <label class="block text-caption font-medium text-text-muted mb-1">Filtrar barrio / vereda</label>
                                           <app-autocomplete
                                             [searchFn]="neighborhoodsSearchFn(c.code, d.code, m.code)"
                                             [minSearchChars]="3"

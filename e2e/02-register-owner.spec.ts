@@ -4,21 +4,26 @@ import { byPlaceholder, registerOwner, unique } from './support/helpers';
 /** Wizard público de alta de dueño: validaciones por paso, happy path y duplicados. */
 test.describe('Registro de dueño', () => {
 
-  test('paso 1 (cuenta): Continuar se habilita solo con los datos válidos', async ({ page }) => {
+  test('paso 1 (cuenta): el botón no se bloquea; valida al intentar y avanza con datos válidos', async ({ page }) => {
     await page.goto('/login/register');
     const continuar = page.getByRole('button', { name: 'Continuar' });
-    await expect(continuar).toBeDisabled();
+    // Ya NO se bloquea por validez: siempre habilitado (que los validators indiquen).
+    await expect(continuar).toBeEnabled();
 
+    // Intentar con campos vacíos → muestra los errores y NO avanza.
+    await continuar.click();
+    await expect(page.getByText('Ingresa tu nombre (mínimo 2 caracteres).')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Crear cuenta' })).toHaveCount(0);
+
+    // Completar con datos válidos → verifica el correo (paso 1) y avanza a confirmar.
     const inputs = page.locator('input');
     await inputs.nth(0).fill('Ana');                                   // Nombre
     await inputs.nth(1).fill('Pérez');                                 // Apellido
-    await byPlaceholder(page, 'tu@correo.com').fill('ana@correo.com');
+    await byPlaceholder(page, 'tu@correo.com').fill(`${unique('ana')}@correo.com`);
     await inputs.nth(3).fill('anaperez');                             // Usuario
-    // Contraseña corta: sigue deshabilitado.
-    await byPlaceholder(page, 'Mínimo 8 caracteres').fill('123');
-    await expect(continuar).toBeDisabled();
     await byPlaceholder(page, 'Mínimo 8 caracteres').fill('Password123!');
-    await expect(continuar).toBeEnabled();
+    await continuar.click();
+    await expect(page.getByRole('button', { name: 'Crear cuenta' })).toBeVisible({ timeout: 15_000 });
   });
 
   test('happy path: registro (solo cuenta) aterriza en /tenant', async ({ page }) => {

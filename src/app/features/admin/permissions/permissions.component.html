@@ -1,12 +1,8 @@
 
     <div class="space-y-5">
-      <header class="flex items-end justify-between gap-3">
-        <div>
-          <h1 class="text-xl font-semibold text-text tracking-tight">{{ 'admin.permissions' | t }}</h1>
-          <p class="text-sm text-text-muted mt-0.5">{{ 'admin.permissions.subtitle' | t }}</p>
-        </div>
+      <app-page-header [title]="'admin.permissions' | t" [subtitle]="'admin.permissions.subtitle' | t">
         <app-button [icon]="plusIcon" (onClick)="open(null)">{{ 'admin.permissions.new' | t }}</app-button>
-      </header>
+      </app-page-header>
 
       <app-data-table [columns]="columns()" [rows]="items()" [actions]="actions()" [loading]="loading()" />
 

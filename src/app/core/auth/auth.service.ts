@@ -57,6 +57,18 @@ export class AuthService {
     );
   }
 
+  /**
+   * ¿El correo ya está registrado? Se usa en el primer paso del registro para
+   * avisar antes de continuar. Si la verificación falla (red/servidor), no
+   * bloqueamos: devolvemos `false` y el duplicado se detectará en el envío.
+   */
+  emailExists(email: string): Observable<boolean> {
+    return this.api.post<boolean>(ms(MICROSERVICES.AUTH, 'exists'), { email }).pipe(
+      map(v => !!v),
+      catchError(() => of(false)),
+    );
+  }
+
   /** Persiste tokens + usuario y carga permisos tras un login/registro exitoso. */
   private establishSession(res: LoginResponse): void {
     this.storage.setAccess(res.tokens.accessToken);

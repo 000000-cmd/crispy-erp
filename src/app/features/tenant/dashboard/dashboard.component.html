@@ -1,14 +1,18 @@
 <div class="space-y-5">
 
   <header>
-    <h1 class="text-2xl font-semibold text-text tracking-tight">Hola{{ greeting() ? ', ' + greeting() : '' }} 👋</h1>
+    <h1 class="text-display text-text">Hola{{ greeting() ? ', ' + greeting() : '' }} 👋</h1>
     <p class="text-sm text-text-muted mt-0.5">
       {{ business() ? ('Tu negocio · ' + business()!.name) : 'Bienvenido a tu panel' }}
     </p>
   </header>
 
   @if (loading()) {
-    <p class="text-sm text-text-muted">Cargando…</p>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <app-skeleton variant="block" height="5.5rem" />
+      <app-skeleton variant="block" height="5.5rem" />
+      <app-skeleton variant="block" height="5.5rem" />
+    </div>
   } @else if (!business()) {
     <!-- Sin negocio: el único paso real es crearlo. -->
     <div class="rounded-2xl border border-border bg-surface p-6 space-y-3 max-w-xl">
@@ -76,7 +80,7 @@
               <div class="min-w-0 flex-1">
                 <p class="text-sm" [class.line-through]="s.done"
                    [class.text-primary-600]="s.done" [class.text-primary-900]="!s.done" [class.dark:text-primary-100]="!s.done">{{ s.label }}</p>
-                <p class="text-[11px] text-primary-700/70 dark:text-primary-200/60">{{ s.hint }}</p>
+                <p class="text-caption text-primary-700/70 dark:text-primary-200/60">{{ s.hint }}</p>
               </div>
               @if (!s.done) {
                 <button type="button" (click)="go(s.route)"
@@ -112,12 +116,11 @@
   <!-- Bienvenida (primer ingreso): pasos + llenar más tarde. Tour guiado: a futuro. -->
   <app-modal [open]="showWelcome()" title="¡Te damos la bienvenida! 🎉" size="md" (onClose)="closeWelcome()">
     <div class="space-y-4">
-      <div class="flex items-start gap-3">
-        <span class="h-10 w-10 rounded-lg bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 inline-flex items-center justify-center shrink-0">
-          <lucide-icon [img]="welcomeIcon" [size]="18" />
-        </span>
-        <p class="text-sm text-text-muted">
-          Estos son los pasos mínimos para operar. Hazlos ahora o más tarde, a tu ritmo — te acompañamos desde el panel.
+      <div class="flex flex-col items-center text-center">
+        <app-mascot class="block h-40 w-40" />
+        <p class="text-sm text-text mt-1 max-w-sm">{{ welcomeMessage() }}</p>
+        <p class="text-caption text-text-muted mt-1.5 max-w-sm">
+          Estos son los pasos mínimos para operar. Hazlos ahora o más tarde, a tu ritmo.
         </p>
       </div>
       <ul class="space-y-2">
@@ -127,7 +130,7 @@
                          [class.text-primary-500]="s.done" [class.text-text-soft]="!s.done" />
             <div class="min-w-0 flex-1">
               <p class="text-sm text-text" [class.line-through]="s.done">{{ s.label }}</p>
-              <p class="text-[11px] text-text-muted">{{ s.hint }}</p>
+              <p class="text-caption text-text-muted">{{ s.hint }}</p>
             </div>
             @if (!s.done) {
               <button type="button" (click)="startStep(s.route)"

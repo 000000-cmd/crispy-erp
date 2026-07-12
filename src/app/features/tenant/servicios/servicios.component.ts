@@ -7,6 +7,10 @@ import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { DrawerComponent } from '../../../shared/ui/drawer/drawer.component';
 import { DataTableComponent, ColumnDef, RowAction } from '../../../shared/table/data-table.component';
 import { DynamicFormComponent } from '../../../shared/forms/dynamic-form.component';
+import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
+import { FormCompanionComponent } from '../../../shared/ui/form-companion/form-companion.component';
+import { TPipe } from '../../../shared/pipes/t.pipe';
+import { SkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { FormSchema } from '../../../shared/forms/core/types';
 import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
@@ -20,7 +24,7 @@ import { Offering } from './servicios.model';
 @Component({
   selector: 'app-tenant-servicios',
   standalone: true,
-  imports: [CommonModule, RouterLink, ButtonComponent, DrawerComponent, DataTableComponent, DynamicFormComponent],
+  imports: [CommonModule, RouterLink, ButtonComponent, DrawerComponent, DataTableComponent, DynamicFormComponent, PageHeaderComponent, SkeletonComponent, FormCompanionComponent, TPipe],
   templateUrl: './servicios.component.html',
 })
 export class ServiciosComponent {

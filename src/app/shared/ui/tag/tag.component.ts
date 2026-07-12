@@ -31,7 +31,7 @@ export class TagComponent {
   readonly classes = computed(() => {
     const size = this.size() === 'md'
       ? 'px-2.5 py-1 text-xs'
-      : 'px-2 py-0.5 text-[11px]';
+      : 'px-2 py-0.5 text-caption';
     const base = `inline-flex items-center gap-1 rounded-full font-medium leading-none ${size}`;
     const soft: Record<TagTone, string> = {
       neutral: 'bg-surface-muted text-text-muted',

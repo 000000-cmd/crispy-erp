@@ -1,12 +1,8 @@
 
     <div class="space-y-5">
-      <header class="flex items-end justify-between gap-3">
-        <div>
-          <h1 class="text-xl font-semibold text-text tracking-tight">{{ 'admin.menus' | t }}</h1>
-          <p class="text-sm text-text-muted mt-0.5">{{ 'admin.menus.subtitle' | t }}</p>
-        </div>
+      <app-page-header [title]="'admin.menus' | t" [subtitle]="'admin.menus.subtitle' | t">
         <app-button [icon]="plusIcon" (onClick)="openCreate(null)">{{ 'admin.menus.new' | t }}</app-button>
-      </header>
+      </app-page-header>
 
       <div class="rounded-xl border border-border bg-surface">
         @if (loading()) {
@@ -43,9 +39,9 @@
               <span class="text-sm font-medium text-text">{{ node.name }}</span>
               <span class="ml-2 text-[10px] font-mono text-text-muted bg-surface-muted px-1.5 py-0.5 rounded">{{ node.code }}</span>
               @if (node.route) {
-                <span class="ml-2 text-[11px] text-text-muted">{{ node.route }}</span>
+                <span class="ml-2 text-caption text-text-muted">{{ node.route }}</span>
               } @else {
-                <span class="ml-2 text-[11px] text-text-soft italic">{{ 'admin.menus.group' | t }}</span>
+                <span class="ml-2 text-caption text-text-soft italic">{{ 'admin.menus.group' | t }}</span>
               }
             </span>
 
@@ -128,7 +124,7 @@
                   </span>
                   <span class="min-w-0">
                     <span class="block text-sm font-medium text-text">{{ r.name }}</span>
-                    <span class="block text-[11px] text-text-muted font-mono">{{ r.code }}</span>
+                    <span class="block text-caption text-text-muted font-mono">{{ r.code }}</span>
                   </span>
                 </label>
               }

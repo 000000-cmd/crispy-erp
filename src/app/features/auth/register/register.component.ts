@@ -3,9 +3,12 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { LucideAngularModule, Check, Loader2, ArrowLeft } from 'lucide-angular';
 import { AuthService } from '../../../core/auth/auth.service';
+import { AuthMascotService } from '../../../core/auth/auth-mascot.service';
+import { I18nService } from '../../../core/i18n/i18n.service';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { FieldComponent } from '../../../shared/ui/field/field.component';
 import { InputComponent } from '../../../shared/ui/input/input.component';
+import { FieldState } from '../../../shared/ui/field-status/field-status.component';
 import { RegisterOwnerRequest } from './register.model';
 
 type Step = 1 | 2;
@@ -28,6 +31,10 @@ type Step = 1 | 2;
 export class RegisterComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  protected readonly mascot = inject(AuthMascotService);
+  private readonly i18n = inject(I18nService);
+
+  constructor() { this.mascot.reset(); }
 
   protected readonly checkIcon = Check;
   protected readonly spinnerIcon = Loader2;
@@ -52,9 +59,26 @@ export class RegisterComponent {
     password: '',
   });
 
+  /** El correo ya está registrado (lo dice el back al validar en el paso 1). */
+  readonly emailTaken = signal(false);
+
   /** Actualiza un campo del modelo de forma inmutable. */
   patch<K extends keyof RegisterOwnerRequest>(key: K, value: RegisterOwnerRequest[K]) {
     this.model.update(m => ({ ...m, [key]: value }));
+    if (key === 'email') this.emailTaken.set(false); // al reescribir, se revalida
+  }
+
+  /**
+   * Estado visual del campo, mismo lenguaje que el resto del sistema:
+   * check al ser válido, alerta si tiene valor pero no cumple, X si está vacío
+   * tras intentar continuar.
+   */
+  stateFor(key: keyof RegisterOwnerRequest): FieldState {
+    const value = (this.model()[key] ?? '').trim();
+    const invalid = !!this.fieldErrors()[key];
+    if (!invalid) return value ? 'valid' : 'idle';
+    if (this.showErrors()) return value ? 'warn' : 'error';
+    return value ? 'warn' : 'idle';
   }
 
   readonly step1Valid = computed(() => {
@@ -66,18 +90,56 @@ export class RegisterComponent {
       && m.password.length >= 8;
   });
 
+  /** El botón nunca se bloquea; al fallar mostramos el error de cada campo. */
+  readonly showErrors = signal(false);
+  readonly fieldErrors = computed(() => {
+    const m = this.model();
+    const t = (k: string) => this.i18n.t(k);
+    return {
+      firstName: m.firstName.trim().length >= 2 ? '' : t('validation.firstName'),
+      lastName: m.lastName.trim().length >= 2 ? '' : t('validation.lastName'),
+      email: !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m.email)
+        ? t('validation.email')
+        : (this.emailTaken() ? t('validation.emailTaken') : ''),
+      username: m.username.trim().length >= 3 ? '' : t('validation.username'),
+      password: m.password.length >= 8 ? '' : t('validation.password'),
+    };
+  });
+
   /**
    * Avanza con feedback visual: el número del paso actual muestra un spinner,
    * luego se marca como completado (check) y avanza suave al siguiente.
    */
   next() {
     if (this.advancing()) return;
-    if (this.step() === 1 && !this.step1Valid()) return;
+    if (this.step() !== 1) return;
+    if (!this.step1Valid()) {
+      this.showErrors.set(true);
+      this.mascot.reject();
+      return;
+    }
+    // Formato OK → el orb verifica que el correo no esté ya registrado:
+    // loading mientras consulta; si está libre, success y avanza a confirmar;
+    // si está tomado, lo marca y se queda en el paso 1.
     this.advancing.set(true);
-    setTimeout(() => {
-      this.step.update(v => Math.min(2, v + 1) as Step);
-      this.advancing.set(false);
-    }, 650);
+    this.mascot.setTyping(false);
+    this.mascot.setLoading(true);
+    this.emailTaken.set(false);
+    this.auth.emailExists(this.model().email).subscribe(exists => {
+      this.mascot.setLoading(false);
+      if (exists) {
+        this.emailTaken.set(true);
+        this.showErrors.set(true);
+        this.mascot.reject();
+        this.advancing.set(false);
+        return;
+      }
+      this.mascot.celebrate();
+      setTimeout(() => {
+        this.step.set(2);
+        this.advancing.set(false);
+      }, 550);
+    });
   }
 
   back() {
@@ -96,13 +158,18 @@ export class RegisterComponent {
     if (!this.step1Valid()) return;
     this.error.set(null);
     this.loading.set(true);
+    this.mascot.setLoading(true);
     this.auth.registerOwner(this.model()).subscribe({
       next: () => {
         this.loading.set(false);
+        this.mascot.setLoading(false);
+        this.mascot.celebrate();
         this.router.navigateByUrl(this.auth.homeRoute());
       },
       error: (e) => {
         this.loading.set(false);
+        this.mascot.setLoading(false);
+        this.mascot.reject();
         this.error.set(e?.error?.message ?? 'No se pudo completar el registro. Revisa los datos e intenta de nuevo.');
       },
     });

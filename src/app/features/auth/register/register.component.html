@@ -4,8 +4,8 @@
         <lucide-icon [img]="backIcon" [size]="15"></lucide-icon> Volver al inicio
       </a>
 
-      <div class="space-y-1">
-        <h1 class="text-2xl font-semibold text-text">
+      <div class="space-y-1.5">
+        <h1 class="text-display text-text">
           @switch (step()) {
             @case (1) { ¡Hola! Creemos tu cuenta 👋 }
             @case (2) { Todo listo, revisa y confirma }
@@ -38,7 +38,7 @@
                 @default          { {{ s.n }} }
               }
             </div>
-            <span class="mt-1.5 text-[11px] transition-colors"
+            <span class="mt-1.5 text-caption transition-colors"
                   [class.text-primary-600]="step() >= s.n"
                   [class.text-text-muted]="step() < s.n">{{ s.label }}</span>
           </div>
@@ -52,23 +52,24 @@
 
       <!-- Paso 1: Cuenta -->
       @if (step() === 1) {
-        <div class="space-y-4">
-          <app-field label="Nombre">
-            <app-input [value]="model().firstName" (valueChange)="patch('firstName', $event)" autocomplete="given-name" />
+        <div class="space-y-4" (focusin)="mascot.setTyping(true)" (focusout)="mascot.setTyping(false)">
+          <app-field label="Nombre" [error]="showErrors() ? fieldErrors().firstName : ''">
+            <app-input [value]="model().firstName" (valueChange)="patch('firstName', $event)" [state]="stateFor('firstName')" autocomplete="given-name" />
           </app-field>
-          <app-field label="Apellido">
-            <app-input [value]="model().lastName" (valueChange)="patch('lastName', $event)" autocomplete="family-name" />
+          <app-field label="Apellido" [error]="showErrors() ? fieldErrors().lastName : ''">
+            <app-input [value]="model().lastName" (valueChange)="patch('lastName', $event)" [state]="stateFor('lastName')" autocomplete="family-name" />
           </app-field>
-          <app-field label="Correo">
+          <app-field label="Correo" [error]="showErrors() ? fieldErrors().email : ''">
             <app-input type="email" [value]="model().email" (valueChange)="patch('email', $event)"
-                       placeholder="tu@correo.com" autocomplete="email" />
+                       [state]="stateFor('email')" placeholder="tu@correo.com" autocomplete="email" />
           </app-field>
-          <app-field label="Usuario">
-            <app-input [value]="model().username" (valueChange)="patch('username', $event)" autocomplete="username" />
+          <app-field label="Usuario" [error]="showErrors() ? fieldErrors().username : ''">
+            <app-input [value]="model().username" (valueChange)="patch('username', $event)" [state]="stateFor('username')" autocomplete="username" />
           </app-field>
-          <app-field label="Contraseña" hint="Mínimo 8 caracteres. Úsala con tu usuario o correo para entrar.">
+          <app-field label="Contraseña" hint="Mínimo 8 caracteres. Úsala con tu usuario o correo para entrar."
+                     [error]="showErrors() ? fieldErrors().password : ''">
             <app-input type="password" [value]="model().password" (valueChange)="patch('password', $event)"
-                       placeholder="Mínimo 8 caracteres" autocomplete="new-password" />
+                       [state]="stateFor('password')" placeholder="Mínimo 8 caracteres" autocomplete="new-password" />
           </app-field>
         </div>
       }
@@ -104,12 +105,12 @@
         }
 
         @if (step() < 2) {
-          <app-button (onClick)="next()" [loading]="advancing()"
-                      [disabled]="advancing() || !step1Valid()">
+          <app-button (onClick)="next()" (mouseenter)="mascot.jump()" [loading]="advancing()"
+                      [disabled]="advancing()">
             Continuar
           </app-button>
         } @else {
-          <app-button (onClick)="submit()" [loading]="loading()" [disabled]="loading()">
+          <app-button (onClick)="submit()" (mouseenter)="mascot.jump()" [loading]="loading()" [disabled]="loading()">
             {{ loading() ? 'Creando…' : 'Crear cuenta' }}
           </app-button>
         }

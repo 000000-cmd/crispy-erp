@@ -1,12 +1,8 @@
 <div class="space-y-5">
 
-  <header class="flex items-end justify-between gap-3">
-    <div>
-      <h1 class="text-xl font-semibold text-text">{{ 'admin.thirdParties' | t }}</h1>
-      <p class="text-sm text-text-muted">{{ 'admin.thirdParties.subtitle' | t }}</p>
-    </div>
+  <app-page-header [title]="'admin.thirdParties' | t" [subtitle]="'admin.thirdParties.subtitle' | t">
     <app-button [icon]="plusIcon" (onClick)="openCreate()">{{ 'admin.thirdParties.new' | t }}</app-button>
-  </header>
+  </app-page-header>
 
   <div class="max-w-sm">
     <app-search-field
@@ -160,11 +156,11 @@
               <span>Elasticsearch (indexado)</span>
               @if (!elasticDoc()) { <app-tag label="No indexado" tone="warning" /> }
             </div>
-            <pre class="p-3 text-[11px] leading-relaxed overflow-auto max-h-[50vh] whitespace-pre-wrap">{{ elasticDoc() | json }}</pre>
+            <pre class="p-3 text-caption leading-relaxed overflow-auto max-h-[50vh] whitespace-pre-wrap">{{ elasticDoc() | json }}</pre>
           </div>
           <div class="rounded-lg border border-border overflow-hidden">
             <div class="px-3 py-2 bg-surface-muted text-xs font-semibold">Base de datos (completo)</div>
-            <pre class="p-3 text-[11px] leading-relaxed overflow-auto max-h-[50vh] whitespace-pre-wrap">{{ dbFull() | json }}</pre>
+            <pre class="p-3 text-caption leading-relaxed overflow-auto max-h-[50vh] whitespace-pre-wrap">{{ dbFull() | json }}</pre>
           </div>
         </div>
         <div class="flex items-center justify-end gap-2 pt-2">

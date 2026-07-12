@@ -3,6 +3,7 @@ import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Plus, Trash2, ListTree } from 'lucide-angular';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
+import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 import { DrawerComponent } from '../../../shared/ui/drawer/drawer.component';
 import { SwitchComponent } from '../../../shared/ui/switch/switch.component';
 import { EmptyComponent } from '../../../shared/ui/empty/empty.component';
@@ -19,7 +20,7 @@ import { I18nService } from '../../../core/i18n/i18n.service';
 @Component({
   selector: 'app-admin-system-lists',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, DrawerComponent, SwitchComponent, EmptyComponent, SpinnerComponent, DynamicFormComponent, TPipe],
+  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, DrawerComponent, SwitchComponent, EmptyComponent, SpinnerComponent, DynamicFormComponent, TPipe, PageHeaderComponent],
   templateUrl: './system-lists.component.html',
 })
 export class AdminSystemListsComponent {

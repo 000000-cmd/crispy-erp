@@ -7,13 +7,14 @@ import {
 } from 'lucide-angular';
 import { PanelService } from '../../../core/panel/panel.service';
 import { DependencyStatus, ServiceHealth } from '../../../core/panel/panel.api';
+import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 
 interface ServiceCard { key: string; label: string; icon: any; }
 
 @Component({
   selector: 'app-admin-system-status',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, DatePipe],
+  imports: [CommonModule, LucideAngularModule, DatePipe, PageHeaderComponent],
   templateUrl: './system-status.component.html',
 })
 export class AdminSystemStatusComponent {

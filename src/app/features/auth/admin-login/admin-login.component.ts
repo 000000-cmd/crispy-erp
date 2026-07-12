@@ -2,8 +2,11 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
+import { AuthMascotService } from '../../../core/auth/auth-mascot.service';
+import { I18nService } from '../../../core/i18n/i18n.service';
 import { DynamicFormComponent } from '../../../shared/forms/dynamic-form.component';
 import { FormSchema } from '../../../shared/forms/core/types';
+import { TPipe } from '../../../shared/pipes/t.pipe';
 
 /**
  * Login de ADMINISTRADORES del sistema (`/login/admin`). Deliberadamente plano
@@ -14,15 +17,19 @@ import { FormSchema } from '../../../shared/forms/core/types';
 @Component({
   selector: 'app-admin-login-page',
   standalone: true,
-  imports: [CommonModule, DynamicFormComponent, RouterLink],
+  imports: [CommonModule, DynamicFormComponent, RouterLink, TPipe],
   templateUrl: './admin-login.component.html',
 })
 export class AdminLoginComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  protected readonly mascot = inject(AuthMascotService);
+  private readonly i18n = inject(I18nService);
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+
+  constructor() { this.mascot.reset(); }
 
   readonly schema: FormSchema = {
     cols: 1,
@@ -48,20 +55,26 @@ export class AdminLoginComponent {
   onSubmit(value: Record<string, any>) {
     this.error.set(null);
     this.loading.set(true);
+    this.mascot.setLoading(true);
     this.auth.login({ usernameOrEmail: value['usernameOrEmail'], password: value['password'] }).subscribe({
       next: () => {
         this.loading.set(false);
+        this.mascot.setLoading(false);
         // Este acceso es EXCLUSIVO de administradores del sistema.
         if (this.auth.kind() !== 'SYSTEM_ADMIN') {
           this.auth.handleAuthFailure(false);
-          this.error.set('Este acceso es exclusivo para administradores.');
+          this.mascot.reject();
+          this.error.set(this.i18n.t('auth.error.adminOnly'));
           return;
         }
+        this.mascot.celebrate();
         this.router.navigateByUrl(this.auth.homeRoute());
       },
       error: () => {
         this.loading.set(false);
-        this.error.set('Credenciales inválidas');
+        this.mascot.setLoading(false);
+        this.mascot.reject();
+        this.error.set(this.i18n.t('auth.error.invalidCredentials'));
       },
     });
   }

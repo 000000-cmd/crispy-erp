@@ -7,6 +7,8 @@ import { DrawerComponent } from '../../../shared/ui/drawer/drawer.component';
 import { DynamicFormComponent } from '../../../shared/forms/dynamic-form.component';
 import { InputComponent } from '../../../shared/ui/input/input.component';
 import { TagComponent } from '../../../shared/ui/tag/tag.component';
+import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
+import { SkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -20,7 +22,7 @@ import { buildBusinessSchema } from '../../admin/business/business-form';
 @Component({
   selector: 'app-my-business',
   standalone: true,
-  imports: [CommonModule, RouterLink, ButtonComponent, DrawerComponent, DynamicFormComponent, InputComponent, TagComponent],
+  imports: [CommonModule, RouterLink, ButtonComponent, DrawerComponent, DynamicFormComponent, InputComponent, TagComponent, PageHeaderComponent, SkeletonComponent],
   templateUrl: './my-business.component.html',
 })
 export class MyBusinessComponent {

@@ -1,12 +1,8 @@
 
     <div class="space-y-5">
-      <header class="flex items-end justify-between gap-3">
-        <div>
-          <h1 class="text-xl font-semibold text-text">{{ 'admin.constants' | t }}</h1>
-          <p class="text-sm text-text-muted">{{ 'admin.constants.subtitle' | t }}</p>
-        </div>
+      <app-page-header [title]="'admin.constants' | t" [subtitle]="'admin.constants.subtitle' | t">
         <app-button [icon]="plusIcon" (onClick)="open(null)">{{ 'admin.constants.new' | t }}</app-button>
-      </header>
+      </app-page-header>
 
       <app-data-table [columns]="columns()" [rows]="items()" [actions]="actions()" [loading]="loading()" />
 

@@ -1,11 +1,8 @@
 <div class="space-y-5">
-  <header>
-    <h1 class="text-xl font-semibold text-text">Mi negocio</h1>
-    <p class="text-sm text-text-muted">Datos de tu empresa y sus dominios.</p>
-  </header>
+  <app-page-header title="Mi negocio" subtitle="Datos de tu empresa y sus dominios." />
 
   @if (loading()) {
-    <p class="text-sm text-text-muted">Cargando…</p>
+    <app-skeleton [lines]="4" />
   } @else if (!business()) {
     <div class="rounded-lg border border-border bg-surface p-6 space-y-3">
       <h2 class="text-base font-semibold text-text">Aún no tienes un negocio</h2>
@@ -21,7 +18,7 @@
         </div>
         <app-button variant="secondary" (onClick)="openEdit()">Editar</app-button>
       </div>
-      <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+      <div class="grid grid-cols-1 gap-x-4 gap-y-1 text-sm sm:grid-cols-2">
         @if (b.legalName) { <div><span class="text-text-muted">Razón social:</span> {{ b.legalName }}</div> }
         @if (b.documentNumber) { <div><span class="text-text-muted">Documento:</span> {{ b.documentNumber }}</div> }
       </div>

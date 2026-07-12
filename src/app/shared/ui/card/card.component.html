@@ -1,9 +1,9 @@
 
-    <div class="rounded-xl border border-border bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.03)]" [class.p-5]="padded()" [class.overflow-hidden]="!padded()">
+    <div class="rounded-xl border border-border bg-surface elev-1" [class.p-5]="padded()" [class.overflow-hidden]="!padded()">
       @if (title() || subtitle()) {
         <header class="mb-4 flex items-baseline gap-2">
-          @if (title()) { <h3 class="text-sm font-semibold text-text tracking-tight">{{ title() }}</h3> }
-          @if (subtitle()) { <p class="text-xs text-text-muted">{{ subtitle() }}</p> }
+          @if (title()) { <h3 class="text-h3 text-text">{{ title() }}</h3> }
+          @if (subtitle()) { <p class="text-caption text-text-muted">{{ subtitle() }}</p> }
         </header>
       }
       <ng-content />

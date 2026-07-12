@@ -1,0 +1,15 @@
+@if (src()) {
+  <img
+    [src]="src()"
+    [alt]="name()"
+    class="rounded-full object-cover shrink-0 ring-1 ring-black/5 dark:ring-white/10"
+    [class]="sizeClasses()" />
+} @else {
+  <span
+    class="inline-flex items-center justify-center rounded-full font-semibold shrink-0 select-none leading-none"
+    [class]="sizeClasses() + ' ' + toneClasses()"
+    [attr.aria-label]="name() || null"
+    aria-hidden="false">
+    {{ initials() }}
+  </span>
+}

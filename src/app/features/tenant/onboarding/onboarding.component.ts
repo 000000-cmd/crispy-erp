@@ -1,7 +1,10 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { map } from 'rxjs';
 import { DynamicFormComponent } from '../../../shared/forms/dynamic-form.component';
+import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
+import { FormCompanionComponent } from '../../../shared/ui/form-companion/form-companion.component';
+import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { FormSchema, Option } from '../../../shared/forms/core/types';
 import { SystemListsApi } from '../../admin/system-lists/system-lists.api';
 import { CatalogItem } from '../../admin/system-lists/system-lists.model';
@@ -10,15 +13,19 @@ import { ProvisionRequest } from '../../admin/business/business.model';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ConstantsService } from '../../../core/constants/constants.service';
+import { I18nService } from '../../../core/i18n/i18n.service';
+
+type Step = 1 | 2;
 
 /**
- * Alta del negocio del dueño (post-login). Una sola llamada a /business/provision
- * crea la empresa + slug + la persona del dueño + el vínculo business_owner.
+ * Alta del negocio del dueño (post-login). Se divide en dos pasos para no
+ * sofocar al usuario: 1) Negocio (tipo, nombre, subdominio) y 2) Tus datos
+ * (documento y datos del dueño). El provision es una sola llamada al final.
  */
 @Component({
   selector: 'app-tenant-onboarding',
   standalone: true,
-  imports: [DynamicFormComponent],
+  imports: [DynamicFormComponent, PageHeaderComponent, FormCompanionComponent, ButtonComponent],
   templateUrl: './onboarding.component.html',
 })
 export class OnboardingComponent {
@@ -28,15 +35,22 @@ export class OnboardingComponent {
   private readonly auth = inject(AuthService);
   private readonly constants = inject(ConstantsService);
   private readonly router = inject(Router);
+  private readonly i18n = inject(I18nService);
 
   readonly saving = signal(false);
+  readonly step = signal<Step>(1);
+  readonly steps = [{ n: 1 as Step, label: 'Negocio' }, { n: 2 as Step, label: 'Tus datos' }];
 
-  // Pre-rellena tu nombre/apellido desde la cuenta: ya se pidieron en el
-  // registro, no se vuelven a escribir (quedan editables por si difieren).
-  readonly model = {
+  // Acumula los valores de ambos pasos. Pre-rellena tu nombre/apellido desde la
+  // cuenta (ya se pidieron en el registro; quedan editables por si difieren).
+  readonly acc = signal<Record<string, any>>({
     ownerFirstName: this.auth.user()?.firstName ?? '',
     ownerFirstLastName: this.auth.user()?.lastName ?? '',
-  };
+  });
+
+  readonly companionMessage = computed(() =>
+    this.i18n.t(this.step() === 1 ? 'companion.onboarding.step1' : 'companion.onboarding.step2'),
+  );
 
   private catalog(name: string) {
     return () => this.systemListsApi.itemsEnabled(name).pipe(
@@ -53,7 +67,8 @@ export class OnboardingComponent {
       .slice(0, 63);
   }
 
-  readonly schema: FormSchema = {
+  readonly businessSchema: FormSchema = {
+    cols: 1,
     fields: [
       { key: 'businessTypeId', type: 'select', label: 'Tipo de negocio', validators: ['required'], options: this.catalog('business_type') },
       {
@@ -65,6 +80,13 @@ export class OnboardingComponent {
         } },
       },
       { key: 'slug', type: 'text', label: 'Subdominio', validators: ['required', { kind: 'pattern', value: /^[a-z0-9-]{3,63}$/, message: 'Minúsculas, números y guiones (3-63)' }] },
+    ],
+    submit: { label: 'Continuar' },
+  };
+
+  readonly ownerSchema: FormSchema = {
+    cols: 1,
+    fields: [
       { key: 'ownerDocumentTypeId', type: 'select', label: 'Tu tipo de documento', validators: ['required'], options: this.catalog('document_type') },
       { key: 'ownerDocumentNumber', type: 'text', label: 'Tu número de documento', validators: ['required', { kind: 'maxLength', value: 40 }] },
       { key: 'ownerFirstName', type: 'text', label: 'Tu nombre', validators: ['required', { kind: 'maxLength', value: 80 }] },
@@ -76,9 +98,17 @@ export class OnboardingComponent {
     submit: { label: 'Crear mi negocio' },
   };
 
-  onSubmit(v: any) {
+  /** Paso 1 válido → guarda y avanza. (dynamic-form solo emite si es válido.) */
+  onBusinessSubmit(v: Record<string, any>) {
+    this.acc.update(a => ({ ...a, ...v }));
+    this.step.set(2);
+  }
+
+  back() { this.step.set(1); }
+
+  onOwnerSubmit(v: Record<string, any>) {
     this.saving.set(true);
-    const payload: ProvisionRequest = { ...v, ownerUserId: this.auth.user()?.id ?? null };
+    const payload: ProvisionRequest = { ...this.acc(), ...v, ownerUserId: this.auth.user()?.id ?? null } as ProvisionRequest;
     this.businessApi.provision(payload).subscribe({
       next: () => {
         this.toast.success('¡Negocio creado correctamente!');

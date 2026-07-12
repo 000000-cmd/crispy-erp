@@ -3,6 +3,7 @@ import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Plus, Pencil, Trash2, Shield, ChevronDown, ChevronRight, CornerDownRight } from 'lucide-angular';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
+import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 import { CheckboxComponent } from '../../../shared/ui/checkbox/checkbox.component';
 import { DrawerComponent } from '../../../shared/ui/drawer/drawer.component';
 import { EmptyComponent } from '../../../shared/ui/empty/empty.component';
@@ -21,7 +22,7 @@ import { I18nService } from '../../../core/i18n/i18n.service';
 @Component({
   selector: 'app-admin-menus',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, CheckboxComponent, DrawerComponent, EmptyComponent, SpinnerComponent, DynamicFormComponent, TPipe],
+  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, CheckboxComponent, DrawerComponent, EmptyComponent, SpinnerComponent, DynamicFormComponent, TPipe, PageHeaderComponent],
   templateUrl: './menus.component.html',
 })
 export class AdminMenusComponent {

@@ -1,16 +1,12 @@
 <div class="space-y-5">
-  <header class="flex items-end justify-between gap-3">
-    <div>
-      <h1 class="text-xl font-semibold text-text">Sedes</h1>
-      <p class="text-sm text-text-muted">Las ubicaciones físicas de tu negocio.</p>
-    </div>
+  <app-page-header title="Sedes" subtitle="Las ubicaciones físicas de tu negocio.">
     @if (businessId()) {
       <app-button [icon]="plusIcon" (onClick)="openCreate()">Nueva sede</app-button>
     }
-  </header>
+  </app-page-header>
 
   @if (loading()) {
-    <p class="text-sm text-text-muted">Cargando…</p>
+    <app-skeleton [lines]="4" />
   } @else if (!businessId()) {
     <div class="rounded-2xl border border-border bg-surface p-6 space-y-3">
       <h2 class="text-base font-semibold text-text">Primero registra tu negocio</h2>
@@ -18,6 +14,9 @@
       <a routerLink="/tenant/onboarding"><app-button>Crear mi negocio</app-button></a>
     </div>
   } @else {
+    @if (!items().length) {
+      <app-form-companion [message]="'companion.sede' | t" />
+    }
     <app-data-table [columns]="columns()" [rows]="items()" [actions]="actions()" [loading]="loading()" />
   }
 
@@ -26,13 +25,13 @@
     [title]="editingId() ? 'Editar sede' : 'Nueva sede'"
     size="lg"
     [showActions]="true"
-    [saveDisabled]="!formValid()"
     [saving]="saving()"
     (save)="save()"
     (onClose)="close()">
 
     <div class="space-y-4">
-      <app-field label="Tipo de sede" [required]="true">
+      <app-field label="Tipo de sede" [required]="true"
+                 [error]="tried() && !form().branchTypeId ? ('validation.branchType' | t) : ''">
         <app-autocomplete
           [options]="branchTypeOptions()"
           [ngModel]="form().branchTypeId"
@@ -40,11 +39,14 @@
           placeholder="Selecciona el tipo" />
       </app-field>
 
-      <app-field label="Nombre" [required]="true">
-        <app-input [value]="form().name" (valueChange)="patch('name', $event)" placeholder="Sede centro" />
+      <app-field label="Nombre" [required]="true"
+                 [error]="tried() && form().name.trim().length < 2 ? ('validation.branchName' | t) : ''">
+        <app-input [value]="form().name" (valueChange)="patch('name', $event)" placeholder="Sede centro"
+                   [state]="tried() && form().name.trim().length < 2 ? 'error' : (form().name.trim().length >= 2 ? 'valid' : 'idle')" />
       </app-field>
 
       <app-field label="Ubicación" [required]="true"
+                 [error]="tried() && !form().municipalityId ? ('validation.location' | t) : ''"
                  hint="Busca tu municipio; el departamento y el país se completan solos. El barrio es opcional.">
         <app-location-picker (change)="onLocation($event)" />
       </app-field>

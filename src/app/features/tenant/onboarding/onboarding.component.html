@@ -1,12 +1,38 @@
 <div class="max-w-2xl mx-auto space-y-5">
-  <header>
-    <h1 class="text-xl font-semibold text-text">Crea tu negocio</h1>
-    <p class="text-sm text-text-muted">Registra los datos de tu empresa y los tuyos como dueño.</p>
-  </header>
+  <app-page-header title="Crea tu negocio" subtitle="Registra los datos de tu empresa y los tuyos como dueño." />
 
-  <app-dynamic-form
-    [schema]="schema"
-    [model]="model"
-    [submitting]="saving()"
-    (submitValue)="onSubmit($event)" />
+  <app-form-companion [message]="companionMessage()" />
+
+  <!-- Stepper: Negocio → Tus datos -->
+  <div class="flex items-center">
+    @for (s of steps; track s.n) {
+      <div class="flex items-center gap-2">
+        <span class="inline-flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors"
+              [class.bg-primary-500]="step() >= s.n"
+              [class.border-primary-500]="step() >= s.n"
+              [class.text-white]="step() >= s.n"
+              [class.border-border]="step() < s.n"
+              [class.text-text-muted]="step() < s.n">{{ s.n }}</span>
+        <span class="text-sm transition-colors" [class.text-text]="step() >= s.n" [class.text-text-muted]="step() < s.n">{{ s.label }}</span>
+      </div>
+      @if (!$last) {
+        <div class="mx-2 h-0.5 w-10 rounded transition-colors"
+             [class.bg-primary-500]="step() > s.n" [class.bg-surface-muted]="step() <= s.n"></div>
+      }
+    }
+  </div>
+
+  @if (step() === 1) {
+    <app-dynamic-form
+      [schema]="businessSchema"
+      [model]="acc()"
+      (submitValue)="onBusinessSubmit($event)" />
+  } @else {
+    <app-dynamic-form
+      [schema]="ownerSchema"
+      [model]="acc()"
+      [submitting]="saving()"
+      (submitValue)="onOwnerSubmit($event)" />
+    <app-button variant="ghost" (onClick)="back()">← Volver a datos del negocio</app-button>
+  }
 </div>

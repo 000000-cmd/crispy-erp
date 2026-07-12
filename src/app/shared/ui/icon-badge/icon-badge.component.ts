@@ -19,7 +19,7 @@ export class IconBadgeComponent {
 
   readonly classes = computed(() => {
     const base = 'inline-flex items-center justify-center rounded-md font-semibold';
-    const dim = this.size() === 'sm' ? 'h-6 w-6 text-[11px]' : this.size() === 'lg' ? 'h-10 w-10 text-sm' : 'h-8 w-8 text-xs';
+    const dim = this.size() === 'sm' ? 'h-6 w-6 text-caption' : this.size() === 'lg' ? 'h-10 w-10 text-sm' : 'h-8 w-8 text-xs';
     const tone: Record<IconBadgeTone, string> = {
       primary: 'bg-primary-500 text-white',
       neutral: 'bg-surface-muted text-text',

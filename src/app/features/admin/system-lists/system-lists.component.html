@@ -1,9 +1,6 @@
 
     <div class="space-y-5">
-      <header>
-        <h1 class="text-xl font-semibold text-text">{{ 'admin.lists' | t }}</h1>
-        <p class="text-sm text-text-muted">{{ 'admin.lists.subtitle' | t }}</p>
-      </header>
+      <app-page-header [title]="'admin.lists' | t" [subtitle]="'admin.lists.subtitle' | t" />
 
       <div class="grid grid-cols-12 gap-4">
         <!-- Master -->
@@ -30,7 +27,7 @@
                     <span class="mt-0.5 text-text-soft"><lucide-icon [img]="treeIcon" [size]="14"></lucide-icon></span>
                     <span class="flex-1 min-w-0">
                       <span class="block text-sm font-medium text-text truncate">{{ l.name }}</span>
-                      <span class="block text-[11px] text-text-muted font-mono">{{ l.code }}</span>
+                      <span class="block text-caption text-text-muted font-mono">{{ l.code }}</span>
                     </span>
                   </button>
                 </li>
@@ -46,7 +43,7 @@
           } @else {
             <header class="px-5 py-4 border-b border-border flex items-start justify-between gap-4">
               <div>
-                <h2 class="text-base font-semibold text-text">{{ selected()!.name }} <span class="text-[11px] font-mono text-text-muted bg-surface-muted px-1.5 py-0.5 rounded ml-1">{{ selected()!.code }}</span></h2>
+                <h2 class="text-base font-semibold text-text">{{ selected()!.name }} <span class="text-caption font-mono text-text-muted bg-surface-muted px-1.5 py-0.5 rounded ml-1">{{ selected()!.code }}</span></h2>
                 @if (selected()!.description) { <p class="text-xs text-text-muted mt-0.5">{{ selected()!.description }}</p> }
               </div>
               <app-button [icon]="plusIcon" size="sm" (onClick)="openItem()">{{ 'admin.lists.items.add' | t }}</app-button>
@@ -59,7 +56,7 @@
             } @else {
               <div class="overflow-x-auto">
                 <table class="w-full text-sm">
-                  <thead class="bg-surface-muted text-text-muted text-[11px] uppercase tracking-wide">
+                  <thead class="bg-surface-muted text-text-muted text-caption uppercase tracking-wide">
                     <tr>
                       <th class="px-4 py-2.5 text-left font-medium w-32">{{ 'admin.lists.items.column.code' | t }}</th>
                       <th class="px-4 py-2.5 text-left font-medium">{{ 'admin.lists.items.column.name' | t }}</th>
@@ -90,7 +87,7 @@
                     }
                   </tbody>
                 </table>
-                <p class="px-4 py-3 text-[11px] text-text-muted">{{ 'admin.lists.items.hint' | t }}</p>
+                <p class="px-4 py-3 text-caption text-text-muted">{{ 'admin.lists.items.hint' | t }}</p>
               </div>
             }
           }

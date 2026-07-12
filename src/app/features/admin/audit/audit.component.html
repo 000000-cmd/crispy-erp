@@ -1,10 +1,6 @@
 
     <div class="space-y-5">
-      <header class="flex items-end justify-between gap-3">
-        <div>
-          <h1 class="text-xl font-semibold text-text tracking-tight">Auditoría</h1>
-          <p class="text-sm text-text-muted">Quién cambió qué, cuándo y cómo estaba antes.</p>
-        </div>
+      <app-page-header title="Auditoría" subtitle="Quién cambió qué, cuándo y cómo estaba antes.">
         <button
           type="button"
           (click)="load()"
@@ -14,18 +10,18 @@
           <lucide-angular [img]="refreshIcon" class="w-4 h-4" [class.animate-spin]="loading()"></lucide-angular>
           Actualizar
         </button>
-      </header>
+      </app-page-header>
 
       <!-- Filtros -->
       <div class="rounded-xl border border-border bg-surface p-3 flex flex-wrap items-end gap-3">
         <div class="flex-1 min-w-[160px]">
-          <label class="block text-[11px] font-medium text-text-muted mb-1">Entidad</label>
+          <label class="block text-caption font-medium text-text-muted mb-1">Entidad</label>
           <input [ngModel]="fType()" (ngModelChange)="fType.set($event)" (keyup.enter)="applyFilters()"
                  placeholder="role, user, country…"
                  class="w-full h-9 px-3 rounded-md border border-border bg-surface text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20" />
         </div>
         <div class="min-w-[150px]">
-          <label class="block text-[11px] font-medium text-text-muted mb-1">Acción</label>
+          <label class="block text-caption font-medium text-text-muted mb-1">Acción</label>
           <select [ngModel]="fAction()" (ngModelChange)="fAction.set($event)"
                   class="w-full h-9 px-3 rounded-md border border-border bg-surface text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20">
             <option value="">Todas</option>
@@ -33,7 +29,7 @@
           </select>
         </div>
         <div class="flex-1 min-w-[160px]">
-          <label class="block text-[11px] font-medium text-text-muted mb-1">Actor (id)</label>
+          <label class="block text-caption font-medium text-text-muted mb-1">Actor (id)</label>
           <input [ngModel]="fActor()" (ngModelChange)="fActor.set($event)" (keyup.enter)="applyFilters()"
                  placeholder="UUID del usuario"
                  class="w-full h-9 px-3 rounded-md border border-border bg-surface text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20" />
@@ -55,7 +51,7 @@
         } @else {
           <table class="w-full text-sm">
             <thead>
-              <tr class="text-left text-[11px] uppercase tracking-wide text-text-soft border-b border-border">
+              <tr class="text-left text-caption uppercase tracking-wide text-text-soft border-b border-border">
                 <th class="px-4 py-2.5 font-medium">Fecha</th>
                 <th class="px-4 py-2.5 font-medium">Acción</th>
                 <th class="px-4 py-2.5 font-medium">Entidad</th>
@@ -69,13 +65,13 @@
                 <tr class="border-b border-border last:border-0 hover:bg-surface-hover transition-colors">
                   <td class="px-4 py-2.5 text-text-muted whitespace-nowrap">{{ r.occurredAt | date:'dd/MM/yy HH:mm' }}</td>
                   <td class="px-4 py-2.5">
-                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium" [class]="actionClass(r.action)">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-caption font-medium" [class]="actionClass(r.action)">
                       {{ actionLabel(r.action) }}
                     </span>
                   </td>
                   <td class="px-4 py-2.5">
                     <span class="font-medium text-text">{{ r.aggregateType }}</span>
-                    <span class="ml-1.5 text-[11px] font-mono text-text-soft">{{ shortId(r.aggregateId) }}</span>
+                    <span class="ml-1.5 text-caption font-mono text-text-soft">{{ shortId(r.aggregateId) }}</span>
                   </td>
                   <td class="px-4 py-2.5 text-text">{{ r.actorName || '—' }}</td>
                   <td class="px-4 py-2.5 text-text-muted">
@@ -133,10 +129,10 @@
 
           @if (s.changedFields?.length) {
             <div>
-              <p class="text-[11px] uppercase tracking-wide text-text-soft mb-2">Campos modificados</p>
+              <p class="text-caption uppercase tracking-wide text-text-soft mb-2">Campos modificados</p>
               <div class="flex flex-wrap gap-1.5">
                 @for (f of s.changedFields!; track f) {
-                  <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-200">{{ f }}</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-md text-caption font-medium bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-200">{{ f }}</span>
                 }
               </div>
             </div>
@@ -144,12 +140,12 @@
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div>
-              <p class="text-[11px] uppercase tracking-wide text-text-soft mb-2">Antes</p>
-              <pre class="text-[11px] leading-relaxed font-mono bg-surface-muted rounded-lg p-3 overflow-auto max-h-[60vh] text-text-muted whitespace-pre-wrap break-all">{{ pretty(s.before) }}</pre>
+              <p class="text-caption uppercase tracking-wide text-text-soft mb-2">Antes</p>
+              <pre class="text-caption leading-relaxed font-mono bg-surface-muted rounded-lg p-3 overflow-auto max-h-[60vh] text-text-muted whitespace-pre-wrap break-all">{{ pretty(s.before) }}</pre>
             </div>
             <div>
-              <p class="text-[11px] uppercase tracking-wide text-text-soft mb-2">Después</p>
-              <pre class="text-[11px] leading-relaxed font-mono bg-surface-muted rounded-lg p-3 overflow-auto max-h-[60vh] text-text whitespace-pre-wrap break-all">{{ pretty(s.after) }}</pre>
+              <p class="text-caption uppercase tracking-wide text-text-soft mb-2">Después</p>
+              <pre class="text-caption leading-relaxed font-mono bg-surface-muted rounded-lg p-3 overflow-auto max-h-[60vh] text-text whitespace-pre-wrap break-all">{{ pretty(s.after) }}</pre>
             </div>
           </div>
         </div>
