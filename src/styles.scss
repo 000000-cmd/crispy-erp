@@ -488,3 +488,142 @@ router-outlet + * {
 @media (prefers-reduced-motion: reduce) {
   .text-cloud { animation: opacity 120ms linear both; }
 }
+
+/* ---------- Theme switch (toggle propio, sin Rive) ---------- */
+.theme-switch { display: inline-flex; padding: 0; background: none; border: 0; cursor: pointer; }
+.theme-switch__track {
+  position: relative; display: inline-flex; align-items: center; justify-content: space-between;
+  width: 3.25rem; height: 1.75rem; padding: 0 .4rem; border-radius: 999px;
+  background: var(--color-surface-muted); border: 1px solid var(--color-border);
+  transition: background .2s ease, border-color .2s ease;
+}
+.theme-switch.is-dark .theme-switch__track {
+  background: color-mix(in oklab, var(--color-primary-500) 32%, var(--color-surface-muted));
+  border-color: color-mix(in oklab, var(--color-primary-500) 40%, var(--color-border));
+}
+.theme-switch__ico { position: relative; z-index: 1; color: var(--color-text-muted); }
+.theme-switch__ico--sun { color: color-mix(in oklab, #f59e0b 70%, var(--color-text-muted)); }
+.theme-switch.is-dark .theme-switch__ico--sun { color: var(--color-text-muted); opacity: .5; }
+.theme-switch__ico--moon { opacity: .5; }
+.theme-switch.is-dark .theme-switch__ico--moon { color: color-mix(in oklab, var(--color-primary-500) 55%, white); opacity: 1; }
+.theme-switch__knob {
+  position: absolute; top: 50%; left: .25rem; width: 1.25rem; height: 1.25rem; border-radius: 999px;
+  background: var(--color-surface); box-shadow: 0 1px 3px rgba(0, 0, 0, .28);
+  // Misma función translate() en ambos estados: garantiza interpolación limpia
+  // de la transición (mezclar translateY() y translate() deja el knob pegado).
+  transform: translate(0, -50%); transition: transform .2s ease;
+}
+.theme-switch.is-dark .theme-switch__knob { transform: translate(1.5rem, -50%); }
+.theme-switch:focus-visible { outline: none; }
+.theme-switch:focus-visible .theme-switch__track {
+  outline: 2px solid color-mix(in oklab, var(--color-primary-500) 50%, transparent); outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-switch__track, .theme-switch__knob { transition: none; }
+}
+
+/* ---------- Landing: aurora + glass + tilt ---------- */
+.aurora { position: absolute; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; }
+.aurora__layer {
+  position: absolute; inset: -25%; filter: blur(64px); opacity: .55;
+  background:
+    radial-gradient(38% 38% at 22% 30%, color-mix(in oklab, var(--color-primary-500) 55%, transparent), transparent 70%),
+    radial-gradient(44% 44% at 80% 22%, color-mix(in oklab, var(--color-primary-400) 46%, transparent), transparent 70%),
+    radial-gradient(48% 48% at 62% 80%, color-mix(in oklab, var(--color-primary-600) 40%, transparent), transparent 70%);
+  animation: aurora-drift 22s ease-in-out infinite alternate;
+}
+@keyframes aurora-drift {
+  0%   { transform: translate3d(-4%, -2%, 0) scale(1.05) rotate(0deg); }
+  100% { transform: translate3d(4%, 3%, 0) scale(1.15) rotate(8deg); }
+}
+.glass {
+  background: color-mix(in oklab, var(--color-surface) 72%, transparent);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  border: 1px solid color-mix(in oklab, var(--color-border) 80%, transparent);
+}
+.glass--card { border-radius: 1rem; box-shadow: 0 20px 60px -30px rgba(0, 0, 0, .5); }
+.tilt {
+  transform: perspective(900px) rotateX(var(--tilt-y, 0deg)) rotateY(var(--tilt-x, 0deg));
+  transition: transform .15s ease; transform-style: preserve-3d;
+}
+@media (prefers-reduced-motion: reduce) {
+  .aurora__layer { animation: none; }
+  .tilt { transform: none !important; transition: none; }
+}
+
+/* ---------- Landing del negocio (tl-*): impacto y drama ---------- */
+/* Entrada escalonada: cada bloque define su retraso con --d (en ms). */
+.tl-reveal {
+  opacity: 0;
+  animation: tl-fade-up .7s cubic-bezier(.22, .8, .3, 1) forwards;
+  animation-delay: calc(var(--d, 0) * 1ms);
+}
+@keyframes tl-fade-up {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Texto protagonista con degradado del tema que respira. */
+.tl-gradient-text {
+  background: linear-gradient(100deg,
+    var(--p-400), var(--p-600), var(--p-400), var(--p-500));
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent;
+  animation: tl-gradient-pan 7s ease-in-out infinite alternate;
+}
+@keyframes tl-gradient-pan { to { background-position: 100% 0; } }
+
+/* Indicio de scroll en el hero. */
+.tl-scroll-cue { animation: tl-bounce 1.8s ease-in-out infinite; }
+@keyframes tl-bounce {
+  0%, 100% { transform: translateY(0); opacity: .55; }
+  50%      { transform: translateY(7px); opacity: 1; }
+}
+
+/* WhatsApp flotante con anillo que pulsa. */
+.tl-wa-fab { position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 40; }
+.tl-wa-fab::before {
+  content: ""; position: absolute; inset: 0; border-radius: 999px;
+  background: #22c55e; opacity: .5;
+  animation: tl-pulse 2.2s ease-out infinite;
+}
+@keyframes tl-pulse {
+  0%   { transform: scale(1);    opacity: .5; }
+  70%  { transform: scale(1.65); opacity: 0; }
+  100% { transform: scale(1.65); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tl-reveal { animation: none; opacity: 1; }
+  .tl-gradient-text { animation: none; }
+  .tl-scroll-cue { animation: none; }
+  .tl-wa-fab::before { animation: none; opacity: 0; }
+}
+
+/* ---------- Borde rainbow (cards del acompañante ORB, para que combine con él) ----------
+   Anillo de gradiente que respeta border-radius vía máscara (border-image no lo hace).
+   Solo pinta el borde: el interior de la card queda intacto. */
+.rainbow-border { position: relative; }
+.rainbow-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(120deg,
+    hsl(350 90% 66%), hsl(28 95% 60%), hsl(52 95% 60%),
+    hsl(140 70% 55%), hsl(200 92% 60%), hsl(265 85% 68%), hsl(350 90% 66%));
+  background-size: 200% 100%;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+  animation: rainbow-pan 6s linear infinite;
+}
+@keyframes rainbow-pan { to { background-position: 200% 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .rainbow-border::before { animation: none; }
+}

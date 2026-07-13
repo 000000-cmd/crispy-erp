@@ -3,7 +3,7 @@ import { AbstractControl, AsyncValidatorFn, FormGroup, ValidatorFn } from '@angu
 import { Observable } from 'rxjs';
 
 export type FieldType =
-  | 'text' | 'email' | 'password' | 'number' | 'textarea'
+  | 'text' | 'email' | 'password' | 'number' | 'money' | 'textarea'
   | 'select' | 'multiselect' | 'autocomplete'
   | 'radio' | 'checkbox-group' | 'checkbox' | 'switch'
   | 'date' | 'time' | 'datetime'

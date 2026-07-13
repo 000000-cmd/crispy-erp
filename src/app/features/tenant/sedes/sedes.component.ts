@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { Plus, Pencil, Trash2 } from 'lucide-angular';
 
@@ -34,7 +33,7 @@ import { BranchForm, EMPTY_BRANCH_FORM } from './sedes.form';
   selector: 'app-tenant-sedes',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, RouterLink, ButtonComponent, DrawerComponent, DataTableComponent, PageHeaderComponent, SkeletonComponent,
+    CommonModule, FormsModule, ButtonComponent, DrawerComponent, DataTableComponent, PageHeaderComponent, SkeletonComponent,
     FieldComponent, InputComponent, SwitchComponent, AutocompleteComponent, LocationPickerComponent, FormCompanionComponent, TPipe,
   ],
   templateUrl: './sedes.component.html',

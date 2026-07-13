@@ -17,6 +17,8 @@ export interface UserResponse {
   visible?: boolean;
   roleCodes?: string[];
   createdDate?: string;
+  /** Negocio del dueño (null para admins o dueños que aún no aprovisionaron). */
+  businessId?: string;
 }
 
 export interface TokenPairResponse {
@@ -49,6 +51,8 @@ export interface AuthUser {
   roles: string[];
   kind: UserKind;
   tenantId?: string | null;
+  /** Negocio del dueño; alimenta el gate de onboarding. Ausente hasta aprovisionar. */
+  businessId?: string;
   theme?: string;
   languageCode?: string;
 }

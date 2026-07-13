@@ -16,7 +16,7 @@ import { TextCloudComponent } from '../text-cloud/text-cloud.component';
   standalone: true,
   imports: [MascotComponent, TextCloudComponent],
   template: `
-    <div class="flex items-center gap-4 rounded-xl border border-border bg-surface-muted/60 p-4 sm:gap-5 sm:p-5">
+    <div class="rainbow-border flex items-center gap-4 rounded-xl bg-surface-muted/60 p-4 sm:gap-5 sm:p-5">
       @if (tip()) {
         <app-text-cloud [text]="tip()" placement="top" class="shrink-0">
           <app-mascot class="block h-40 w-40 sm:h-56 sm:w-56" [typing]="typing()" />

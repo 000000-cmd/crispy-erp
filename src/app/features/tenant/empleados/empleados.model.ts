@@ -1,12 +1,18 @@
-/** Empleado con el nombre de la persona ya resuelto (lista del dueño). */
+/**
+ * Empleado con el nombre de la persona ya resuelto (lista del dueño).
+ * Cargo/fecha/nombre pueden venir vacíos: el alta mínima crea "shells" que el
+ * empleado completa desde el APK.
+ */
 export interface EmployeeDetail {
   id: string;
   thirdPartyId: string;
   personName: string;
+  /** Foto de perfil del tercero (la sube el empleado desde el APK). */
+  photoUrl?: string | null;
   branchId: string;
-  positionId: string;
+  positionId: string | null;
   employeeCode?: string | null;
-  hireDate: string;
+  hireDate: string | null;
   terminationDate?: string | null;
   statusId?: string | null;
   enabled?: boolean;
@@ -23,28 +29,14 @@ export interface EmployeePayload {
 }
 
 /**
- * Alta COMPLETA de un empleado por el dueño: crea cuenta (rol EMPLOYEE),
- * persona y registro laboral en una sola llamada. El empleado termina de
- * completar sus datos en su primer ingreso al APK.
+ * Alta MÍNIMA de un empleado por el dueño: solo la cuenta (rol EMPLOYEE). El
+ * back crea tercero y registro laboral como shells (solo FKs) y el empleado
+ * completa sus datos en su primer ingreso al APK.
  */
 export interface EmployeeProvisionPayload {
-  // Laboral
   branchId: string;
-  positionId: string;
-  hireDate: string;
-  employeeCode?: string | null;
-  // Persona
-  documentTypeId: string;
-  documentNumber: string;
-  firstName: string;
-  secondName?: string | null;
-  firstLastName: string;
-  secondLastName?: string | null;
-  genderId?: string | null;
-  birthDate?: string | null;
-  // Cuenta (para la app móvil)
-  email: string;
   username: string;
+  email: string;
   password: string;
 }
 

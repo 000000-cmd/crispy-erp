@@ -7,12 +7,6 @@
 
   @if (loading()) {
     <app-skeleton [lines]="4" />
-  } @else if (!businessId()) {
-    <div class="rounded-2xl border border-border bg-surface p-6 space-y-3">
-      <h2 class="text-base font-semibold text-text">Primero registra tu negocio</h2>
-      <p class="text-sm text-text-muted">Necesitas una empresa para gestionar sedes.</p>
-      <a routerLink="/tenant/onboarding"><app-button>Crear mi negocio</app-button></a>
-    </div>
   } @else {
     @if (!items().length) {
       <app-form-companion [message]="'companion.sede' | t" />

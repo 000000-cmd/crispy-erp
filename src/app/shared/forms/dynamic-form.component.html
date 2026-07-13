@@ -22,6 +22,7 @@
             @case ('checkbox-group'){ <df-checkbox-group-field [field]="f" [control]="form.get(f.key)!" [options]="optionsFor(f)" [hint]="hintFor(f)" /> }
             @case ('checkbox')      { <df-checkbox-field [field]="f" [control]="form.get(f.key)!" [hint]="hintFor(f)" /> }
             @case ('switch')        { <df-switch-field [field]="f" [control]="form.get(f.key)!" [hint]="hintFor(f)" /> }
+            @case ('money')         { <df-money-field [field]="f" [control]="form.get(f.key)!" [hint]="hintFor(f)" /> }
             @case ('file')          { <df-file-field [field]="f" [control]="form.get(f.key)!" [hint]="hintFor(f)" /> }
             @case ('hidden')        { }
             @case ('custom')        { <ng-container *ngComponentOutlet="f.customComponent!; inputs: { field: f, control: form.get(f.key)! }"></ng-container> }

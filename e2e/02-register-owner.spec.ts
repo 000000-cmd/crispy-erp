@@ -28,8 +28,9 @@ test.describe('Registro de dueño', () => {
 
   test('happy path: registro (solo cuenta) aterriza en /tenant', async ({ page }) => {
     await registerOwner(page);
-    // Sin negocio aún: el panel invita a crearlo.
-    await expect(page.getByText('Empieza por registrar tu negocio')).toBeVisible();
+    // Sin negocio aún: el gate lleva directo al onboarding para crearlo.
+    await expect(page).toHaveURL(/\/tenant\/onboarding/);
+    await expect(page.locator('app-form-companion')).toBeVisible();
   });
 
   test('caso borde: username duplicado muestra el error del back y no navega', async ({ page }) => {

@@ -5,7 +5,6 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 
 import { routes } from './app.routes';
 import { authInterceptor } from './core/http/auth.interceptor';
-import { businessInterceptor } from './core/http/business.interceptor';
 import { refreshInterceptor } from './core/http/refresh.interceptor';
 import { errorInterceptor } from './core/http/error.interceptor';
 import { AuthService } from './core/auth/auth.service';
@@ -34,7 +33,7 @@ export const appConfig: ApplicationConfig = {
     //  3. errorInterceptor   -> toasts para errores no-auth
     provideHttpClient(
       withFetch(),
-      withInterceptors([authInterceptor, businessInterceptor, refreshInterceptor, errorInterceptor]),
+      withInterceptors([authInterceptor, refreshInterceptor, errorInterceptor]),
     ),
 
     // Hidratacion de sesion en el arranque. Si en localStorage hay un token

@@ -36,3 +36,23 @@ export const roleGuard = (...roles: string[]): CanActivateFn => () => {
   router.navigateByUrl(auth.homeRoute());
   return false;
 };
+
+/**
+ * Gate del onboarding. "Crear negocio" deja de ser una funcionalidad permanente
+ * y pasa a ser un gate de primera vez:
+ *  - `requiresBusiness`: rutas operativas del tenant exigen tener negocio; si no,
+ *    mandan al onboarding.
+ *  - `onboardingGate`: si el dueño ya tiene negocio, el onboarding deja de existir
+ *    como opción y redirige al dashboard.
+ */
+export const requiresBusiness: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  return auth.user()?.businessId ? true : router.createUrlTree(['/tenant/onboarding']);
+};
+
+export const onboardingGate: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  return auth.user()?.businessId ? router.createUrlTree(['/tenant/dashboard']) : true;
+};

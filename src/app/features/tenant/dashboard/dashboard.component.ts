@@ -69,11 +69,12 @@ export class TenantDashboardComponent {
   readonly offeringCount = signal(0);
 
   // ----- Completar empresa: pasos mínimos para operar -----
+  // El negocio ya existe al llegar aquí (gate de onboarding), así que el checklist
+  // arranca en los pasos operativos reales.
   readonly steps = computed<CompletionStep[]>(() => [
-    { label: 'Datos de tu negocio', hint: 'Tipo, nombre y subdominio', done: !!this.business(), route: '/tenant/onboarding' },
-    { label: 'Registra una sede',   hint: 'Dónde atiendes',           done: this.branchCount() > 0,   route: '/tenant/sedes' },
-    { label: 'Agrega un servicio',  hint: 'Qué ofreces',              done: this.offeringCount() > 0, route: '/tenant/servicios' },
-    { label: 'Suma un empleado',    hint: 'Tu equipo',                done: this.employeeCount() > 0, route: '/tenant/empleados' },
+    { label: 'Registra una sede',   hint: 'Dónde atiendes', done: this.branchCount() > 0,   route: '/tenant/sedes' },
+    { label: 'Agrega un servicio',  hint: 'Qué ofreces',    done: this.offeringCount() > 0, route: '/tenant/servicios' },
+    { label: 'Suma un empleado',    hint: 'Tu equipo',      done: this.employeeCount() > 0, route: '/tenant/empleados' },
   ]);
   readonly doneCount = computed(() => this.steps().filter(s => s.done).length);
   readonly progressPct = computed(() => Math.round((this.doneCount() / this.steps().length) * 100));

@@ -2,9 +2,10 @@ import { Routes } from '@angular/router';
 import { NotFoundComponent } from './shared/ui/not-found/not-found.component';
 
 export const routes: Routes = [
-  // Home: landing pública. Engancha y deriva al login (dueño) o al registro.
-  // El acceso de administradores NO se expone aquí (ruta aparte y directa).
-  { path: '', pathMatch: 'full', loadComponent: () => import('./features/landing/landing.component').then(m => m.LandingComponent) },
+  // Home: landing pública. Con subdominio de tenant pinta la página del
+  // negocio; sin tenant, la landing del producto. El acceso de administradores
+  // NO se expone aquí (ruta aparte y directa).
+  { path: '', pathMatch: 'full', loadComponent: () => import('./features/public-site/home.component').then(m => m.HomeComponent) },
   { path: 'login',  loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES) },
   { path: 'admin',  loadChildren: () => import('./features/admin/admin.routes').then(m => m.ADMIN_ROUTES) },
   // Área del dueño (tenant): NO comparte rutas con el admin del sistema.

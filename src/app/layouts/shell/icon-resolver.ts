@@ -1,7 +1,7 @@
 import {
   Activity, AlertTriangle, Building2, Calendar, ChartColumn, ClipboardList,
-  Clock, DollarSign, FileText, Hash, Inbox, KeyRound, LayoutDashboard,
-  ListTree, Mail, Menu as MenuIcon, MessageCircle, MinusCircle, Package,
+  Clock, DollarSign, FileText, Globe, Hash, Inbox, KeyRound, LayoutDashboard,
+  ListTree, Mail, MapPin, Menu as MenuIcon, MessageCircle, MinusCircle, Package,
   Percent, Scissors, ScrollText, Settings, Shield, ShieldCheck, Sliders,
   User, UserPlus, Users, Wallet, Activity as DefaultIcon, Box, Tags,
 } from 'lucide-angular';
@@ -17,6 +17,9 @@ const MAP: Record<string, any> = {
   box: Box,
   building2: Building2,
   building: Building2,
+  'building-2': Building2,
+  globe: Globe,
+  'map-pin': MapPin,
   calendar: Calendar,
   'chart-column': ChartColumn,
   'clipboard-list': ClipboardList,

@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { TenantLayoutComponent } from '../../layouts/tenant-layout/tenant-layout.component';
-import { authGuard, kindGuard } from '../../core/auth/guards';
+import { authGuard, kindGuard, requiresBusiness, onboardingGate } from '../../core/auth/guards';
 
 export const TENANT_ROUTES: Routes = [
   {
@@ -11,28 +11,37 @@ export const TENANT_ROUTES: Routes = [
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
-        path: 'dashboard', data: { crumb: 'Panel' },
+        path: 'dashboard', data: { crumb: 'Panel' }, canActivate: [requiresBusiness],
         loadComponent: () => import('./dashboard/dashboard.component').then(m => m.TenantDashboardComponent),
       },
       {
-        path: 'onboarding', data: { crumb: 'Crear mi negocio' },
+        // Gate de primera vez: si ya hay negocio, redirige al dashboard.
+        path: 'onboarding', data: { crumb: 'Crear mi negocio' }, canActivate: [onboardingGate],
         loadComponent: () => import('./onboarding/onboarding.component').then(m => m.OnboardingComponent),
       },
       {
-        path: 'mi-negocio', data: { crumb: 'Mi negocio' },
+        path: 'mi-negocio', data: { crumb: 'Mi negocio' }, canActivate: [requiresBusiness],
         loadComponent: () => import('./business/my-business.component').then(m => m.MyBusinessComponent),
       },
       {
-        path: 'servicios', data: { crumb: 'Servicios' },
+        path: 'servicios', data: { crumb: 'Servicios' }, canActivate: [requiresBusiness],
         loadComponent: () => import('./servicios/servicios.component').then(m => m.ServiciosComponent),
       },
       {
-        path: 'sedes', data: { crumb: 'Sedes' },
+        path: 'sedes', data: { crumb: 'Sedes' }, canActivate: [requiresBusiness],
         loadComponent: () => import('./sedes/sedes.component').then(m => m.SedesComponent),
       },
       {
-        path: 'empleados', data: { crumb: 'Empleados' },
+        path: 'empleados', data: { crumb: 'Empleados' }, canActivate: [requiresBusiness],
         loadComponent: () => import('./empleados/empleados.component').then(m => m.EmpleadosComponent),
+      },
+      {
+        path: 'compensaciones', data: { crumb: 'Compensaciones' }, canActivate: [requiresBusiness],
+        loadComponent: () => import('./finanzas/compensaciones.component').then(m => m.CompensacionesComponent),
+      },
+      {
+        path: 'mi-pagina', data: { crumb: 'Mi página' }, canActivate: [requiresBusiness],
+        loadComponent: () => import('./pagina/mi-pagina.component').then(m => m.MiPaginaComponent),
       },
       {
         path: 'profile', data: { crumb: 'Mi perfil' },

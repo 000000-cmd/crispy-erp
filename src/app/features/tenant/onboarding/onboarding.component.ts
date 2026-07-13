@@ -110,7 +110,10 @@ export class OnboardingComponent {
     this.saving.set(true);
     const payload: ProvisionRequest = { ...this.acc(), ...v, ownerUserId: this.auth.user()?.id ?? null } as ProvisionRequest;
     this.businessApi.provision(payload).subscribe({
-      next: () => {
+      next: (res) => {
+        // Hidrata el businessId en sesión: el gate deja pasar al dashboard y el
+        // onboarding deja de ser una opción (redirige) de aquí en adelante.
+        this.auth.setBusinessId(res.businessId);
         this.toast.success('¡Negocio creado correctamente!');
         this.saving.set(false);
         this.router.navigateByUrl('/tenant/dashboard');

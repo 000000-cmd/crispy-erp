@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal, viewChild } from '@angular/core';
-import { RouterLink } from '@angular/router';
 
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { DrawerComponent } from '../../../shared/ui/drawer/drawer.component';
@@ -22,7 +21,7 @@ import { buildBusinessSchema } from '../../admin/business/business-form';
 @Component({
   selector: 'app-my-business',
   standalone: true,
-  imports: [CommonModule, RouterLink, ButtonComponent, DrawerComponent, DynamicFormComponent, InputComponent, TagComponent, PageHeaderComponent, SkeletonComponent],
+  imports: [CommonModule, ButtonComponent, DrawerComponent, DynamicFormComponent, InputComponent, TagComponent, PageHeaderComponent, SkeletonComponent],
   templateUrl: './my-business.component.html',
 })
 export class MyBusinessComponent {

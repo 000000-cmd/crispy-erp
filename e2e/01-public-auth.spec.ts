@@ -21,7 +21,7 @@ test.describe('Público y autenticación', () => {
 
   test('login con credenciales inválidas muestra error y no navega', async ({ page }) => {
     await page.goto('/login');
-    await byPlaceholder(page, 'usuario  /  tu@empresa.com').fill('nadie@e2e.local');
+    await byPlaceholder(page, 'usuario  /  tu@empresa.com  /  nº documento').fill('nadie@e2e.local');
     await byPlaceholder(page, '••••••••').fill('malaclave123');
     await page.getByRole('button', { name: 'Iniciar sesión' }).click();
     await expect(page.getByText('Credenciales inválidas')).toBeVisible();
@@ -30,7 +30,7 @@ test.describe('Público y autenticación', () => {
 
   test('un admin NO entra por el login común (ruta dedicada)', async ({ page }) => {
     await page.goto('/login');
-    await byPlaceholder(page, 'usuario  /  tu@empresa.com').fill(ADMIN.user);
+    await byPlaceholder(page, 'usuario  /  tu@empresa.com  /  nº documento').fill(ADMIN.user);
     await byPlaceholder(page, '••••••••').fill(ADMIN.pass);
     await page.getByRole('button', { name: 'Iniciar sesión' }).click();
     await expect(page.getByText('Los administradores ingresan por su acceso dedicado.')).toBeVisible();

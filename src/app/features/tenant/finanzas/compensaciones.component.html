@@ -1,0 +1,142 @@
+<div class="space-y-6">
+  <app-page-header
+    title="Compensaciones"
+    subtitle="Define la base de pago de tu empresa. Las excepciones por sede o por empleado son opcionales." />
+
+  @if (bizLoading()) {
+    <app-skeleton [lines]="6" />
+  } @else {
+
+    <!-- ============ PASO ÚNICO OBLIGATORIO: LA BASE ============ -->
+    <section class="max-w-4xl">
+      <div class="mb-2 flex items-center gap-2">
+        <span class="grid h-8 w-8 place-items-center rounded-xl bg-primary-500 text-white shadow-lg shadow-primary-500/30">
+          <lucide-icon [img]="bizIcon" [size]="15" />
+        </span>
+        <h2 class="text-sm font-semibold text-text">La base de tu empresa</h2>
+        <span class="rounded-full bg-primary-500/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-primary-600 dark:text-primary-300">Empieza aquí</span>
+      </div>
+      <app-comp-level-card
+        levelLabel="Toda la empresa"
+        help="Es la regla general: aplica a todo tu equipo salvo que definas una excepción por sede o por empleado."
+        [own]="bizComp()"
+        [inherited]="null"
+        [saving]="bizSaving()"
+        (save)="saveBusiness($event)" />
+    </section>
+
+    <!-- ============ EXCEPCIONES OPCIONALES (independientes) ============ -->
+    <section class="max-w-6xl">
+      <div class="mb-2 flex items-center gap-1.5">
+        <h2 class="text-sm font-semibold text-text">Excepciones</h2>
+        <app-tooltip text="Solo si las necesitas. No hace falta configurar la sede para configurar a un empleado: cada excepción es independiente." />
+      </div>
+
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start">
+
+        <!-- ---- Por sede ---- -->
+        <div class="space-y-2">
+          <div class="flex items-center gap-2">
+            <span class="grid h-7 w-7 place-items-center rounded-lg bg-primary-500/15 text-primary-600 dark:text-primary-300">
+              <lucide-icon [img]="pinIcon" [size]="13" />
+            </span>
+            <p class="text-xs font-medium text-text-muted">Una sede completa</p>
+          </div>
+          @if (baseReady()) {
+            <div class="max-w-xs">
+              <app-autocomplete
+                [options]="branchOptions()"
+                [ngModel]="branchSelId()"
+                (ngModelChange)="branchSelId.set($event)"
+                placeholder="¿Qué sede quieres ajustar?" />
+            </div>
+          }
+          <app-comp-level-card
+            levelLabel="Por sede"
+            help="Pisa la base de la empresa para todos los empleados de esa sede (salvo quienes tengan regla individual)."
+            [optional]="true"
+            [own]="branchComp()"
+            [inherited]="branchSelId() ? bizComp() : null"
+            inheritedFrom="Empresa"
+            [locked]="!baseReady() || !branchSelId()"
+            [lockedHint]="!baseReady()
+              ? 'Primero define la base de tu empresa, arriba.'
+              : 'Elige la sede que quieres ajustar (verás su regla precargada desde la empresa).'"
+            [saving]="branchSaving()"
+            (save)="saveBranch($event)" />
+        </div>
+
+        <!-- ---- Por empleado ---- -->
+        <div class="space-y-2">
+          <div class="flex items-center gap-2">
+            <span class="grid h-7 w-7 place-items-center rounded-lg bg-primary-500/15 text-primary-600 dark:text-primary-300">
+              <lucide-icon [img]="userIcon" [size]="13" />
+            </span>
+            <p class="text-xs font-medium text-text-muted">Un empleado en particular</p>
+          </div>
+
+          @if (baseReady()) {
+            <div class="flex flex-wrap gap-2">
+              <div class="w-52">
+                <app-autocomplete
+                  [options]="branchOptions()"
+                  [ngModel]="empBranchId()"
+                  (ngModelChange)="empBranchId.set($event)"
+                  placeholder="¿En qué sede trabaja?" />
+              </div>
+              @if (empBranchId()) {
+                <div class="w-56">
+                  <app-autocomplete
+                    [options]="employeeOptions()"
+                    [ngModel]="empSelId()"
+                    (ngModelChange)="empSelId.set($event)"
+                    placeholder="Elige al empleado" />
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Perfil del empleado elegido -->
+          @if (selectedEmployee(); as emp) {
+            <div class="flex items-center gap-3 rounded-2xl border border-border bg-surface-muted/50 p-3.5">
+              @if (assetUrl(emp.photoUrl); as photo) {
+                <img [src]="photo" alt="" class="h-14 w-14 rounded-2xl object-cover border border-border" />
+              } @else {
+                <span class="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-primary-500/15 text-primary-600 dark:text-primary-300 text-lg font-bold">
+                  {{ empInitials() }}
+                </span>
+              }
+              <div class="min-w-0">
+                <p class="font-semibold text-text truncate">{{ emp.personName?.trim() || 'Pendiente de completar' }}</p>
+                <p class="text-xs text-text-muted truncate">{{ empPositionName() }} · {{ empBranchName() }}</p>
+                <p class="text-[11px] text-text-soft">
+                  @if (emp.employeeCode) { Código {{ emp.employeeCode }} · }
+                  @if (emp.hireDate) { Desde {{ emp.hireDate }} } @else { Completará sus datos en la app }
+                </p>
+              </div>
+            </div>
+          }
+
+          <app-comp-level-card
+            levelLabel="Individual"
+            help="La regla más específica de todas: pisa la de su sede y la de la empresa solo para esta persona."
+            [optional]="true"
+            [own]="empComp()"
+            [inherited]="empSelId() ? empInherited() : null"
+            [inheritedFrom]="empInheritedFrom()"
+            [locked]="!baseReady() || !empSelId()"
+            [lockedHint]="!baseReady()
+              ? 'Primero define la base de tu empresa, arriba.'
+              : 'Elige la sede y el empleado (su regla llega precargada de la sede o de la empresa).'"
+            [saving]="empSaving()"
+            (save)="saveEmployee($event)" />
+        </div>
+      </div>
+    </section>
+
+    <p class="text-xs text-text-soft max-w-4xl">
+      Al calcular un pago se usa la regla más específica vigente: primero la del empleado,
+      luego la de su sede y por último la base de la empresa.
+    </p>
+  }
+</div>

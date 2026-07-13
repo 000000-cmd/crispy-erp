@@ -7,11 +7,6 @@
 
   @if (loading() && !branches().length) {
     <app-skeleton [lines]="4" />
-  } @else if (!businessId()) {
-    <div class="rounded-2xl border border-border bg-surface p-6 space-y-3">
-      <h2 class="text-base font-semibold text-text">Primero registra tu negocio</h2>
-      <a routerLink="/tenant/onboarding"><app-button>Crear mi negocio</app-button></a>
-    </div>
   } @else if (!branches().length) {
     <div class="rounded-2xl border border-border bg-surface p-6 space-y-3">
       <h2 class="text-base font-semibold text-text">Aún no tienes sedes</h2>
@@ -46,11 +41,12 @@
     (onClose)="close()">
 
     @if (!editingId()) {
-      <!-- Alta completa: cuenta (rol EMPLOYEE) + persona + laboral. -->
+      <!-- Alta mínima: solo la cuenta. El tercero y el registro laboral nacen
+           vacíos y el empleado completa sus datos desde la app móvil. -->
       <div class="mb-4 rounded-lg border border-primary-200 dark:border-primary-800 bg-primary-50/60 dark:bg-primary-900/20 px-3 py-2 text-xs text-primary-700 dark:text-primary-200">
         Sede: <span class="font-semibold">{{ selectedBranchName() }}</span> ·
-        El empleado usará el correo y la contraseña para entrar a la app móvil;
-        en su primer ingreso completará el resto de sus datos.
+        Solo creas su cuenta: el empleado entra a la app móvil con este correo y
+        contraseña, y allá completa sus datos personales.
       </div>
       <app-dynamic-form
         #dynForm

@@ -39,13 +39,9 @@ test.describe('Audit de formularios de empresa', () => {
       { code: 'MAIN', name: 'Principal' }, { code: 'BRANCH', name: 'Sucursal' },
     ]);
 
-    // 1. Registro → dashboard con modal de bienvenida (orb + mensaje).
+    // 1. Registro. El gate deja al dueño en el onboarding hasta que cree su
+    //    negocio; el modal de bienvenida se verá al aterrizar en el dashboard.
     const owner = await registerOwner(page);
-    await page.goto('/tenant/dashboard');
-    const welcome = page.locator('app-modal:has-text("bienvenida")');
-    await expect(welcome.locator('app-mascot canvas')).toBeVisible();       // el orb saluda
-    await expect(welcome.getByText(/Buenos días|Buenas tardes|Buenas noches/)).toBeVisible();
-    await welcome.getByRole('button', { name: /Llenar más tarde/ }).click();
 
     // 2. Onboarding (wizard 2 pasos): acompañante + una columna + botón habilitado.
     await page.goto('/tenant/onboarding');
@@ -64,7 +60,13 @@ test.describe('Audit de formularios de empresa', () => {
     await page.locator('form').getByRole('button', { name: 'Crear mi negocio' }).click();
     await page.waitForURL('**/tenant/dashboard**', { timeout: 20_000 });
 
-    // 3. Sedes: acompañante de primera vez + drawer en columna + guardar sin bloqueo.
+    // 3. Primer ingreso al dashboard: modal de bienvenida (orb + saludo generativo).
+    const welcome = page.locator('app-modal:has-text("bienvenida")');
+    await expect(welcome.locator('app-mascot canvas')).toBeVisible();       // el orb saluda
+    await expect(welcome.getByText(/Buenos días|Buenas tardes|Buenas noches/)).toBeVisible();
+    await welcome.getByRole('button', { name: /Llenar más tarde/ }).click();
+
+    // 4. Sedes: acompañante de primera vez + drawer en columna + guardar sin bloqueo.
     await page.goto('/tenant/sedes');
     await expect(page.locator('app-form-companion')).toBeVisible();          // aún no hay sedes
     await page.getByRole('button', { name: 'Nueva sede' }).click();

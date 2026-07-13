@@ -20,8 +20,6 @@ import { AutocompleteOption } from '../../../shared/ui/autocomplete/autocomplete
 import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { AuthService } from '../../../core/auth/auth.service';
-import { ConstantsService } from '../../../core/constants/constants.service';
-import { BusinessApi } from '../../admin/business/business.api';
 import { SystemListsApi } from '../../admin/system-lists/system-lists.api';
 import { CatalogItem } from '../../admin/system-lists/system-lists.model';
 
@@ -29,14 +27,15 @@ import { SedesApi } from '../sedes/sedes.api';
 import { Branch } from '../sedes/sedes.model';
 import { EmpleadosApi } from './empleados.api';
 import { EmployeeDetail } from './empleados.model';
-import { EmployeeEditForm, EMPTY_EMPLOYEE_EDIT_FORM, buildEmployeeProvisionSchema } from './empleados-form';
+import { EmployeeEditForm, EMPTY_EMPLOYEE_EDIT_FORM, EMPLOYEE_PROVISION_SCHEMA } from './empleados-form';
 
 /**
  * Empleados del negocio, por sede.
  *
- * ALTA: el dueño crea al empleado COMPLETO (cuenta con rol EMPLOYEE + persona +
- * registro laboral) — el empleado entra por la app móvil y completa sus datos
- * en su primer ingreso. EDICIÓN: sólo lo laboral (cargo/código/fecha).
+ * ALTA MÍNIMA: el dueño solo crea la cuenta (usuario/correo/contraseña); el
+ * tercero y el registro laboral nacen como shells y el empleado completa sus
+ * datos en su primer ingreso al APK. EDICIÓN: sólo lo laboral (cargo/código/
+ * fecha), por si el dueño quiere fijarlos él mismo.
  */
 @Component({
   selector: 'app-tenant-empleados',
@@ -50,9 +49,7 @@ import { EmployeeEditForm, EMPTY_EMPLOYEE_EDIT_FORM, buildEmployeeProvisionSchem
 export class EmpleadosComponent {
   private readonly api = inject(EmpleadosApi);
   private readonly sedesApi = inject(SedesApi);
-  private readonly businessApi = inject(BusinessApi);
   private readonly systemListsApi = inject(SystemListsApi);
-  private readonly constants = inject(ConstantsService);
   private readonly confirm = inject(ConfirmService);
   private readonly toast = inject(ToastService);
   private readonly auth = inject(AuthService);
@@ -88,7 +85,7 @@ export class EmpleadosComponent {
   readonly editTried = signal(false);
   private editingSnapshot: EmployeeDetail | null = null;
 
-  readonly provisionSchema = buildEmployeeProvisionSchema(this.systemListsApi, this.constants);
+  readonly provisionSchema = EMPLOYEE_PROVISION_SCHEMA;
   readonly provisionModel = signal<Record<string, unknown>>({});
 
   readonly dynForm = viewChild<DynamicFormComponent>('dynForm');
@@ -99,8 +96,10 @@ export class EmpleadosComponent {
   });
 
   readonly columns = computed<ColumnDef<EmployeeDetail>[]>(() => [
-    { key: 'personName', label: 'Empleado' },
-    { key: 'positionId', label: 'Cargo', format: r => this.positionName().get(r.positionId) ?? '—' },
+    // Shells del alta mínima: sin nombre/cargo/fecha hasta que el empleado
+    // complete sus datos desde el APK.
+    { key: 'personName', label: 'Empleado', format: r => r.personName?.trim() || 'Pendiente de completar' },
+    { key: 'positionId', label: 'Cargo', format: r => (r.positionId && this.positionName().get(r.positionId)) || '—' },
     { key: 'employeeCode', label: 'Código', width: '140px', format: r => r.employeeCode || '—' },
     { key: 'hireDate', label: 'Ingreso', width: '140px', format: r => r.hireDate ?? '—' },
     {
@@ -115,26 +114,21 @@ export class EmpleadosComponent {
   ]);
 
   constructor() {
-    const userId = this.auth.user()?.id;
-    if (!userId) { this.loading.set(false); return; }
+    // El gate de onboarding garantiza negocio: el id vive en la sesión.
+    const businessId = this.auth.user()?.businessId ?? null;
+    this.businessId.set(businessId);
+    if (!businessId) { this.loading.set(false); return; }
+
     this.systemListsApi.itemsEnabled('employee_position').pipe(
       map<CatalogItem[], AutocompleteOption[]>(items => items.map(i => ({ value: i.id, label: i.name }))),
     ).subscribe({ next: o => this.positionOptions.set(o) });
 
-    this.businessApi.mine(userId).subscribe({
-      next: list => {
-        const id = list[0]?.id ?? null;
-        this.businessId.set(id);
-        if (!id) { this.loading.set(false); return; }
-        this.sedesApi.list(id).subscribe({
-          next: bs => {
-            this.branches.set(bs);
-            const first = bs[0]?.id ?? null;
-            this.selectedBranchId.set(first);
-            if (first) this.refresh(first); else this.loading.set(false);
-          },
-          error: () => this.loading.set(false),
-        });
+    this.sedesApi.list(businessId).subscribe({
+      next: bs => {
+        this.branches.set(bs);
+        const first = bs[0]?.id ?? null;
+        this.selectedBranchId.set(first);
+        if (first) this.refresh(first); else this.loading.set(false);
       },
       error: () => this.loading.set(false),
     });
@@ -176,19 +170,8 @@ export class EmpleadosComponent {
     this.saving.set(true);
     this.api.provision({
       branchId,
-      positionId: v.positionId,
-      hireDate: v.hireDate,
-      employeeCode: v.employeeCode || null,
-      documentTypeId: v.documentTypeId,
-      documentNumber: v.documentNumber,
-      firstName: v.firstName,
-      secondName: v.secondName || null,
-      firstLastName: v.firstLastName,
-      secondLastName: v.secondLastName || null,
-      genderId: v.genderId || null,
-      birthDate: v.birthDate || null,
-      email: v.email,
       username: v.username,
+      email: v.email,
       password: v.password,
     }).subscribe({
       next: r => {
@@ -245,7 +228,8 @@ export class EmpleadosComponent {
   }
 
   async askDelete(e: EmployeeDetail) {
-    const ok = await this.confirm.ask({ title: 'Eliminar empleado', message: `¿Eliminar a "${e.personName}"?`, tone: 'danger', confirmText: 'Eliminar' });
+    const name = e.personName?.trim() || 'este empleado (pendiente de completar)';
+    const ok = await this.confirm.ask({ title: 'Eliminar empleado', message: `¿Eliminar a "${name}"?`, tone: 'danger', confirmText: 'Eliminar' });
     if (!ok) return;
     const branchId = this.selectedBranchId();
     this.api.remove(e.id).subscribe({

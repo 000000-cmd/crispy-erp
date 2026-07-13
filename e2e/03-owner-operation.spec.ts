@@ -33,6 +33,10 @@ test.describe('Operación del dueño (ciclo completo)', () => {
     // ---------- 1. Registro del dueño ----------
     const owner = await registerOwner(page);
 
+    // Gate: un dueño sin negocio que intenta una ruta operativa es enviado a crearlo.
+    await page.goto('/tenant/dashboard');
+    await expect(page).toHaveURL(/\/tenant\/onboarding/);
+
     // ---------- 2. Onboarding del negocio (wizard 2 pasos: Negocio → Tus datos) ----------
     await page.goto('/tenant/onboarding');
     // Paso 1: Negocio (tipo, nombre, subdominio).
@@ -55,17 +59,22 @@ test.describe('Operación del dueño (ciclo completo)', () => {
     // Ya en el dashboard: el widget de completitud (header único) pide los pasos que faltan.
     await expect(page.getByText('Termina de configurar tu negocio')).toBeVisible();
 
-    // ---------- 3. Servicio vía UI (drawer) ----------
+    // Gate inverso: con el negocio ya creado, el onboarding deja de ser una opción.
+    await page.goto('/tenant/onboarding');
+    await expect(page).toHaveURL(/\/tenant\/dashboard/);
+
+    // ---------- 3. Servicio vía UI (drawer + cards) ----------
     await page.goto('/tenant/servicios');
     await page.getByRole('button', { name: 'Nuevo servicio' }).click();
     const d1 = drawer(page);
     await d1.locator('form input[type="text"]').first().fill('Corte E2E');
-    const numbers = d1.locator('form input[type="number"]');
-    await numbers.nth(0).fill('30');
-    await numbers.nth(1).fill('25000');
+    await d1.locator('form input[type="number"]').first().fill('30'); // duración
+    await d1.locator('form input[inputmode="numeric"]').fill('25000'); // precio (money con máscara)
     await d1.getByRole('button', { name: /Guardar|Save/ }).click();
     await expectToast(page, 'Servicio guardado');
-    await expect(page.getByRole('cell', { name: 'Corte E2E' })).toBeVisible();
+    // La vista es una carta de precios (cards), no tabla: nombre + precio enmascarado.
+    await expect(page.getByRole('heading', { name: 'Corte E2E' })).toBeVisible();
+    await expect(page.getByText(/\$\s?25\.000/)).toBeVisible();
 
     // ---------- 4. Sede: validación UI + creación por API ----------
     await page.goto('/tenant/sedes');
@@ -97,24 +106,19 @@ test.describe('Operación del dueño (ciclo completo)', () => {
     await page.goto('/tenant/sedes');
     await expect(page.getByRole('cell', { name: 'Sede E2E' })).toBeVisible();
 
-    // ---------- 5. Empleado (cuenta EMPLOYEE + persona + laboral) vía UI ----------
+    // ---------- 5. Empleado: ALTA MÍNIMA (solo cuenta) vía UI ----------
+    // El tercero y el registro laboral nacen como shells; el empleado completa
+    // sus datos desde el APK. En la lista aparece "Pendiente de completar".
     const emp = unique('emp');
     await page.goto('/tenant/empleados');
     await page.getByRole('button', { name: 'Nuevo empleado' }).click();
     const d3 = drawer(page);
-    await pickSelect(page, d3, 0); // Cargo
-    await d3.locator('form input[type="date"]').first().fill('2026-07-01');
-    await pickSelect(page, d3, 1); // Tipo de documento
-    const t = d3.locator('form input[type="text"]');
-    await t.nth(1).fill(unique('8'));      // número de documento (texto 0 = código interno)
-    await t.nth(2).fill('Empleado');       // primer nombre
-    await t.nth(4).fill('Prueba');         // primer apellido
-    await d3.locator('form input[type="email"]').fill(`${emp}@e2e.local`);
-    await t.nth(6).fill(emp);              // usuario
-    await d3.locator('form input[type="password"]').fill('Password123!');
+    await d3.locator('form input[type="text"]').first().fill(emp);           // usuario
+    await d3.locator('form input[type="email"]').fill(`${emp}@e2e.local`);   // correo
+    await d3.locator('form input[type="password"]').fill('Password123!');    // contraseña
     await d3.getByRole('button', { name: /Guardar|Save/ }).click();
     await expectToast(page, /Empleado creado/);
-    await expect(page.getByRole('cell', { name: 'Empleado Prueba' })).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'Pendiente de completar' })).toBeVisible();
 
     // ---------- 6. Dashboard con conteos REALES ----------
     await page.goto('/tenant/dashboard');
@@ -129,7 +133,7 @@ test.describe('Operación del dueño (ciclo completo)', () => {
     // Cerrar la sesión del dueño: con sesión activa /login redirige al home.
     await page.evaluate(() => localStorage.clear());
     await page.goto('/login');
-    await byPlaceholder(page, 'usuario  /  tu@empresa.com').fill(`${emp}@e2e.local`);
+    await byPlaceholder(page, 'usuario  /  tu@empresa.com  /  nº documento').fill(`${emp}@e2e.local`);
     await byPlaceholder(page, '••••••••').fill('Password123!');
     await page.getByRole('button', { name: 'Iniciar sesión' }).click();
     await expect(page.getByText('Las cuentas de empleado ingresan por la app móvil.')).toBeVisible();

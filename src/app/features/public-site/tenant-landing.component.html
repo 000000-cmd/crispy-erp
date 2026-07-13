@@ -1,0 +1,243 @@
+<div class="relative min-h-full overflow-hidden bg-bg text-text">
+
+  <!-- ===================== NAV (glass) ===================== -->
+  <header class="sticky top-0 z-30 border-b border-border/60 glass">
+    <div class="mx-auto max-w-6xl px-5 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2.5 min-w-0">
+        @if (logo()) {
+          <img [src]="logo()" [alt]="data().business.name" class="h-9 w-9 rounded-xl object-cover shadow-lg shadow-primary-500/20" />
+        } @else {
+          <div class="h-9 w-9 rounded-xl bg-primary-500 text-white flex items-center justify-center font-semibold shadow-lg shadow-primary-500/30">
+            {{ data().business.name.charAt(0) }}
+          </div>
+        }
+        <span class="font-semibold tracking-tight truncate">{{ data().business.name }}</span>
+      </div>
+      @if (!preview()) {
+        <a routerLink="/login" class="inline-flex h-9 items-center px-3 rounded-lg text-sm text-text-muted hover:bg-surface-muted transition">
+          Iniciar sesión
+        </a>
+      }
+    </div>
+  </header>
+
+  <!-- ===================== HERO (full-bleed, dramático) ===================== -->
+  <section class="relative overflow-hidden" [class.min-h-[34rem]]="hero()">
+    @if (hero()) {
+      <!-- Imagen del negocio como protagonista absoluta -->
+      <img [src]="hero()" alt="" class="absolute inset-0 h-full w-full object-cover" />
+      <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/20"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-transparent"></div>
+    } @else {
+      <div class="aurora"><div class="aurora__layer" style="opacity:.75"></div></div>
+    }
+
+    <div class="relative z-10 mx-auto max-w-6xl px-5 pt-24 pb-20">
+      <div class="max-w-2xl space-y-6" [class.text-white]="hero()">
+        <span class="tl-reveal inline-flex items-center gap-1.5 rounded-full glass px-3.5 py-1.5 text-xs font-semibold tracking-wide uppercase"
+              [class.text-primary-200]="hero()" [class.text-primary-700]="!hero()" style="--d: 0">
+          <lucide-icon [img]="sparklesIcon" [size]="13" /> {{ data().business.name }}
+        </span>
+
+        <h1 class="tl-reveal text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-[1.02] tracking-tight" style="--d: 120">
+          @if (hero()) {
+            {{ data().landing.tagline || data().business.name }}
+          } @else {
+            <span class="tl-gradient-text">{{ data().landing.tagline || data().business.name }}</span>
+          }
+        </h1>
+
+        @if (data().landing.about) {
+          <p class="tl-reveal text-lg sm:text-xl max-w-xl whitespace-pre-line" style="--d: 240"
+             [class.text-white/85]="hero()" [class.text-text-muted]="!hero()">{{ data().landing.about }}</p>
+        }
+
+        <div class="tl-reveal flex flex-wrap items-center gap-3 pt-1" style="--d: 360">
+          <button type="button" disabled
+                  class="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold bg-primary-500/70 text-white cursor-not-allowed shadow-xl shadow-primary-500/30"
+                  title="Muy pronto podrás agendar en línea">
+            <lucide-icon [img]="calendarIcon" [size]="17" /> Agendar cita
+            <span class="rounded-full bg-white/25 px-2 py-0.5 text-[10px] uppercase tracking-widest">Pronto</span>
+          </button>
+          @if (waLink(); as wa) {
+            <a [href]="preview() ? null : wa" target="_blank" rel="noopener"
+               class="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold glass hover:bg-surface-muted transition hover:-translate-y-0.5"
+               [class.text-white]="hero()">
+              <lucide-icon [img]="waIcon" [size]="17" class="text-emerald-400" /> Escríbenos
+            </a>
+          }
+        </div>
+
+        <!-- stats del negocio -->
+        <div class="tl-reveal flex flex-wrap gap-2.5 pt-2" style="--d: 480">
+          @if (data().offerings.length) {
+            <span class="glass rounded-full px-3.5 py-1.5 text-xs font-medium" [class.text-white]="hero()">
+              {{ data().offerings.length }} servicio{{ data().offerings.length === 1 ? '' : 's' }}
+            </span>
+          }
+          @if (data().branches.length) {
+            <span class="glass rounded-full px-3.5 py-1.5 text-xs font-medium" [class.text-white]="hero()">
+              {{ data().branches.length }} sede{{ data().branches.length === 1 ? '' : 's' }}
+            </span>
+          }
+          @if (data().landing.scheduleText) {
+            <span class="glass rounded-full px-3.5 py-1.5 text-xs font-medium" [class.text-white]="hero()">
+              <lucide-icon [img]="clockIcon" [size]="11" class="inline -mt-0.5" /> Abierto hoy
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="tl-scroll-cue absolute bottom-4 left-1/2 -translate-x-1/2 hidden sm:block" aria-hidden="true"
+           [class.text-white]="hero()" [class.text-text-muted]="!hero()">
+        <lucide-icon [img]="chevronDown" [size]="22" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SERVICIOS ===================== -->
+  @if (data().offerings.length) {
+    <section class="relative z-10 mx-auto max-w-6xl px-5 py-16">
+      <div class="mb-8">
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary-600 dark:text-primary-300">Lo que hacemos</p>
+        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight mt-1">Nuestros servicios</h2>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        @for (o of data().offerings; track o.name; let i = $index) {
+          <article class="group relative overflow-hidden rounded-2xl border border-border bg-surface p-6 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-primary-500/15 hover:border-primary-400/60">
+            <span class="absolute -right-2 -top-4 text-7xl font-extrabold text-primary-500/10 select-none transition-colors group-hover:text-primary-500/20" aria-hidden="true">
+              {{ i + 1 < 10 ? '0' + (i + 1) : i + 1 }}
+            </span>
+            <div class="relative">
+              <h3 class="text-lg font-semibold">{{ o.name }}</h3>
+              @if (o.description) { <p class="text-sm text-text-muted mt-1 line-clamp-2">{{ o.description }}</p> }
+              <div class="mt-5 flex items-end justify-between gap-2">
+                <p class="text-2xl font-bold tracking-tight tabular-nums">{{ fmt(o.price) }}</p>
+                <span class="inline-flex items-center gap-1 rounded-full bg-primary-500/10 text-primary-600 dark:text-primary-300 px-2.5 py-1 text-xs font-medium">
+                  <lucide-icon [img]="clockIcon" [size]="12" /> {{ o.durationMinutes }} min
+                </span>
+              </div>
+            </div>
+            <div class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-primary-500 via-primary-400 to-primary-600 opacity-0 transition-opacity group-hover:opacity-100"></div>
+          </article>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===================== GALERÍA ===================== -->
+  @if (gallery().length) {
+    <section class="relative z-10 mx-auto max-w-6xl px-5 py-16">
+      <div class="mb-8">
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary-600 dark:text-primary-300">Nuestro espacio</p>
+        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight mt-1">Galería</h2>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 [grid-auto-rows:9rem] sm:[grid-auto-rows:11rem]">
+        @for (g of gallery(); track g; let i = $index) {
+          <div class="group overflow-hidden rounded-2xl border border-border/60"
+               [class.col-span-2]="i === 0" [class.row-span-2]="i === 0">
+            <img [src]="g" alt="" loading="lazy"
+                 class="h-full w-full object-cover transition duration-500 group-hover:scale-105 group-hover:brightness-110" />
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ===================== SEDES + HORARIO ===================== -->
+  @if (data().branches.length || data().landing.scheduleText) {
+    <section class="relative z-10 mx-auto max-w-6xl px-5 py-16 grid lg:grid-cols-2 gap-10">
+      @if (data().branches.length) {
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary-600 dark:text-primary-300">Visítanos</p>
+          <h2 class="text-3xl font-bold tracking-tight mt-1 mb-5">Dónde estamos</h2>
+          <div class="space-y-3">
+            @for (b of data().branches; track b.name) {
+              <div class="glass glass--card p-5 flex items-start gap-4 transition-all hover:-translate-y-0.5">
+                <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30">
+                  <lucide-icon [img]="pinIcon" [size]="18" />
+                </span>
+                <div class="min-w-0">
+                  <p class="font-semibold">{{ b.name }}</p>
+                  @if (b.addressLine) { <p class="text-sm text-text-muted mt-0.5">{{ b.addressLine }}</p> }
+                  @if (b.phone) { <p class="text-xs text-text-soft mt-1">Tel: {{ b.phone }}</p> }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+      @if (data().landing.scheduleText) {
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary-600 dark:text-primary-300">Horarios</p>
+          <h2 class="text-3xl font-bold tracking-tight mt-1 mb-5">Cuándo atendemos</h2>
+          <div class="glass glass--card p-6 flex items-start gap-4">
+            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30">
+              <lucide-icon [img]="clockIcon" [size]="18" />
+            </span>
+            <p class="text-base text-text whitespace-pre-line leading-relaxed">{{ data().landing.scheduleText }}</p>
+          </div>
+        </div>
+      }
+    </section>
+  }
+
+  <!-- ===================== CONTACTO ===================== -->
+  @if (hasContact()) {
+    <section class="relative z-10 mx-auto max-w-6xl px-5 py-16">
+      <div class="relative overflow-hidden rounded-3xl px-8 py-14 border border-primary-400/30">
+        <div class="aurora"><div class="aurora__layer"></div></div>
+        <div class="relative z-10 text-center">
+          <h2 class="text-3xl sm:text-4xl font-bold tracking-tight mb-2">Hablemos</h2>
+          <p class="text-text-muted mb-7">Escríbenos por el canal que prefieras.</p>
+          <div class="flex flex-wrap justify-center gap-3">
+            @if (data().landing.phone; as tel) {
+              <a [href]="preview() ? null : 'tel:' + tel" class="inline-flex items-center gap-2 px-5 py-3 rounded-2xl glass hover:bg-surface-muted transition hover:-translate-y-0.5 text-sm font-semibold">
+                <lucide-icon [img]="phoneIcon" [size]="16" /> {{ tel }}
+              </a>
+            }
+            @if (waLink(); as wa) {
+              <a [href]="preview() ? null : wa" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-5 py-3 rounded-2xl glass hover:bg-surface-muted transition hover:-translate-y-0.5 text-sm font-semibold">
+                <lucide-icon [img]="waIcon" [size]="16" class="text-emerald-500" /> WhatsApp
+              </a>
+            }
+            @if (data().landing.contactEmail; as em) {
+              <a [href]="preview() ? null : 'mailto:' + em" class="inline-flex items-center gap-2 px-5 py-3 rounded-2xl glass hover:bg-surface-muted transition hover:-translate-y-0.5 text-sm font-semibold">
+                <lucide-icon [img]="mailIcon" [size]="16" /> {{ em }}
+              </a>
+            }
+            @if (igLink(); as ig) {
+              <a [href]="preview() ? null : ig" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-5 py-3 rounded-2xl glass hover:bg-surface-muted transition hover:-translate-y-0.5 text-sm font-semibold">
+                <lucide-icon [img]="igIcon" [size]="16" /> Instagram
+              </a>
+            }
+            @if (fbLink(); as fb) {
+              <a [href]="preview() ? null : fb" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-5 py-3 rounded-2xl glass hover:bg-surface-muted transition hover:-translate-y-0.5 text-sm font-semibold">
+                <lucide-icon [img]="fbIcon" [size]="16" /> Facebook
+              </a>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+  }
+
+  <footer class="relative z-10 border-t border-border">
+    <div class="mx-auto max-w-6xl px-5 py-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-text-muted">
+      <span>© {{ data().business.name }}</span>
+      @if (!preview()) {
+        <a routerLink="/login" class="hover:text-text transition">Acceso del equipo</a>
+      }
+    </div>
+  </footer>
+
+  <!-- WhatsApp flotante (siempre a un toque) -->
+  @if (waLink(); as wa) {
+    @if (!preview()) {
+      <a [href]="wa" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp"
+         class="tl-wa-fab grid h-14 w-14 place-items-center rounded-full bg-emerald-500 text-white shadow-2xl shadow-emerald-500/40 transition hover:scale-105">
+        <lucide-icon [img]="waIcon" [size]="24" class="relative" />
+      </a>
+    }
+  }
+</div>

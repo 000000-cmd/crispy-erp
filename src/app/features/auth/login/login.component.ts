@@ -38,8 +38,8 @@ export class LoginComponent {
       {
         key: 'usernameOrEmail',
         type: 'text',
-        label: 'Usuario o correo',
-        placeholder: 'usuario  /  tu@empresa.com',
+        label: 'Usuario, correo o documento',
+        placeholder: 'usuario  /  tu@empresa.com  /  nº documento',
         validators: ['required'],
       },
       {

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { byPlaceholder, drawer, expectToast, logHttpErrors, loginAdmin, pickSelect, unique } from './support/helpers';
+import { byPlaceholder, drawer, logHttpErrors, loginAdmin, pickSelect, unique } from './support/helpers';
 
 /** Administración: CRUD real, pipeline CQRS (outbox→Kafka→ES), dark mode e idioma. */
 test.describe('Administración del sistema', () => {
@@ -45,15 +45,19 @@ test.describe('Administración del sistema', () => {
     await texts.nth(0).fill(doc);          // número de documento
     await texts.nth(1).fill('Tercero');    // primer nombre
     await texts.nth(3).fill('E2E');        // primer apellido
+    // El éxito del create se afirma por la SEÑAL DIRECTA (respuesta HTTP del
+    // POST), no por el DOM: el toast expira (TTL 4s) y el <aside> del drawer
+    // permanece en el árbol tras cerrarse (animación) → toBeHidden era flaky.
+    const createResp = page.waitForResponse(
+      r => r.url().includes('/thirdparty/third-parties') && r.request().method() === 'POST',
+      { timeout: 30_000 },
+    );
     await d.getByRole('button', { name: /Guardar|Save/ }).click();
-    try {
-      await expectToast(page, 'Tercero creado correctamente');
-    } catch (err) {
-      // Diagnóstico: estado del formulario si la creación no ocurrió.
-      // eslint-disable-next-line no-console
-      console.log('FORM AL FALLAR >>>\n', await d.locator('form').innerText().catch(() => '(drawer cerrado)'));
-      throw err;
-    }
+    const resp = await createResp;
+    const body = await resp.json().catch(() => ({}));
+    expect(resp.status(), `create tercero → ${JSON.stringify(body).slice(0, 200)}`).toBe(200);
+    expect(body?.success, `create tercero body → ${JSON.stringify(body).slice(0, 200)}`).toBeTruthy();
+    await page.keyboard.press('Escape'); // cierra el drawer si sigue abierto
 
     // La lista lee de ELASTIC: el documento llega vía outbox (eventual).
     // OJO: el buscador tiene debounce(300)+distinctUntilChanged → entre limpiar

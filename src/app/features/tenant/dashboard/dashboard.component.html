@@ -13,13 +13,6 @@
       <app-skeleton variant="block" height="5.5rem" />
       <app-skeleton variant="block" height="5.5rem" />
     </div>
-  } @else if (!business()) {
-    <!-- Sin negocio: el único paso real es crearlo. -->
-    <div class="rounded-2xl border border-border bg-surface p-6 space-y-3 max-w-xl">
-      <h2 class="text-base font-semibold text-text">Empieza por registrar tu negocio</h2>
-      <p class="text-sm text-text-muted">Crea tu empresa para gestionar sedes, equipo y servicios.</p>
-      <a routerLink="/tenant/onboarding"><app-button>Crear mi negocio</app-button></a>
-    </div>
   } @else {
 
     <!-- Conteos reales, clic → gestión -->
@@ -141,7 +134,7 @@
       </ul>
       <div class="flex items-center justify-end gap-2 pt-1">
         <app-button variant="ghost" (onClick)="closeWelcome()">Llenar más tarde</app-button>
-        <app-button (onClick)="startStep(firstPending()?.route ?? '/tenant/onboarding')">Empezar ahora</app-button>
+        <app-button (onClick)="startStep(firstPending()?.route ?? '/tenant/sedes')">Empezar ahora</app-button>
       </div>
     </div>
   </app-modal>

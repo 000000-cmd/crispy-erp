@@ -179,9 +179,22 @@ export class AuthService {
       isFirstLogin: u.isFirstLogin,
       roles,
       kind,
+      businessId: u.businessId,
       theme: u.theme,
       languageCode: u.languageCode,
     };
+  }
+
+  /**
+   * Sella el businessId recién aprovisionado en la sesión, para que el gate de
+   * onboarding deje pasar de inmediato sin depender de un segundo request.
+   */
+  setBusinessId(businessId: string): void {
+    const u = this._user();
+    if (!u) return;
+    const updated = { ...u, businessId };
+    this._user.set(updated);
+    this.storage.setUser(updated);
   }
 
   /**

@@ -18,6 +18,7 @@ import { CheckboxGroupFieldComponent } from './fields/checkbox-group-field.compo
 import { CheckboxFieldComponent } from './fields/checkbox-field.component';
 import { SwitchFieldComponent } from './fields/switch-field.component';
 import { FileFieldComponent } from './fields/file-field.component';
+import { MoneyFieldComponent } from './fields/money-field.component';
 import { FieldLabelComponent } from './fields/field-label.component';
 
 @Component({
@@ -27,7 +28,7 @@ import { FieldLabelComponent } from './fields/field-label.component';
     CommonModule, ReactiveFormsModule, ButtonComponent, TPipe,
     TextFieldComponent, SelectFieldComponent, AutocompleteFieldComponent, RadioFieldComponent,
     CheckboxGroupFieldComponent, CheckboxFieldComponent, SwitchFieldComponent, FileFieldComponent,
-    FieldLabelComponent,
+    MoneyFieldComponent, FieldLabelComponent,
   ],
   templateUrl: './dynamic-form.component.html',
 })
