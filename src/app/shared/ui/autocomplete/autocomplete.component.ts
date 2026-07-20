@@ -49,6 +49,10 @@ export class AutocompleteComponent implements ControlValueAccessor, OnDestroy {
   readonly emptyText = input<string>('Sin resultados');
   /** Mensaje cuando faltan caracteres. */
   readonly hintText = input<string>('');
+  /** Texto mientras el servicio responde. */
+  readonly loadingText = input<string>('Buscando…');
+  /** Texto cuando la búsqueda falla. */
+  readonly errorText = input<string>('No se pudo buscar. Revisa tu conexión e inténtalo de nuevo.');
 
   /** Emite la opcion seleccionada (o null al limpiar). Util cuando se usa fuera de forms. */
   @Output() readonly selected = new EventEmitter<AutocompleteOption | null>();
@@ -57,6 +61,8 @@ export class AutocompleteComponent implements ControlValueAccessor, OnDestroy {
   readonly open = signal(false);
   readonly search = signal('');
   readonly loading = signal(false);
+  /** La última búsqueda falló: el panel lo dice en vez de fingir "sin resultados". */
+  readonly failed = signal(false);
   /** Opciones que muestra el panel cuando se usa searchFn. */
   readonly remoteOptions = signal<AutocompleteOption[]>([]);
   /** Cache de la opcion actualmente seleccionada (para mostrar label cuando closed). */
@@ -77,20 +83,30 @@ export class AutocompleteComponent implements ControlValueAccessor, OnDestroy {
 
   constructor() {
     // Pipeline de busqueda async. Solo se activa cuando hay searchFn.
+    //
+    // El debounce es REAL (antes era `debounceTime(0)` y `debounceMs` no se
+    // usaba en ninguna parte): sin el, cada tecla disparaba una consulta a
+    // Elasticsearch y los resultados parpadeaban entre peticiones en vuelo.
     this.subs.push(
       this.searchTerm$.pipe(
-        debounceTime(0), // se sustituye por debounceMs en cada emision via switchMap
+        debounceTime(this.debounceMs()),
         distinctUntilChanged(),
         switchMap(term => {
           const fn = this.searchFn();
           if (!fn) return of([] as AutocompleteOption[]);
           if (term.length < this.minSearchChars()) {
             this.loading.set(false);
+            this.failed.set(false);
             return of([] as AutocompleteOption[]);
           }
           this.loading.set(true);
+          this.failed.set(false);
+          // Se limpian los resultados anteriores: mostrar los del término previo
+          // mientras llega el nuevo hace que el usuario elija una opción que ya
+          // no corresponde a lo que escribió.
+          this.remoteOptions.set([]);
           return fn(term).pipe(
-            catchError(() => of([] as AutocompleteOption[])),
+            catchError(() => { this.failed.set(true); return of([] as AutocompleteOption[])}),
             tap(() => this.loading.set(false)),
           );
         }),
@@ -173,6 +189,7 @@ export class AutocompleteComponent implements ControlValueAccessor, OnDestroy {
     this.selected.emit(null);
     this.search.set('');
     this.remoteOptions.set([]);
+    this.failed.set(false);
     this.touchedFn();
   }
 

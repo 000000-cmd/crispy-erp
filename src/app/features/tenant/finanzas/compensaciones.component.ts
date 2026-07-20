@@ -19,9 +19,12 @@ import { Branch } from '../sedes/sedes.model';
 import { EmployeeDetail } from '../empleados/empleados.model';
 import { assetUrl } from '../../public-site/landing.model';
 
+import { ServiciosApi } from '../servicios/servicios.api';
+import { Offering } from '../servicios/servicios.model';
 import { FinanceApi } from './finance.api';
 import { Compensation, CompensationDraft } from './finance.model';
 import { CompLevelCardComponent } from './comp-level-card.component';
+import { CompSimulationComponent } from './comp-simulation.component';
 
 /**
  * Compensaciones del equipo. Organización pensada para ser instintiva:
@@ -43,7 +46,7 @@ import { CompLevelCardComponent } from './comp-level-card.component';
   selector: 'app-tenant-compensaciones',
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule, PageHeaderComponent, SkeletonComponent,
-            AutocompleteComponent, TooltipComponent, CompLevelCardComponent],
+            AutocompleteComponent, TooltipComponent, CompLevelCardComponent, CompSimulationComponent],
   templateUrl: './compensaciones.component.html',
 })
 export class CompensacionesComponent {
@@ -53,6 +56,21 @@ export class CompensacionesComponent {
   private readonly systemListsApi = inject(SystemListsApi);
   private readonly toast = inject(ToastService);
   private readonly auth = inject(AuthService);
+  private readonly serviciosApi = inject(ServiciosApi);
+
+  /** Pestaña activa (Empresa / Sede / Empleado), layout Stitch. */
+  readonly tab = signal<'business' | 'branch' | 'employee'>('business');
+  /** Servicios del negocio para la simulación/mini-modal (se cargan una vez). */
+  readonly offerings = signal<Offering[]>([]);
+
+  /** Borrador EN VIVO de cada nivel (lo emite el comp-level-card) + su estado dirty,
+   *  para que la simulación se mueva mientras el dueño edita y muestre simulado/guardado. */
+  readonly bizDraft = signal<CompensationDraft | null>(null);
+  readonly bizDirtySim = signal(false);
+  readonly branchDraft = signal<CompensationDraft | null>(null);
+  readonly branchDirtySim = signal(false);
+  readonly empDraft = signal<CompensationDraft | null>(null);
+  readonly empDirtySim = signal(false);
 
   protected readonly bizIcon = Building2;
   protected readonly pinIcon = MapPin;
@@ -106,6 +124,28 @@ export class CompensacionesComponent {
   readonly empInherited = computed(() => this.empBranchComp() ?? this.bizComp());
   readonly empInheritedFrom = computed(() => this.empBranchComp() ? 'Sede' : 'Empresa');
 
+  // ---- Qué compensación alimenta cada simulación ----
+  //
+  // La tarjeta emite su borrador SIEMPRE, incluso vacío (mientras no se elige
+  // sede/empleado). Un borrador sin valor no representa nada, así que se
+  // descarta y se cae a lo guardado y luego a lo HEREDADO: sin esto, el
+  // simulador de un nivel sin configuración propia se quedaba en ceros en vez
+  // de mostrar la regla que realmente le aplica.
+  private resolveSim(draft: CompensationDraft | null, own: Compensation | null, inherited: Compensation | null) {
+    if (draft && draft.compensationValue != null) return draft;
+    return own ?? inherited;
+  }
+
+  readonly bizSim = computed(() => this.resolveSim(this.bizDraft(), this.bizComp(), null));
+  readonly branchSim = computed(() => this.resolveSim(this.branchDraft(), this.branchComp(), this.bizComp()));
+  readonly empSim = computed(() => this.resolveSim(this.empDraft(), this.empComp(), this.empInherited()));
+
+  /** De dónde sale lo que se está simulando (para rotularlo en el panel). */
+  readonly branchSimSource = computed(() =>
+    this.branchDirtySim() ? 'draft' : (this.branchComp() ? 'own' : 'inherited'));
+  readonly empSimSource = computed(() =>
+    this.empDirtySim() ? 'draft' : (this.empComp() ? 'own' : 'inherited'));
+
   constructor() {
     const businessId = this.businessId();
 
@@ -115,6 +155,7 @@ export class CompensacionesComponent {
         error: () => this.bizLoading.set(false),
       });
       this.sedesApi.list(businessId).subscribe({ next: b => this.branches.set(b) });
+      this.serviciosApi.list(businessId).subscribe({ next: o => this.offerings.set(o) });
       this.systemListsApi.itemsEnabled('employee_position').pipe(
         map((items: CatalogItem[]) => new Map(items.map(i => [i.id, i.name]))),
       ).subscribe({ next: m => this.positionName.set(m) });

@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { forkJoin, of, switchMap, map, catchError } from 'rxjs';
-import { LucideAngularModule, MapPin, Users, Scissors, ChevronRight, Building2, Smartphone, CheckCircle2, Circle } from 'lucide-angular';
+import { LucideAngularModule, MapPin, Users, Scissors, ChevronRight, Building2, Smartphone, CheckCircle2, Circle, CalendarDays, Lock } from 'lucide-angular';
 
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { ModalComponent } from '../../../shared/ui/modal/modal.component';
@@ -46,6 +46,14 @@ export class TenantDashboardComponent {
   protected readonly appIcon = Smartphone;
   protected readonly stepDoneIcon = CheckCircle2;
   protected readonly stepTodoIcon = Circle;
+  protected readonly agendaIcon = CalendarDays;
+  protected readonly lockIcon = Lock;
+
+  /** Resumen interactivo: el tile activo cambia el contenido del contenedor
+   *  inferior. 'agenda' abre el calendario de hoy (shell "próximamente"). */
+  readonly panel = signal<'agenda' | 'sedes' | 'empleados' | 'servicios'>('agenda');
+  /** Fecha de hoy para el encabezado de la agenda. */
+  readonly today = new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
 
   readonly greeting = computed(() => this.auth.user()?.fullName?.split(' ')[0] ?? '');
 

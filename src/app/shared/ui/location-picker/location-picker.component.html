@@ -10,6 +10,7 @@
         [minSearchChars]="3"
         [placeholder]="'Busca tu municipio…'"
         hintText="Escribe al menos 3 letras. El departamento y el país se completan solos."
+        [ngModel]="municipality()" [ngModelOptions]="{ standalone: true }"
         (selected)="onMunicipalitySearch($event)"
       />
       @if (derivedContext(); as ctx) {
@@ -23,8 +24,9 @@
         <app-autocomplete
           [searchFn]="neighborhoodsFn()"
           [minSearchChars]="3"
-          [placeholder]="'Buscar barrio o vereda… (opcional)'"
-          hintText="Opcional"
+          [placeholder]="neighborhoodRequired() ? 'Buscar barrio o vereda…' : 'Buscar barrio o vereda… (opcional)'"
+          [hintText]="neighborhoodRequired() ? 'Escribe al menos 3 letras' : 'Opcional'"
+          [ngModel]="neighborhood()" [ngModelOptions]="{ standalone: true }"
           (selected)="onNeighborhood($event)"
         />
       </div>
@@ -39,6 +41,7 @@
           [minSearchChars]="3"
           [placeholder]="'Buscar país…'"
           hintText="Escribe al menos 3 letras"
+          [ngModel]="country()" [ngModelOptions]="{ standalone: true }"
           (selected)="onCountry($event)"
         />
       </div>
@@ -52,6 +55,7 @@
           [minSearchChars]="3"
           [placeholder]="'Buscar departamento…'"
           hintText="Escribe al menos 3 letras"
+          [ngModel]="department()" [ngModelOptions]="{ standalone: true }"
           (selected)="onDepartment($event)"
         />
       </div>
@@ -65,6 +69,7 @@
           [minSearchChars]="3"
           [placeholder]="'Buscar municipio…'"
           hintText="Escribe al menos 3 letras"
+          [ngModel]="municipality()" [ngModelOptions]="{ standalone: true }"
           (selected)="onMunicipality($event)"
         />
       </div>
@@ -78,6 +83,7 @@
           [minSearchChars]="3"
           [placeholder]="'Buscar barrio o vereda…'"
           hintText="Escribe al menos 3 letras"
+          [ngModel]="neighborhood()" [ngModelOptions]="{ standalone: true }"
           (selected)="onNeighborhood($event)"
         />
       </div>

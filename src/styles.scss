@@ -3,7 +3,9 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Luminous Aura: Hanken Grotesk (cuerpo/UI) + Bricolage Grotesque (títulos). */
+  --font-sans: 'Hanken Grotesk', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif;
 
   --color-primary-50:  var(--p-50);
   --color-primary-100: var(--p-100);
@@ -26,6 +28,67 @@
   --color-text-soft:      var(--s-text-soft);
   --color-bg:             var(--s-bg);
 
+  /* ── Luminous Aura: vocabulario Material-3 del diseño Stitch ──────────────
+     Permite portar el HTML de Stitch con fidelidad (bg-surface-container-*,
+     text-on-surface-variant, bg-primary-fixed, bg-tertiary-fixed…). `primary`
+     sigue el tema dinámico (--p-*); el resto son los tokens semánticos M3
+     (valores en :root / html.dark abajo). */
+  --color-primary:                   var(--p-500);
+  --color-primary-container:         var(--m-primary-container);
+  --color-primary-fixed:             var(--m-primary-fixed);
+  --color-primary-fixed-dim:         var(--m-primary-fixed-dim);
+  --color-on-primary:                var(--m-on-primary);
+  --color-on-primary-container:      var(--m-on-primary-container);
+  /* Los colores "fixed" NO cambian entre temas (esa es su razón de ser), así que
+     su texto encima tampoco: siempre morado oscuro. Faltaban en el @theme, por lo
+     que `text-on-primary-fixed-variant` no existía como utilidad y el texto caía
+     al color del tema — invisible sobre lavanda en modo oscuro. */
+  --color-on-primary-fixed:          #30004a;
+  --color-on-primary-fixed-variant:  #7000a6;
+  --color-on-tertiary-fixed:         #1e1929;
+  --color-on-tertiary-fixed-variant: #4a4456;
+  --color-on-secondary-fixed:        #1b1b20;
+  --color-on-secondary-fixed-variant:#47464c;
+  --color-secondary:                 var(--m-secondary);
+  --color-secondary-container:       var(--m-secondary-container);
+  --color-on-secondary:              var(--m-on-secondary);
+  --color-tertiary:                  var(--m-tertiary);
+  --color-tertiary-container:        var(--m-tertiary-container);
+  --color-tertiary-fixed:            var(--m-tertiary-fixed);
+  --color-on-tertiary:               var(--m-on-tertiary);
+  --color-on-tertiary-container:     var(--m-on-tertiary-container);
+  --color-background:                var(--s-bg);
+  --color-on-background:             var(--s-text);
+  --color-on-surface:                var(--s-text);
+  --color-on-surface-variant:        var(--m-on-surface-variant);
+  --color-surface-variant:           var(--m-surface-variant);
+  --color-surface-dim:               var(--m-surface-dim);
+  --color-surface-bright:            var(--m-surface-bright);
+  --color-surface-container-lowest:  var(--m-sc-lowest);
+  --color-surface-container-low:     var(--m-sc-low);
+  --color-surface-container:         var(--m-sc);
+  --color-surface-container-high:    var(--m-sc-high);
+  --color-surface-container-highest: var(--m-sc-highest);
+  --color-outline:                   var(--m-outline);
+  --color-outline-variant:           var(--m-outline-variant);
+  --color-inverse-surface:           var(--m-inverse-surface);
+  --color-error-container:           var(--m-error-container);
+  --color-on-error-container:        var(--m-on-error-container);
+
+  /* Escala tipográfica del diseño Stitch (font-* = familia, text-* = tamaño) */
+  --font-display-xl:  'Bricolage Grotesque', ui-sans-serif, sans-serif;
+  --font-headline-lg: 'Bricolage Grotesque', ui-sans-serif, sans-serif;
+  --font-headline-md: 'Bricolage Grotesque', ui-sans-serif, sans-serif;
+  --font-body-lg:     'Hanken Grotesk', ui-sans-serif, sans-serif;
+  --font-body-md:     'Hanken Grotesk', ui-sans-serif, sans-serif;
+  --font-label-md:    'Hanken Grotesk', ui-sans-serif, sans-serif;
+  --text-display-xl:  3rem;      --text-display-xl--line-height: 3.5rem;   --text-display-xl--font-weight: 700; --text-display-xl--letter-spacing: -0.02em;
+  --text-headline-lg: 2rem;      --text-headline-lg--line-height: 2.5rem;  --text-headline-lg--font-weight: 600;
+  --text-headline-md: 1.5rem;    --text-headline-md--line-height: 2rem;    --text-headline-md--font-weight: 600;
+  --text-body-lg:     1.125rem;  --text-body-lg--line-height: 1.75rem;     --text-body-lg--font-weight: 400;
+  --text-body-md:     1rem;      --text-body-md--line-height: 1.5rem;      --text-body-md--font-weight: 400;
+  --text-label-md:    0.875rem;  --text-label-md--line-height: 1.25rem;    --text-label-md--font-weight: 500; --text-label-md--letter-spacing: 0.05em;
+
   /* ── Escala tipográfica (Geist) ──────────────────────────────────────────
      Jerarquía intencional: headings con tracking negativo (más seguros), body
      legible, caption/overline consistentes. Reemplaza los text-xl/2xl/[11px]
@@ -44,19 +107,20 @@
   --ease-in-out:  cubic-bezier(0.77, 0, 0.175, 1);
   --ease-drawer:  cubic-bezier(0.32, 0.72, 0, 1);
 
-  /* Default palette: terracotta. ThemeService overrides at runtime. */
-  --p-50:  oklch(97% 0.015 30);
-  --p-100: oklch(93% 0.035 30);
-  --p-200: oklch(85% 0.07 30);
-  --p-300: oklch(76% 0.10 30);
-  --p-400: oklch(68% 0.12 30);
-  --p-500: oklch(58% 0.14 30);
-  --p-600: oklch(50% 0.13 30);
-  --p-700: oklch(42% 0.11 30);
-  --p-800: oklch(34% 0.09 30);
-  --p-900: oklch(26% 0.07 30);
+  /* Default palette: "Aura" púrpura (#8204be, hue 309). ThemeService overrides
+     at runtime por tenant; este es el fallback pre-JS y el default de marca. */
+  --p-50:  oklch(97% 0.015 309);
+  --p-100: oklch(93% 0.035 309);
+  --p-200: oklch(85% 0.07 309);
+  --p-300: oklch(76% 0.10 309);
+  --p-400: oklch(68% 0.12 309);
+  --p-500: oklch(58% 0.20 309);
+  --p-600: oklch(50% 0.19 309);
+  --p-700: oklch(42% 0.17 309);
+  --p-800: oklch(34% 0.15 309);
+  --p-900: oklch(26% 0.13 309);
 
-  --s-bg:            #fafaf8;
+  --s-bg:            #f8f9fa;
   --s-surface:       #ffffff;
   --s-surface-muted: #f5f4f0;
   --s-surface-hover: #f0efe9;
@@ -64,7 +128,38 @@
   --s-border-strong: #d6d3c8;
   --s-text:          #1c1917;
   --s-text-muted:    #57534e;
-  --s-text-soft:     #a8a29e;
+  /* Subido de #a8a29e: daba 2.52 de contraste sobre el fondo claro (bajo AA),
+     se notaba en las marcas del deslizador de porcentaje. */
+  --s-text-soft:     #78716c;
+
+  /* M3 semantic tokens (Luminous Aura) — light, valores exactos de Stitch. */
+  --m-primary-container:      #9d34d9;
+  --m-primary-fixed:          #f5d9ff;
+  --m-primary-fixed-dim:      #e6b4ff;
+  --m-on-primary:             #ffffff;
+  --m-on-primary-container:   #fae6ff;
+  --m-secondary:              #5f5e64;
+  --m-secondary-container:    #e1dee5;
+  --m-on-secondary:           #ffffff;
+  --m-tertiary:               #575062;
+  --m-tertiary-container:     #70687b;
+  --m-tertiary-fixed:         #e9def5;
+  --m-on-tertiary:            #ffffff;
+  --m-on-tertiary-container:  #f4e9ff;
+  --m-on-surface-variant:     #4e4353;
+  --m-surface-variant:        #e1e3e4;
+  --m-surface-dim:            #d9dadb;
+  --m-surface-bright:         #f8f9fa;
+  --m-sc-lowest:              #ffffff;
+  --m-sc-low:                 #f3f4f5;
+  --m-sc:                     #edeeef;
+  --m-sc-high:                #e7e8e9;
+  --m-sc-highest:             #e1e3e4;
+  --m-outline:                #807384;
+  --m-outline-variant:        #d1c1d5;
+  --m-inverse-surface:        #2e3132;
+  --m-error-container:        #ffdad6;
+  --m-on-error-container:     #93000a;
 
   /* Elevación theme-aware (sombras suaves premium). Se aplican con .elev-1/2/3
      — no con shadow-* de Tailwind, que es estático y no cambia en dark. */
@@ -90,7 +185,44 @@ html.dark {
   --s-border-strong: #3d3d42;
   --s-text:          #f4f4f5;
   --s-text-muted:    #a1a1aa;
-  --s-text-soft:     #71717a;
+  /* Subido de #71717a: sobre el fondo oscuro daba 3.96 de contraste (bajo AA). */
+  --s-text-soft:     #8e8e99;
+
+  /* M3 semantic tokens (Luminous Aura) — dark (equivalentes M3 estándar). */
+  --m-primary-container:      #7000a6;
+  --m-primary-fixed:          #f5d9ff;
+  --m-primary-fixed-dim:      #e6b4ff;
+  /* OJO: en M3 puro el primary se ACLARA en dark y por eso su "on" se oscurece.
+     Aquí el morado de marca es CONSTANTE en ambos temas (sale de --p-500), así
+     que su texto encima debe seguir siendo blanco. Con el valor oscuro de M3
+     los botones primarios quedaban en 1.4 de contraste (ilegibles). */
+  --m-on-primary:             #ffffff;
+  --m-on-primary-container:   #fae6ff;
+  --m-secondary:              #cbc4cf;
+  --m-secondary-container:    #47464c;
+  --m-on-secondary:           #322f35;
+  --m-tertiary:               #cdc2d9;
+  --m-tertiary-container:     #575062;
+  /* Los "fixed" de M3 son CONSTANTES entre temas (esa es su definición): no se
+     redefinen aquí. Tenerlo en oscuro dejaba texto oscuro sobre fondo oscuro en
+     los chips que lo usan de fondo.
+     --m-tertiary-fixed: se hereda de :root a propósito. */
+  --m-on-tertiary:            #332d41;
+  --m-on-tertiary-container:  #f4e9ff;
+  --m-on-surface-variant:     #cabfce;
+  --m-surface-variant:        #49454f;
+  --m-surface-dim:            #141416;
+  --m-surface-bright:         #3a383c;
+  --m-sc-lowest:              #0e0e10;
+  --m-sc-low:                 #1a1a1c;
+  --m-sc:                     #1f1f22;
+  --m-sc-high:                #29292c;
+  --m-sc-highest:             #333336;
+  --m-outline:                #948f99;
+  --m-outline-variant:        #49454f;
+  --m-inverse-surface:        #e6e1e5;
+  --m-error-container:        #93000a;
+  --m-on-error-container:     #ffdad6;
 
   /* En oscuro las sombras son más profundas (la luz "cae" más). */
   --elev-1: 0 1px 2px rgba(0, 0, 0, 0.40), 0 1px 1px rgba(0, 0, 0, 0.30);
@@ -135,6 +267,16 @@ input, select, textarea, button {
 .elev-1 { box-shadow: var(--elev-1); }
 .elev-2 { box-shadow: var(--elev-2); }
 .elev-3 { box-shadow: var(--elev-3); }
+
+/* ── Luminous Aura ──────────────────────────────────────────────────────────
+   Títulos en Bricolage Grotesque (display); sombra "luminosa" con tinte púrpura
+   del tema para las cards premium (usar .elev-glow en lugar de .elev-1/2). */
+.text-display, .text-h1, .text-h2 { font-family: var(--font-display); letter-spacing: -0.02em; }
+.elev-glow {
+  box-shadow:
+    0 10px 34px -14px color-mix(in oklab, var(--color-primary-500) 32%, transparent),
+    var(--elev-1);
+}
 
 /* ── Foco accesible por teclado ─────────────────────────────────────────────
    Baseline consistente para elementos interactivos que no traen su propio

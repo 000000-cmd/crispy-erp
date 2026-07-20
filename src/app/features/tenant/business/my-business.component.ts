@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal, viewChild } from '@angular/core';
+import { LucideAngularModule, Building2, Globe, Pencil } from 'lucide-angular';
 
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { DrawerComponent } from '../../../shared/ui/drawer/drawer.component';
@@ -21,10 +22,13 @@ import { buildBusinessSchema } from '../../admin/business/business-form';
 @Component({
   selector: 'app-my-business',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, DrawerComponent, DynamicFormComponent, InputComponent, TagComponent, PageHeaderComponent, SkeletonComponent],
+  imports: [CommonModule, LucideAngularModule, ButtonComponent, DrawerComponent, DynamicFormComponent, InputComponent, TagComponent, PageHeaderComponent, SkeletonComponent],
   templateUrl: './my-business.component.html',
 })
 export class MyBusinessComponent {
+  protected readonly bizIcon = Building2;
+  protected readonly globeIcon = Globe;
+  protected readonly pencilIcon = Pencil;
   private readonly api = inject(BusinessApi);
   private readonly systemListsApi = inject(SystemListsApi);
   private readonly toast = inject(ToastService);

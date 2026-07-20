@@ -1,0 +1,112 @@
+<div class="bg-gradient-to-br from-primary-fixed/70 to-surface-container-lowest rounded-3xl p-6 elev-glow border border-primary/10 relative overflow-hidden">
+  <div class="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-2xl pointer-events-none"></div>
+
+  <div class="relative z-10 flex items-start justify-between gap-3 mb-4">
+    <div class="min-w-0">
+      <h3 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+        <lucide-icon [img]="calcIcon" [size]="20" class="text-primary" /> {{ title() }}
+      </h3>
+      <!-- Etiqueta de estado: simulado (editando) vs guardado -->
+      <span class="mt-1.5 inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider"
+            [class.bg-amber-100]="dirty()" [class.text-amber-800]="dirty()" [class.dark:bg-amber-500/20]="dirty()" [class.dark:text-amber-200]="dirty()"
+            [class.bg-sky-100]="isInherited()" [class.text-sky-800]="isInherited()" [class.dark:bg-sky-500/20]="isInherited()" [class.dark:text-sky-200]="isInherited()"
+            [class.bg-emerald-100]="!dirty() && !isInherited()" [class.text-emerald-800]="!dirty() && !isInherited()"
+            [class.dark:bg-emerald-500/20]="!dirty() && !isInherited()" [class.dark:text-emerald-200]="!dirty() && !isInherited()">
+        <span class="w-1.5 h-1.5 rounded-full"
+              [class.bg-amber-500]="dirty()"
+              [class.bg-sky-500]="isInherited()"
+              [class.bg-emerald-500]="!dirty() && !isInherited()"></span>
+        {{ stateLabel() }}
+      </span>
+    </div>
+    @if (badge()) {
+      <span class="bg-primary text-on-primary text-xs px-2 py-1 rounded-lg font-bold shrink-0">{{ badge() }}</span>
+    }
+  </div>
+
+  <div class="relative z-10 space-y-3 text-sm">
+    <div class="flex items-center justify-between border-b border-primary/15 pb-2">
+      <span class="font-body-md text-body-md text-on-surface-variant">Salario base</span>
+      <span class="font-body-md text-body-md text-on-surface font-semibold tabular-nums">{{ fmt(salaryBase()) }}</span>
+    </div>
+
+    @if (isServicePercent()) {
+      <div class="flex items-center justify-between border-b border-primary/15 pb-2">
+        <span class="font-body-md text-body-md text-on-surface-variant inline-flex items-center gap-1.5">
+          Est. servicios ({{ percent() }}%)
+          <span class="text-[11px] text-on-surface-variant/70">· {{ addedCount() }} en el mes</span>
+        </span>
+        <span class="font-body-md text-body-md text-on-surface font-semibold tabular-nums">+{{ fmt(estServices()) }}</span>
+      </div>
+    }
+  </div>
+
+  <div class="relative z-10 pt-4 flex items-end justify-between">
+    <span class="font-label-md text-label-md text-on-surface font-bold uppercase tracking-wider">Total estimado</span>
+    <span class="font-headline-lg text-headline-lg text-primary font-extrabold tabular-nums">{{ fmt(total()) }}</span>
+  </div>
+
+  @if (isServicePercent()) {
+    <!-- CTA prominente: entra al mini-modal a elegir servicios -->
+    <button type="button" (click)="showBreakdown.set(true)"
+            class="relative z-10 mt-5 w-full rounded-full bg-gradient-to-b from-primary to-primary-container text-on-primary py-3 font-label-md text-label-md font-bold elev-1 hover:elev-2 hover:-translate-y-0.5 transition-all inline-flex items-center justify-center gap-2">
+      <lucide-icon [img]="trendIcon" [size]="18" /> Simular con servicios
+    </button>
+    <p class="relative z-10 mt-2 text-center text-[11px] text-on-surface-variant">Elige qué servicios proyectar en el mes (×{{ monthlyUnits }}) y mira el total cambiar.</p>
+  }
+
+  <!-- Mini-modal: proyección dinámica por servicio -->
+  <app-modal [open]="showBreakdown()" title="Simular con servicios" size="md" (onClose)="showBreakdown.set(false)">
+    <div class="space-y-3">
+      <div class="rounded-2xl bg-primary-fixed/40 border border-primary/15 p-3 flex items-start gap-2.5">
+        <lucide-icon [img]="infoIcon" [size]="16" class="text-primary mt-0.5 shrink-0" />
+        <p class="text-sm text-on-surface-variant">
+          Cada servicio muestra su comisión por unidad ({{ percent() }}%). <strong class="text-on-surface">Toca un servicio</strong> para traerlo al mes y proyectarlo <strong class="text-on-surface">×{{ monthlyUnits }}</strong> en el total.
+        </p>
+      </div>
+
+      <div class="flex items-center justify-end gap-2">
+        <button type="button" (click)="addAll()" class="text-xs font-medium text-primary hover:underline">Todos al mes</button>
+        <span class="text-on-surface-variant/40">·</span>
+        <button type="button" (click)="clearAll()" class="text-xs font-medium text-on-surface-variant hover:underline">Dejar uno</button>
+      </div>
+
+      <div class="max-h-80 overflow-y-auto -mx-1 px-1">
+        @if (rows().length === 0) {
+          <p class="p-4 text-sm text-on-surface-variant">No hay servicios para esta especialidad todavía.</p>
+        } @else {
+          <ul class="space-y-2">
+            @for (row of rows(); track row.id) {
+              <li (click)="toggle(row.id)"
+                  class="flex items-center justify-between gap-3 rounded-2xl border-2 p-3 cursor-pointer transition-colors select-none"
+                  [class.border-primary]="row.added" [class.bg-primary-fixed/40]="row.added"
+                  [class.border-dashed]="!row.added" [class.border-outline-variant]="!row.added"
+                  [class.hover:border-primary]="!row.added" [class.hover:bg-primary-fixed/15]="!row.added">
+                <div class="min-w-0">
+                  <p class="font-body-md text-body-md text-on-surface font-medium truncate">{{ row.name }}</p>
+                  <p class="font-label-md text-label-md text-on-surface-variant">{{ fmt(row.price) }} · comisión {{ fmt(row.once) }} c/u</p>
+                </div>
+                <div class="flex items-center gap-3 shrink-0">
+                  @if (row.added) {
+                    <span class="font-body-md text-body-md text-primary font-bold tabular-nums">+{{ fmt(row.monthly) }}/mes</span>
+                  }
+                  <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors"
+                        [class.bg-primary]="row.added" [class.text-on-primary]="row.added"
+                        [class.text-primary]="!row.added" [class.border]="!row.added" [class.border-primary]="!row.added">
+                    <lucide-icon [img]="row.added ? checkIcon : plusIcon" [size]="13" />
+                    {{ row.added ? 'En el mes' : 'Agregar' }}
+                  </span>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      <div class="flex items-center justify-between border-t border-surface-variant pt-3">
+        <span class="font-label-md text-label-md text-on-surface font-bold uppercase tracking-wider">Est. servicios / mes</span>
+        <span class="font-headline-md text-headline-md text-primary font-extrabold tabular-nums">{{ fmt(estServices()) }}</span>
+      </div>
+    </div>
+  </app-modal>
+</div>

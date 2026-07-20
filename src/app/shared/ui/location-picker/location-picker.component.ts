@@ -36,6 +36,8 @@ export class LocationPickerComponent {
   readonly levels = input<LocationLevel[]>(['country', 'department', 'municipality', 'neighborhood']);
   /** Filtra barrios por tipo (BARRIO|VEREDA|CORREGIMIENTO|OTRO). */
   readonly neighborhoodType = input<NeighborhoodType | null>(null);
+  /** Marca el barrio como obligatorio (cambia el copy; la validación la hace el host). */
+  readonly neighborhoodRequired = input<boolean>(false);
   /** Labels por nivel (opcional). */
   readonly labels = input<Partial<Record<LocationLevel, string>>>({
     country: 'País',
@@ -44,7 +46,10 @@ export class LocationPickerComponent {
     neighborhood: 'Barrio / Vereda',
   });
 
-  @Output() readonly change = new EventEmitter<LocationSelection>();
+  // OJO: NO nombrar este output `change`. Colisiona con el evento DOM nativo
+  // `change` que burbujea desde los <input> internos del autocomplete: el host
+  // `(change)` recibía esos Event nativos (sin `meta`) y borraba la selección.
+  @Output() readonly locationChange = new EventEmitter<LocationSelection>();
 
   // ---- Estado interno (codes seleccionados) ----
   readonly country = signal<string | null>(null);
@@ -75,7 +80,18 @@ export class LocationPickerComponent {
   // searchFns reactivas a los padres seleccionados.
   readonly countriesFn      = computed(() => this.api.searchFn.countries());
   readonly departmentsFn    = computed(() => this.api.searchFn.departments(this.country() ?? undefined));
-  readonly municipalitiesFn = computed(() => this.api.searchFn.municipalities(this.country() ?? undefined, this.department() ?? undefined));
+
+  /**
+   * En modo `search` el municipio se busca SIN filtrar por país/departamento:
+   * ahí esos dos son un RESULTADO derivado del hit, no un filtro. Reinyectarlos
+   * dejaba el buscador encerrado en el departamento ya elegido — tras elegir
+   * "Medellin · Antioquia", buscar "bogota" respondía "sin resultados" y el
+   * usuario no podía cambiar de departamento sin limpiar el campo primero.
+   * En modo `hierarchy` sí acotan, que es el propósito de la cascada.
+   */
+  readonly municipalitiesFn = computed(() => this.mode() === 'search'
+    ? this.api.searchFn.municipalities()
+    : this.api.searchFn.municipalities(this.country() ?? undefined, this.department() ?? undefined));
   readonly neighborhoodsFn  = computed(() => this.api.searchFn.neighborhoods(
     this.country() ?? undefined,
     this.department() ?? undefined,
@@ -134,7 +150,7 @@ export class LocationPickerComponent {
   }
 
   private emit() {
-    this.change.emit({
+    this.locationChange.emit({
       country: this.country() ?? undefined,
       department: this.department() ?? undefined,
       municipality: this.municipality() ?? undefined,

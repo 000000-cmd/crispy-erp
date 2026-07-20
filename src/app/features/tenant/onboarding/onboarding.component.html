@@ -1,38 +1,50 @@
-<div class="max-w-2xl mx-auto space-y-5">
-  <app-page-header title="Crea tu negocio" subtitle="Registra los datos de tu empresa y los tuyos como dueño." />
-
-  <app-form-companion [message]="companionMessage()" />
-
-  <!-- Stepper: Negocio → Tus datos -->
-  <div class="flex items-center">
-    @for (s of steps; track s.n) {
-      <div class="flex items-center gap-2">
-        <span class="inline-flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors"
-              [class.bg-primary-500]="step() >= s.n"
-              [class.border-primary-500]="step() >= s.n"
-              [class.text-white]="step() >= s.n"
-              [class.border-border]="step() < s.n"
-              [class.text-text-muted]="step() < s.n">{{ s.n }}</span>
-        <span class="text-sm transition-colors" [class.text-text]="step() >= s.n" [class.text-text-muted]="step() < s.n">{{ s.label }}</span>
+<div class="min-h-full flex items-center justify-center py-6">
+  <div class="w-full max-w-4xl bg-surface-container-lowest rounded-3xl elev-glow border border-outline-variant/20 overflow-hidden grid grid-cols-1 lg:grid-cols-5">
+    <!-- Panel izquierdo: ORB + contexto del paso -->
+    <div class="lg:col-span-2 relative bg-gradient-to-br from-primary-fixed/70 via-surface-container-low to-surface-container p-8 flex flex-col">
+      <div class="absolute -right-10 -top-10 w-40 h-40 bg-primary-fixed rounded-full blur-3xl opacity-40 pointer-events-none"></div>
+      <div class="relative z-10"><app-form-companion [message]="companionMessage()" /></div>
+      <div class="relative z-10 mt-auto pt-6">
+        <p class="font-label-md text-label-md text-primary uppercase tracking-wider font-bold">Paso {{ step() }} de {{ steps.length }}</p>
+        <h3 class="font-headline-md text-headline-md text-on-surface mt-1">{{ step() === 1 ? 'Tu negocio' : 'Tus datos' }}</h3>
+        <p class="font-body-md text-body-md text-on-surface-variant mt-2">
+          {{ step() === 1 ? 'El nombre y tipo de tu negocio configuran tu espacio de trabajo.' : 'Tus datos como dueño para administrar la empresa.' }}
+        </p>
       </div>
-      @if (!$last) {
-        <div class="mx-2 h-0.5 w-10 rounded transition-colors"
-             [class.bg-primary-500]="step() > s.n" [class.bg-surface-muted]="step() <= s.n"></div>
-      }
-    }
-  </div>
+    </div>
 
-  @if (step() === 1) {
-    <app-dynamic-form
-      [schema]="businessSchema"
-      [model]="acc()"
-      (submitValue)="onBusinessSubmit($event)" />
-  } @else {
-    <app-dynamic-form
-      [schema]="ownerSchema"
-      [model]="acc()"
-      [submitting]="saving()"
-      (submitValue)="onOwnerSubmit($event)" />
-    <app-button variant="ghost" (onClick)="back()">← Volver a datos del negocio</app-button>
-  }
+    <!-- Panel derecho: encabezado + stepper + formulario -->
+    <div class="lg:col-span-3 p-8">
+      <h2 class="font-display-xl text-[2rem] leading-tight text-on-background tracking-tight mb-1">Crea tu negocio</h2>
+      <p class="font-body-md text-body-md text-on-surface-variant mb-6">Registra los datos de tu empresa y los tuyos como dueño.</p>
+
+      <div class="flex items-center mb-6">
+        @for (s of steps; track s.n) {
+          <div class="flex items-center gap-2">
+            <span class="inline-flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold transition-colors"
+                  [class.bg-primary]="step() >= s.n" [class.text-on-primary]="step() >= s.n"
+                  [class.bg-surface-container-high]="step() < s.n" [class.text-on-surface-variant]="step() < s.n">{{ s.n }}</span>
+            <span class="font-label-md text-label-md" [class.text-on-surface]="step() >= s.n" [class.text-on-surface-variant]="step() < s.n">{{ s.label }}</span>
+          </div>
+          @if (!$last) {
+            <div class="mx-3 h-0.5 w-8 rounded transition-colors" [class.bg-primary]="step() > s.n" [class.bg-surface-container-high]="step() <= s.n"></div>
+          }
+        }
+      </div>
+
+      @if (step() === 1) {
+        <app-dynamic-form
+          [schema]="businessSchema"
+          [model]="acc()"
+          (submitValue)="onBusinessSubmit($event)" />
+      } @else {
+        <app-dynamic-form
+          [schema]="ownerSchema"
+          [model]="acc()"
+          [submitting]="saving()"
+          (submitValue)="onOwnerSubmit($event)" />
+        <button type="button" (click)="back()" class="mt-3 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors">← Volver a datos del negocio</button>
+      }
+    </div>
+  </div>
 </div>

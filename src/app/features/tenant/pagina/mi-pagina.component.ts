@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Upload, Trash2, ExternalLink, Globe, EyeOff } from 'lucide-angular';
+import { LucideAngularModule, Upload, Trash2, ExternalLink, Globe, EyeOff,
+  Eye, Sparkles, Pencil, Monitor, Smartphone, Scissors, Image as ImageIcon, MessageSquare, LayoutTemplate } from 'lucide-angular';
 
 import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
@@ -55,6 +56,15 @@ export class MiPaginaComponent {
   protected readonly linkIcon = ExternalLink;
   protected readonly globeIcon = Globe;
   protected readonly eyeOffIcon = EyeOff;
+  protected readonly eyeIcon = Eye;
+  protected readonly sparklesIcon = Sparkles;
+  protected readonly pencilIcon = Pencil;
+  protected readonly monitorIcon = Monitor;
+  protected readonly phoneIcon = Smartphone;
+  protected readonly scissorsIcon = Scissors;
+  protected readonly imageIcon = ImageIcon;
+  protected readonly forumIcon = MessageSquare;
+  protected readonly heroIcon = LayoutTemplate;
   protected readonly assetUrl = assetUrl;
 
   readonly businessId = this.auth.user()?.businessId ?? null;

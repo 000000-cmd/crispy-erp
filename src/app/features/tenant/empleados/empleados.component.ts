@@ -3,7 +3,7 @@ import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { map } from 'rxjs';
-import { Plus, Pencil, Trash2 } from 'lucide-angular';
+import { LucideAngularModule, Plus, Pencil, Trash2, UserPlus, ArrowRight, Sparkles, MapPin } from 'lucide-angular';
 
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
@@ -28,6 +28,10 @@ import { Branch } from '../sedes/sedes.model';
 import { EmpleadosApi } from './empleados.api';
 import { EmployeeDetail } from './empleados.model';
 import { EmployeeEditForm, EMPTY_EMPLOYEE_EDIT_FORM, EMPLOYEE_PROVISION_SCHEMA } from './empleados-form';
+import { SpecialtiesApi } from '../catalogos/specialties.api';
+import { Specialty } from '../catalogos/catalog.model';
+import { MascotComponent } from '../../../shared/ui/mascot/mascot.component';
+import { assetUrl } from '../../public-site/landing.model';
 
 /**
  * Empleados del negocio, por sede.
@@ -41,8 +45,8 @@ import { EmployeeEditForm, EMPTY_EMPLOYEE_EDIT_FORM, EMPLOYEE_PROVISION_SCHEMA }
   selector: 'app-tenant-empleados',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, RouterLink, ButtonComponent, DrawerComponent, DataTableComponent, PageHeaderComponent, SkeletonComponent,
-    DynamicFormComponent, FieldComponent, InputComponent, AutocompleteComponent, FormCompanionComponent, TPipe,
+    CommonModule, FormsModule, RouterLink, LucideAngularModule, ButtonComponent, DrawerComponent, PageHeaderComponent, SkeletonComponent,
+    DynamicFormComponent, FieldComponent, InputComponent, AutocompleteComponent, FormCompanionComponent, MascotComponent, TPipe,
   ],
   templateUrl: './empleados.component.html',
 })
@@ -50,11 +54,25 @@ export class EmpleadosComponent {
   private readonly api = inject(EmpleadosApi);
   private readonly sedesApi = inject(SedesApi);
   private readonly systemListsApi = inject(SystemListsApi);
+  private readonly specialtiesApi = inject(SpecialtiesApi);
   private readonly confirm = inject(ConfirmService);
   private readonly toast = inject(ToastService);
   private readonly auth = inject(AuthService);
 
   protected readonly plusIcon = Plus;
+  protected readonly pencilIcon = Pencil;
+  protected readonly trashIcon = Trash2;
+  protected readonly addIcon = UserPlus;
+  protected readonly arrowIcon = ArrowRight;
+  protected readonly sparklesIcon = Sparkles;
+  protected readonly pinIcon = MapPin;
+  protected readonly assetUrl = assetUrl;
+
+  empInitials(e: EmployeeDetail): string {
+    const n = e.personName?.trim();
+    if (!n) return '?';
+    return n.split(/\s+/).slice(0, 2).map(p => p[0]?.toUpperCase() ?? '').join('');
+  }
 
   readonly businessId = signal<string | null>(null);
   readonly branches = signal<Branch[]>([]);
@@ -63,11 +81,19 @@ export class EmpleadosComponent {
   readonly loading = signal(true);
 
   readonly positionOptions = signal<AutocompleteOption[]>([]);
-  private readonly positionName = computed(() => {
+  readonly positionName = computed(() => {
     const m = new Map<string, string>();
     for (const o of this.positionOptions()) m.set(String(o.value), o.label);
     return m;
   });
+  readonly specialtyName = computed(() => {
+    const m = new Map<string, string>();
+    for (const o of this.specialtyOptions()) m.set(String(o.value), o.label);
+    return m;
+  });
+  readonly employeeCount = computed(() => this.items().length);
+
+  readonly specialtyOptions = signal<AutocompleteOption[]>([]);
 
   readonly branchOptions = computed<AutocompleteOption[]>(() =>
     this.branches().map(b => ({ value: b.id, label: b.name })));
@@ -100,7 +126,6 @@ export class EmpleadosComponent {
     // complete sus datos desde el APK.
     { key: 'personName', label: 'Empleado', format: r => r.personName?.trim() || 'Pendiente de completar' },
     { key: 'positionId', label: 'Cargo', format: r => (r.positionId && this.positionName().get(r.positionId)) || '—' },
-    { key: 'employeeCode', label: 'Código', width: '140px', format: r => r.employeeCode || '—' },
     { key: 'hireDate', label: 'Ingreso', width: '140px', format: r => r.hireDate ?? '—' },
     {
       key: 'enabled', label: 'Estado', align: 'center', width: '120px',
@@ -122,6 +147,10 @@ export class EmpleadosComponent {
     this.systemListsApi.itemsEnabled('employee_position').pipe(
       map<CatalogItem[], AutocompleteOption[]>(items => items.map(i => ({ value: i.id, label: i.name }))),
     ).subscribe({ next: o => this.positionOptions.set(o) });
+
+    this.specialtiesApi.list(businessId).pipe(
+      map<Specialty[], AutocompleteOption[]>(ss => ss.map(s => ({ value: s.id, label: s.name }))),
+    ).subscribe({ next: o => this.specialtyOptions.set(o) });
 
     this.sedesApi.list(businessId).subscribe({
       next: bs => {
@@ -190,7 +219,7 @@ export class EmpleadosComponent {
     this.editForm.set({
       personName: e.personName,
       positionId: e.positionId,
-      employeeCode: e.employeeCode ?? '',
+      specialtyId: e.specialtyId ?? null,
       hireDate: e.hireDate ?? '',
     });
     this.dirty.set(false);
@@ -211,7 +240,7 @@ export class EmpleadosComponent {
       thirdPartyId: snapshot.thirdPartyId,
       branchId,
       positionId: f.positionId!,
-      employeeCode: f.employeeCode || null,
+      specialtyId: f.specialtyId,
       hireDate: f.hireDate,
     }).subscribe({
       next: () => { this.toast.success('Empleado actualizado'); this.saving.set(false); this.close(); this.refresh(branchId); },

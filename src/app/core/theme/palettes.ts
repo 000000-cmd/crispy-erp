@@ -23,6 +23,7 @@ const scaleFromHue = (hue: number, chroma = 0.14): PaletteScale => ({
 });
 
 export const PRESET_PALETTES: Palette[] = [
+  { id: 'aura',       label: 'Aura',      scale: scaleFromHue(309, 0.20) },
   { id: 'terracotta', label: 'Terracota', scale: scaleFromHue(30, 0.14) },
   { id: 'indigo',     label: 'Índigo',    scale: scaleFromHue(265, 0.18) },
   { id: 'violet',     label: 'Violeta',   scale: scaleFromHue(295, 0.20) },
@@ -33,7 +34,7 @@ export const PRESET_PALETTES: Palette[] = [
   { id: 'slate',      label: 'Pizarra',   scale: scaleFromHue(255, 0.04) },
 ];
 
-export const DEFAULT_PALETTE_ID = 'terracotta';
+export const DEFAULT_PALETTE_ID = 'aura';
 
 /** Build a palette scale around a single hex color. */
 export function paletteFromHex(hex: string, label = 'Personalizada'): Palette {

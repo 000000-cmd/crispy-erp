@@ -3,6 +3,7 @@ export interface Offering {
   id: string;
   businessId: string;
   categoryId?: string | null;
+  specialtyId?: string | null;
   name: string;
   description?: string | null;
   durationMinutes: number;
@@ -14,6 +15,7 @@ export interface Offering {
 export interface OfferingPayload {
   businessId: string;
   categoryId?: string | null;
+  specialtyId?: string | null;
   name: string;
   description?: string | null;
   durationMinutes: number;

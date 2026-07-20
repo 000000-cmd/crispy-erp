@@ -1,160 +1,218 @@
-<div class="space-y-5">
-  <app-page-header
-    title="Mi página"
-    subtitle="Personaliza la página pública de tu negocio y mírala en vivo mientras editas.">
-    <div class="flex items-center gap-2 flex-wrap">
-      @if (publicUrl(); as url) {
-        <a [href]="url" target="_blank" rel="noopener"
-           class="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium text-text hover:bg-surface-muted transition">
-          <lucide-icon [img]="linkIcon" [size]="14" /> Ver mi página
-        </a>
-      }
-      <app-button variant="secondary" [disabled]="!dirty() || saving()" (onClick)="save()">Guardar</app-button>
-      <app-button [loading]="saving()" (onClick)="togglePublish()">
-        @if (published()) { Despublicar } @else { Publicar }
-      </app-button>
+<div class="flex flex-col h-[calc(100vh-8.5rem)] min-h-[40rem]">
+  <!-- Barra superior del constructor -->
+  <header class="flex flex-wrap justify-between items-center gap-3 pb-4 border-b border-surface-variant">
+    <div>
+      <h1 class="font-headline-md text-headline-md font-bold text-on-background">Constructor de Landing Page</h1>
+      <div class="flex items-center gap-2 mt-1">
+        <span class="w-2 h-2 rounded-full" [class.bg-primary]="published()" [class.bg-secondary]="!published()"></span>
+        <span class="text-xs font-label-md text-on-surface-variant">{{ published() ? 'Publicado' : 'Borrador no publicado' }}{{ dirty() ? ' · cambios sin guardar' : '' }}</span>
+      </div>
     </div>
-  </app-page-header>
-
-  <!-- estado de publicación -->
-  <div class="flex items-center gap-2 text-sm">
-    @if (published()) {
-      <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 px-3 py-1 text-xs font-medium">
-        <lucide-icon [img]="globeIcon" [size]="12" /> Publicada — visible en tu subdominio
-      </span>
-    } @else {
-      <span class="inline-flex items-center gap-1.5 rounded-full bg-surface-muted text-text-muted px-3 py-1 text-xs font-medium">
-        <lucide-icon [img]="eyeOffIcon" [size]="12" /> Borrador — solo tú la ves aquí
-      </span>
-    }
-    @if (dirty()) { <span class="text-xs text-amber-600 dark:text-amber-400">Cambios sin guardar</span> }
-  </div>
+    <div class="flex items-center gap-3">
+      <div class="hidden lg:flex items-center gap-2 px-4 py-1.5 bg-surface-container-low rounded-full border border-surface-variant">
+        <span class="w-6 h-6 rounded-full bg-primary-container flex items-center justify-center"><span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span></span>
+        <span class="text-xs font-label-md text-on-surface-variant font-medium">Asistente Creativo Activo</span>
+      </div>
+      @if (publicUrl(); as url) {
+        <a [href]="url" target="_blank" rel="noopener" title="Previsualizar"
+           class="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors"><lucide-icon [img]="eyeIcon" [size]="20" /></a>
+      }
+      <app-button variant="secondary" [disabled]="!dirty() || saving()" (onClick)="save()">Guardar Cambios</app-button>
+      <app-button [loading]="saving()" (onClick)="togglePublish()">@if (published()) { Despublicar } @else { Publicar Sitio }</app-button>
+    </div>
+  </header>
 
   @if (loading()) {
-    <app-skeleton [lines]="8" />
+    <div class="pt-6"><app-skeleton [lines]="8" /></div>
   } @else {
-    <div class="grid grid-cols-1 xl:grid-cols-[minmax(20rem,26rem)_1fr] gap-5 items-start">
+    <div class="flex flex-1 overflow-hidden mt-4 rounded-3xl border border-surface-variant elev-glow">
+      <!-- ================= PANEL DE CONTROL ================= -->
+      <div class="w-full lg:w-[40%] max-w-xl flex flex-col bg-surface-container-lowest border-r border-surface-variant overflow-hidden">
+        <!-- Stepper de flujo -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-surface-variant bg-surface/50">
+          <div class="flex items-center gap-2 text-primary"><span class="w-5 h-5 rounded-full bg-primary text-on-primary text-[11px] font-bold grid place-items-center">1</span><span class="text-xs font-label-md font-bold uppercase tracking-wider">Diseño</span></div>
+          <div class="h-px flex-1 bg-surface-variant mx-3"></div>
+          <div class="flex items-center gap-2 text-on-surface-variant"><span class="w-5 h-5 rounded-full bg-surface-container-high text-[11px] font-bold grid place-items-center">2</span><span class="text-xs font-label-md uppercase tracking-wider">Contenido</span></div>
+          <div class="h-px flex-1 bg-surface-variant mx-3"></div>
+          <div class="flex items-center gap-2 text-on-surface-variant"><span class="w-5 h-5 rounded-full bg-surface-container-high text-[11px] font-bold grid place-items-center">3</span><span class="text-xs font-label-md uppercase tracking-wider">Ajustes</span></div>
+        </div>
 
-      <!-- ================= PANEL DE EDICIÓN ================= -->
-      <div class="space-y-4">
-        <section class="rounded-2xl border border-border bg-surface p-4 space-y-3">
-          <h2 class="text-sm font-semibold text-text">Mensaje principal</h2>
-          <label class="block">
-            <span class="text-xs text-text-muted">Frase de bienvenida (tagline)</span>
-            <input type="text" maxlength="160" placeholder="Ej: El mejor corte de la ciudad"
-                   [ngModel]="draft().tagline" (ngModelChange)="patch('tagline', $event)"
-                   class="mt-1 w-full rounded-md border border-border bg-surface py-2 px-3 text-sm text-text outline-none focus:ring-2 focus:ring-primary-500/30" />
-          </label>
-          <label class="block">
-            <span class="text-xs text-text-muted">Sobre tu negocio</span>
-            <textarea rows="4" maxlength="4000" placeholder="Cuenta qué hace especial a tu negocio…"
-                      [ngModel]="draft().about" (ngModelChange)="patch('about', $event)"
-                      class="mt-1 w-full rounded-md border border-border bg-surface py-2 px-3 text-sm text-text outline-none focus:ring-2 focus:ring-primary-500/30"></textarea>
-          </label>
-          <label class="block">
-            <span class="text-xs text-text-muted">Horario (texto libre)</span>
-            <textarea rows="3" maxlength="400" placeholder="Lun–Sáb 9:00–19:00&#10;Dom 10:00–14:00"
-                      [ngModel]="draft().scheduleText" (ngModelChange)="patch('scheduleText', $event)"
-                      class="mt-1 w-full rounded-md border border-border bg-surface py-2 px-3 text-sm text-text outline-none focus:ring-2 focus:ring-primary-500/30"></textarea>
-          </label>
-        </section>
-
-        <section class="rounded-2xl border border-border bg-surface p-4 space-y-3">
-          <h2 class="text-sm font-semibold text-text">Contacto y redes</h2>
-          <div class="grid grid-cols-2 gap-3">
-            <label class="block">
-              <span class="text-xs text-text-muted">Teléfono</span>
-              <input type="tel" maxlength="40" [ngModel]="draft().phone" (ngModelChange)="patch('phone', $event)"
-                     class="mt-1 w-full rounded-md border border-border bg-surface py-2 px-3 text-sm text-text outline-none focus:ring-2 focus:ring-primary-500/30" />
-            </label>
-            <label class="block">
-              <span class="text-xs text-text-muted">WhatsApp</span>
-              <input type="tel" maxlength="40" placeholder="57300…" [ngModel]="draft().whatsapp" (ngModelChange)="patch('whatsapp', $event)"
-                     class="mt-1 w-full rounded-md border border-border bg-surface py-2 px-3 text-sm text-text outline-none focus:ring-2 focus:ring-primary-500/30" />
-            </label>
-          </div>
-          <label class="block">
-            <span class="text-xs text-text-muted">Correo de contacto</span>
-            <input type="email" maxlength="120" [ngModel]="draft().contactEmail" (ngModelChange)="patch('contactEmail', $event)"
-                   class="mt-1 w-full rounded-md border border-border bg-surface py-2 px-3 text-sm text-text outline-none focus:ring-2 focus:ring-primary-500/30" />
-          </label>
-          <div class="grid grid-cols-2 gap-3">
-            <label class="block">
-              <span class="text-xs text-text-muted">Instagram</span>
-              <input type="text" maxlength="160" placeholder="@minegocio" [ngModel]="draft().instagram" (ngModelChange)="patch('instagram', $event)"
-                     class="mt-1 w-full rounded-md border border-border bg-surface py-2 px-3 text-sm text-text outline-none focus:ring-2 focus:ring-primary-500/30" />
-            </label>
-            <label class="block">
-              <span class="text-xs text-text-muted">Facebook</span>
-              <input type="text" maxlength="160" placeholder="minegocio" [ngModel]="draft().facebook" (ngModelChange)="patch('facebook', $event)"
-                     class="mt-1 w-full rounded-md border border-border bg-surface py-2 px-3 text-sm text-text outline-none focus:ring-2 focus:ring-primary-500/30" />
-            </label>
-          </div>
-        </section>
-
-        <section class="rounded-2xl border border-border bg-surface p-4 space-y-3">
-          <h2 class="text-sm font-semibold text-text">Imágenes</h2>
-
-          <!-- Hero -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-8">
+          <!-- Estilo Visual -->
           <div>
-            <span class="text-xs text-text-muted">Imagen principal (hero)</span>
-            <div class="mt-1.5 flex items-center gap-3">
-              @if (draft().heroImageUrl) {
-                <img [src]="assetUrl(draft().heroImageUrl)" alt="" class="h-16 w-24 rounded-lg object-cover border border-border" />
-                <button type="button" (click)="clearHero()"
-                        class="inline-flex items-center gap-1 rounded-lg border border-rose-200 dark:border-rose-900 px-2.5 py-1.5 text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition">
-                  <lucide-icon [img]="trashIcon" [size]="12" /> Quitar
-                </button>
-              }
-              <label class="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-border px-3 py-2 text-xs font-medium text-text-muted hover:bg-surface-muted transition cursor-pointer">
-                <lucide-icon [img]="uploadIcon" [size]="13" />
-                {{ uploading() ? 'Subiendo…' : (draft().heroImageUrl ? 'Cambiar' : 'Subir imagen') }}
-                <input type="file" accept="image/png,image/jpeg,image/webp" class="hidden" #heroInput
-                       [disabled]="uploading()" (change)="uploadHero(heroInput)" />
-              </label>
-            </div>
-          </div>
-
-          <!-- Galería -->
-          <div>
-            <span class="text-xs text-text-muted">Galería</span>
-            <div class="mt-1.5 grid grid-cols-4 gap-2">
-              @for (g of gallery(); track g) {
-                <div class="group/g relative">
-                  <img [src]="assetUrl(g)" alt="" class="aspect-square w-full rounded-lg object-cover border border-border" />
-                  <button type="button" (click)="removeGalleryItem(g)" aria-label="Quitar imagen"
-                          class="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-rose-500 text-white opacity-0 group-hover/g:opacity-100 transition">
-                    <lucide-icon [img]="trashIcon" [size]="10" />
-                  </button>
+            <h3 class="font-headline-md text-lg text-on-background font-bold mb-4 flex items-center justify-between">
+              <span>Estilo Visual</span>
+              <span class="text-xs font-label-md font-normal text-primary bg-primary-fixed px-2 py-1 rounded-md">Recomendado</span>
+            </h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="cursor-pointer">
+                <div class="rounded-xl border-2 border-primary overflow-hidden mb-2 elev-1">
+                  <div class="h-24 bg-surface-container flex flex-col items-center justify-center gap-2 p-3">
+                    <div class="w-full h-1/2 bg-gradient-to-r from-primary-fixed-dim to-primary-container rounded-md opacity-80"></div>
+                    <div class="w-3/4 h-1/3 bg-white rounded-md"></div>
+                  </div>
                 </div>
-              }
-              <label class="grid aspect-square place-items-center rounded-lg border border-dashed border-border text-text-muted hover:bg-surface-muted transition cursor-pointer">
-                <lucide-icon [img]="uploadIcon" [size]="16" />
-                <input type="file" accept="image/png,image/jpeg,image/webp" class="hidden" #galInput
-                       [disabled]="uploading()" (change)="uploadGallery(galInput)" />
-              </label>
+                <p class="text-xs font-label-md text-on-surface font-bold text-center">Luminous Aura</p>
+              </div>
+              <div class="cursor-pointer opacity-70 hover:opacity-100 transition-opacity">
+                <div class="rounded-xl border-2 border-transparent overflow-hidden mb-2">
+                  <div class="h-24 bg-[#111] flex flex-col items-center justify-center gap-2 p-3">
+                    <div class="w-full h-1/2 bg-[#222] rounded-md border border-[#333]"></div>
+                    <div class="w-3/4 h-1/3 bg-white rounded-md"></div>
+                  </div>
+                </div>
+                <p class="text-xs font-label-md text-secondary text-center">Luxury Noir</p>
+              </div>
             </div>
           </div>
-        </section>
 
-        <p class="text-xs text-text-soft">
-          Los servicios y sedes de tu página salen de lo que ya registraste en
-          Servicios y Sedes — actualízalos allá y tu página se refresca sola.
-        </p>
+          <!-- Módulos de página -->
+          <div>
+            <h3 class="font-headline-md text-lg text-on-background font-bold mb-4">Módulos de Página</h3>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between p-4 rounded-xl border border-primary bg-primary-fixed/20">
+                <div class="flex items-center gap-3">
+                  <span class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary elev-1"><lucide-icon [img]="heroIcon" [size]="18" /></span>
+                  <div><p class="text-sm font-label-md font-bold text-on-surface">Portada (Hero)</p><p class="text-xs text-on-surface-variant">Título, imagen y contacto</p></div>
+                </div>
+                <lucide-icon [img]="pencilIcon" [size]="18" class="text-primary" />
+              </div>
+              <div class="flex items-center justify-between p-4 rounded-xl border border-surface-variant bg-surface-container-lowest">
+                <div class="flex items-center gap-3">
+                  <span class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-secondary"><lucide-icon [img]="scissorsIcon" [size]="18" /></span>
+                  <div><p class="text-sm font-label-md font-bold text-on-surface">Servicios</p><p class="text-xs text-on-surface-variant">Salen de tu catálogo</p></div>
+                </div>
+                <span class="relative inline-flex h-5 w-9 items-center rounded-full bg-primary"><span class="inline-block h-3 w-3 translate-x-5 rounded-full bg-white"></span></span>
+              </div>
+              <div class="flex items-center justify-between p-4 rounded-xl border border-surface-variant bg-surface-container-lowest">
+                <div class="flex items-center gap-3">
+                  <span class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-secondary"><lucide-icon [img]="imageIcon" [size]="18" /></span>
+                  <div><p class="text-sm font-label-md font-bold text-on-surface">Galería</p><p class="text-xs text-on-surface-variant">Tu espacio de trabajo</p></div>
+                </div>
+                <span class="relative inline-flex h-5 w-9 items-center rounded-full" [class.bg-primary]="gallery().length" [class.bg-surface-variant]="!gallery().length">
+                  <span class="inline-block h-3 w-3 rounded-full bg-white transition" [class.translate-x-5]="gallery().length" [class.translate-x-1]="!gallery().length"></span>
+                </span>
+              </div>
+              <div class="flex items-center justify-between p-4 rounded-xl border border-surface-variant bg-surface-container-lowest">
+                <div class="flex items-center gap-3">
+                  <span class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-secondary"><lucide-icon [img]="forumIcon" [size]="18" /></span>
+                  <div><p class="text-sm font-label-md font-bold text-on-surface">Testimonios</p><p class="text-xs text-on-surface-variant">Reseñas de clientes</p></div>
+                </div>
+                <span class="relative inline-flex h-5 w-9 items-center rounded-full bg-surface-variant"><span class="inline-block h-3 w-3 translate-x-1 rounded-full bg-white"></span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Editando: Portada (campos reales) -->
+          <div class="space-y-5">
+            <div class="flex items-center gap-2">
+              <lucide-icon [img]="pencilIcon" [size]="16" class="text-primary" />
+              <h4 class="font-label-md font-bold text-on-surface uppercase tracking-widest text-xs">Editando: Portada</h4>
+            </div>
+
+            <label class="block">
+              <span class="font-label-md text-xs font-bold text-on-surface-variant uppercase tracking-wider">Titular principal</span>
+              <input type="text" maxlength="160" placeholder="El mejor corte de la ciudad"
+                     [ngModel]="draft().tagline" (ngModelChange)="patch('tagline', $event)"
+                     class="mt-1.5 w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm font-medium text-on-background transition-colors" />
+            </label>
+
+            <label class="block">
+              <span class="font-label-md text-xs font-bold text-on-surface-variant uppercase tracking-wider">Sobre tu negocio</span>
+              <textarea rows="4" maxlength="4000" placeholder="Cuenta qué hace especial a tu negocio…"
+                        [ngModel]="draft().about" (ngModelChange)="patch('about', $event)"
+                        class="mt-1.5 w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm text-on-background transition-colors"></textarea>
+            </label>
+
+            <label class="block">
+              <span class="font-label-md text-xs font-bold text-on-surface-variant uppercase tracking-wider">Horario</span>
+              <textarea rows="2" maxlength="400" placeholder="Lun–Sáb 9:00–19:00"
+                        [ngModel]="draft().scheduleText" (ngModelChange)="patch('scheduleText', $event)"
+                        class="mt-1.5 w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm text-on-background transition-colors"></textarea>
+            </label>
+
+            <!-- Fotografía editorial -->
+            <div>
+              <span class="font-label-md text-xs font-bold text-on-surface-variant uppercase tracking-wider">Fotografía editorial</span>
+              <label class="mt-1.5 w-full h-40 rounded-xl border-2 border-dashed border-outline-variant flex flex-col items-center justify-center gap-2 bg-surface hover:bg-surface-container transition-colors cursor-pointer relative overflow-hidden">
+                @if (draft().heroImageUrl) {
+                  <img [src]="assetUrl(draft().heroImageUrl)" alt="" class="absolute inset-0 w-full h-full object-cover opacity-40" />
+                }
+                <span class="relative z-10 w-10 h-10 rounded-full bg-white elev-1 flex items-center justify-center"><lucide-icon [img]="uploadIcon" [size]="18" class="text-primary" /></span>
+                <span class="relative z-10 font-label-md text-sm font-bold text-on-surface">{{ uploading() ? 'Subiendo…' : (draft().heroImageUrl ? 'Reemplazar imagen' : 'Subir imagen') }}</span>
+                <input type="file" accept="image/png,image/jpeg,image/webp" class="hidden" #heroInput [disabled]="uploading()" (change)="uploadHero(heroInput)" />
+              </label>
+              @if (draft().heroImageUrl) {
+                <button type="button" (click)="clearHero()" class="mt-2 text-xs font-medium text-error hover:underline inline-flex items-center gap-1"><lucide-icon [img]="trashIcon" [size]="12" /> Quitar imagen</button>
+              }
+            </div>
+
+            <!-- Galería -->
+            <div>
+              <span class="font-label-md text-xs font-bold text-on-surface-variant uppercase tracking-wider">Galería</span>
+              <div class="mt-1.5 grid grid-cols-4 gap-2">
+                @for (g of gallery(); track g) {
+                  <div class="group/g relative">
+                    <img [src]="assetUrl(g)" alt="" class="aspect-square w-full rounded-lg object-cover border border-surface-variant" />
+                    <button type="button" (click)="removeGalleryItem(g)" aria-label="Quitar imagen"
+                            class="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-error text-on-error opacity-0 group-hover/g:opacity-100 transition"><lucide-icon [img]="trashIcon" [size]="10" /></button>
+                  </div>
+                }
+                <label class="grid aspect-square place-items-center rounded-lg border border-dashed border-outline-variant text-on-surface-variant hover:bg-surface-container transition cursor-pointer">
+                  <lucide-icon [img]="uploadIcon" [size]="16" />
+                  <input type="file" accept="image/png,image/jpeg,image/webp" class="hidden" #galInput [disabled]="uploading()" (change)="uploadGallery(galInput)" />
+                </label>
+              </div>
+            </div>
+
+            <!-- Contacto y redes -->
+            <div class="grid grid-cols-2 gap-3">
+              <label class="block"><span class="font-label-md text-xs font-bold text-on-surface-variant uppercase tracking-wider">Teléfono</span>
+                <input type="tel" maxlength="40" [ngModel]="draft().phone" (ngModelChange)="patch('phone', $event)" class="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface focus:border-primary outline-none text-sm text-on-background" /></label>
+              <label class="block"><span class="font-label-md text-xs font-bold text-on-surface-variant uppercase tracking-wider">WhatsApp</span>
+                <input type="tel" maxlength="40" placeholder="57300…" [ngModel]="draft().whatsapp" (ngModelChange)="patch('whatsapp', $event)" class="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface focus:border-primary outline-none text-sm text-on-background" /></label>
+              <label class="block col-span-2"><span class="font-label-md text-xs font-bold text-on-surface-variant uppercase tracking-wider">Correo</span>
+                <input type="email" maxlength="120" [ngModel]="draft().contactEmail" (ngModelChange)="patch('contactEmail', $event)" class="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface focus:border-primary outline-none text-sm text-on-background" /></label>
+              <label class="block"><span class="font-label-md text-xs font-bold text-on-surface-variant uppercase tracking-wider">Instagram</span>
+                <input type="text" maxlength="160" placeholder="@minegocio" [ngModel]="draft().instagram" (ngModelChange)="patch('instagram', $event)" class="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface focus:border-primary outline-none text-sm text-on-background" /></label>
+              <label class="block"><span class="font-label-md text-xs font-bold text-on-surface-variant uppercase tracking-wider">Facebook</span>
+                <input type="text" maxlength="160" placeholder="minegocio" [ngModel]="draft().facebook" (ngModelChange)="patch('facebook', $event)" class="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface focus:border-primary outline-none text-sm text-on-background" /></label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Asistente Creativo -->
+        <div class="p-6 bg-surface-container-low border-t border-surface-variant">
+          <div class="flex items-start gap-4">
+            <span class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0 elev-1"><lucide-icon [img]="sparklesIcon" [size]="20" class="text-primary" /></span>
+            <div>
+              <div class="flex items-center justify-between gap-3 mb-1">
+                <h5 class="font-label-md text-sm font-bold text-on-surface">Asistente Creativo</h5>
+                <span class="text-xs font-bold text-primary">Consejo</span>
+              </div>
+              <p class="text-xs text-on-surface-variant leading-relaxed">Los servicios y sedes de tu página salen de lo que ya registraste — actualízalos allá y aquí se refrescan solos.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- ================= PREVIEW EN VIVO ================= -->
-      <div class="sticky top-4">
-        <div class="rounded-2xl border border-border overflow-hidden shadow-xl">
-          <div class="flex items-center gap-1.5 px-4 py-2.5 border-b border-border bg-surface">
-            <span class="h-2.5 w-2.5 rounded-full bg-rose-400"></span>
-            <span class="h-2.5 w-2.5 rounded-full bg-amber-400"></span>
-            <span class="h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
-            <span class="ml-2 text-xs text-text-muted truncate">
-              {{ slug() ? slug() + '.tudominio.com' : 'tu página' }} · vista previa en vivo
-            </span>
+      <div class="hidden lg:flex flex-1 bg-surface-container-high relative flex-col items-center p-6 overflow-hidden">
+        <div class="absolute inset-0 opacity-[0.12] pointer-events-none" style="background-image: radial-gradient(var(--color-primary) 1px, transparent 1px); background-size: 20px 20px;"></div>
+        <!-- controles de dispositivo -->
+        <div class="mb-4 z-10 bg-surface-container-lowest/90 backdrop-blur-md px-4 py-2 rounded-full elev-2 border border-surface-variant flex items-center gap-3">
+          <button type="button" class="p-1.5 rounded-full bg-surface-container text-on-surface"><lucide-icon [img]="monitorIcon" [size]="18" /></button>
+          <button type="button" class="p-1.5 rounded-full text-secondary hover:bg-surface-container transition-colors"><lucide-icon [img]="phoneIcon" [size]="18" /></button>
+          <span class="w-px h-4 bg-outline-variant"></span>
+          <span class="text-xs font-label-md font-bold text-secondary">En vivo</span>
+        </div>
+        <!-- mockup de navegador -->
+        <div class="w-full max-w-3xl flex-1 bg-white rounded-xl elev-3 flex flex-col overflow-hidden z-10 border border-outline-variant/30">
+          <div class="h-10 bg-surface-container-low border-b border-outline-variant/30 flex items-center px-4 gap-4 flex-shrink-0">
+            <div class="flex gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></span><span class="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></span><span class="w-2.5 h-2.5 rounded-full bg-[#27c93f]"></span></div>
+            <div class="flex-1 flex justify-center"><div class="bg-white/60 px-3 py-1 rounded text-[10px] text-secondary font-label-md flex items-center gap-1.5"><lucide-icon [img]="globeIcon" [size]="12" /> {{ slug() ? slug() + '.tudominio.com' : 'tu página' }}</div></div>
           </div>
-          <div class="max-h-[75vh] overflow-y-auto bg-bg">
+          <div class="flex-1 overflow-y-auto bg-white">
             @if (previewData(); as data) {
               <app-tenant-landing [data]="data" [preview]="true" />
             }

@@ -1,112 +1,131 @@
-<div class="space-y-5">
+<div class="space-y-8">
 
-  <header>
-    <h1 class="text-display text-text">Hola{{ greeting() ? ', ' + greeting() : '' }} 👋</h1>
-    <p class="text-sm text-text-muted mt-0.5">
-      {{ business() ? ('Tu negocio · ' + business()!.name) : 'Bienvenido a tu panel' }}
-    </p>
-  </header>
+  <!-- Encabezado -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+    <div>
+      <h1 class="font-display-xl text-display-xl text-on-surface tracking-tight">Hola{{ greeting() ? ', ' + greeting() : '' }} 👋</h1>
+      <p class="font-body-lg text-body-lg text-on-surface-variant mt-2">
+        {{ business() ? ('Aquí tienes un resumen de ' + business()!.name) : 'Bienvenido a tu panel' }}
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <span class="px-4 py-2 rounded-full border border-primary/20 bg-primary-fixed/30 text-primary font-label-md text-label-md">Hoy</span>
+      <span class="px-4 py-2 rounded-full border border-outline-variant bg-surface text-on-surface-variant font-label-md text-label-md">Esta semana</span>
+    </div>
+  </div>
 
   @if (loading()) {
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <app-skeleton variant="block" height="5.5rem" />
-      <app-skeleton variant="block" height="5.5rem" />
-      <app-skeleton variant="block" height="5.5rem" />
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <app-skeleton variant="block" height="8rem" />
+      <app-skeleton variant="block" height="8rem" />
+      <app-skeleton variant="block" height="8rem" />
     </div>
   } @else {
 
-    <!-- Conteos reales, clic → gestión -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      @for (k of kpis(); track k.key) {
+    <!-- Métricas (conteos reales, tarjetas ricas del diseño) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      @for (k of kpis(); track k.key; let i = $index) {
         <button type="button" (click)="go(k.route)"
-          class="text-left rounded-2xl border border-border bg-surface p-4 transition-all hover:border-border-strong hover:shadow-sm">
-          <div class="flex items-center gap-2">
-            <span class="h-9 w-9 rounded-lg bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 inline-flex items-center justify-center">
-              <lucide-icon [img]="k.icon" [size]="16" />
+          class="text-left bg-surface-container-lowest rounded-3xl p-6 elev-glow border border-outline-variant/20 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -z-10 group-hover:scale-110 transition-transform"></div>
+          <div class="flex justify-between items-start mb-4">
+            <span class="w-12 h-12 rounded-2xl inline-flex items-center justify-center group-hover:scale-110 transition-transform"
+                  [ngClass]="['bg-primary-fixed text-primary','bg-surface-container-highest text-on-surface-variant','bg-tertiary-fixed text-tertiary'][i]">
+              <lucide-icon [img]="k.icon" [size]="20" />
             </span>
-            <span class="text-xs text-text-muted">{{ k.label }}</span>
+            <lucide-icon [img]="chevron" [size]="18" class="text-on-surface-variant group-hover:text-primary transition-colors" />
           </div>
-          <div class="flex items-end justify-between mt-2">
-            <p class="text-3xl font-semibold tracking-tight text-text">{{ k.value }}</p>
-            <lucide-icon [img]="chevron" [size]="16" class="text-text-soft mb-1" />
-          </div>
+          <p class="font-label-md text-label-md text-on-surface-variant mb-1">{{ k.label }}</p>
+          <h3 class="font-headline-lg text-headline-lg text-on-surface">{{ k.value }}</h3>
         </button>
       }
     </div>
 
-    <!-- Mi negocio (datos reales) -->
-    <div class="rounded-2xl border border-border bg-surface p-5">
-      <div class="flex items-start justify-between gap-3">
-        <div class="flex items-center gap-3 min-w-0">
-          <span class="h-10 w-10 rounded-lg bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 inline-flex items-center justify-center shrink-0">
-            <lucide-icon [img]="businessIcon" [size]="18" />
+    <!-- Grid principal: agenda/tendencia + insights + citas -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Panel principal (col-span-2): tendencia (próximamente) -->
+      <div class="lg:col-span-2 bg-surface-container-lowest rounded-3xl p-8 elev-glow border border-outline-variant/20 flex flex-col">
+        <div class="flex justify-between items-center mb-8">
+          <div>
+            <h3 class="font-headline-md text-headline-md text-on-surface">Tendencia de ingresos</h3>
+            <p class="font-label-md text-label-md text-on-surface-variant">Últimos 7 días</p>
+          </div>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-primary-fixed/50 text-primary px-3 py-1 font-label-md text-[12px] font-semibold">
+            <lucide-icon [img]="lockIcon" [size]="12" /> Próximamente
           </span>
-          <div class="min-w-0">
-            <h2 class="text-sm font-semibold text-text truncate">{{ business()!.name }}</h2>
-            <p class="text-xs text-text-muted truncate">
-              {{ business()!.tradeName || business()!.legalName || 'Gestiona los datos y dominios de tu empresa' }}
-            </p>
+        </div>
+        <!-- Placeholder de gráfico (barras del diseño, atenuadas hasta que exista agenda) -->
+        <div class="flex-1 bg-surface-container-low rounded-2xl border border-outline-variant/30 flex items-end p-6 gap-3 min-h-[280px]">
+          <div class="w-1/6 bg-primary-fixed/60 rounded-t-lg h-[40%]"></div>
+          <div class="w-1/6 bg-primary-fixed/60 rounded-t-lg h-[62%]"></div>
+          <div class="w-1/6 bg-primary-fixed/60 rounded-t-lg h-[35%]"></div>
+          <div class="w-1/6 bg-primary/70 rounded-t-lg h-[85%]"></div>
+          <div class="w-1/6 bg-primary-fixed/60 rounded-t-lg h-[70%]"></div>
+          <div class="w-1/6 bg-primary-fixed/60 rounded-t-lg h-[50%]"></div>
+        </div>
+        <p class="font-body-md text-body-md text-on-surface-variant mt-4 text-center">Las métricas de ingresos aparecerán aquí cuando actives el módulo de agenda.</p>
+      </div>
+
+      <!-- Columna derecha: Insights (ORB) + Próximas citas -->
+      <div class="flex flex-col gap-8">
+        <!-- Insights con ORB -->
+        <div class="bg-gradient-to-br from-primary-fixed/50 to-surface-container-lowest rounded-3xl p-6 elev-glow border border-primary/10">
+          <div class="flex items-start gap-4">
+            <div class="w-16 h-16 shrink-0"><app-mascot class="block h-full w-full" /></div>
+            <div>
+              <h3 class="font-headline-md text-headline-md text-on-surface mb-2">Aura Insights</h3>
+              <p class="font-body-md text-body-md text-on-surface-variant">{{ welcomeMessage() }}</p>
+            </div>
           </div>
         </div>
-        <a routerLink="/tenant/mi-negocio"><app-button variant="secondary" size="sm">Gestionar</app-button></a>
+
+        <!-- Próximas citas (próximamente) -->
+        <div class="bg-surface-container-lowest rounded-3xl p-6 elev-glow border border-outline-variant/20 flex-1">
+          <div class="flex justify-between items-center mb-5">
+            <h3 class="font-headline-md text-[20px] font-semibold text-on-surface">Próximas citas</h3>
+            <span class="text-on-surface-variant font-label-md text-label-md">Hoy</span>
+          </div>
+          <div class="flex flex-col items-center justify-center text-center py-8 gap-3">
+            <span class="w-12 h-12 rounded-2xl bg-primary-fixed text-primary inline-flex items-center justify-center"><lucide-icon [img]="agendaIcon" [size]="22" /></span>
+            <p class="font-body-md text-body-md text-on-surface-variant max-w-[16rem]">Aquí verás las citas del día cuando la agenda esté disponible.</p>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-primary-fixed/50 text-primary px-3 py-1 font-label-md text-[12px] font-semibold">
+              <lucide-icon [img]="lockIcon" [size]="12" /> Próximamente
+            </span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Completar empresa: aparece solo mientras falte algún paso -->
+    <!-- Completar empresa (solo si falta algo) -->
     @if (showCompletion()) {
-      <div class="rounded-2xl border border-primary-200 dark:border-primary-800 bg-primary-50/60 dark:bg-primary-900/20 p-5 space-y-4 max-w-xl">
-        <div class="flex items-center justify-between gap-3">
-          <div>
-            <h2 class="text-sm font-semibold text-primary-800 dark:text-primary-100">Termina de configurar tu negocio</h2>
-            <p class="text-xs text-primary-700/80 dark:text-primary-200/70 mt-0.5">{{ doneCount() }} de {{ steps().length }} pasos · lo mínimo para operar</p>
+      <div class="bg-primary-fixed/30 border border-primary/15 rounded-3xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-4 min-w-0">
+          <span class="grid h-12 w-12 place-items-center rounded-2xl bg-primary text-on-primary shrink-0"><lucide-icon [img]="businessIcon" [size]="20" /></span>
+          <div class="min-w-0">
+            <h3 class="font-headline-md text-headline-md text-on-surface">Termina de configurar tu negocio</h3>
+            <p class="font-body-md text-body-md text-on-surface-variant">{{ doneCount() }} de {{ steps().length }} pasos · lo mínimo para operar.</p>
           </div>
-          <span class="text-lg font-semibold text-primary-700 dark:text-primary-200">{{ progressPct() }}%</span>
         </div>
-        <div class="h-2 rounded-full bg-primary-100 dark:bg-primary-900/40 overflow-hidden">
-          <div class="h-full bg-primary-500 transition-all duration-500" [style.width.%]="progressPct()"></div>
-        </div>
-        <ul class="space-y-1">
-          @for (s of steps(); track s.label) {
-            <li class="flex items-center gap-3 rounded-lg px-1 py-1.5">
-              <lucide-icon [img]="s.done ? stepDoneIcon : stepTodoIcon" [size]="18" class="shrink-0"
-                           [class.text-primary-500]="s.done" [class.text-primary-400]="!s.done" />
-              <div class="min-w-0 flex-1">
-                <p class="text-sm" [class.line-through]="s.done"
-                   [class.text-primary-600]="s.done" [class.text-primary-900]="!s.done" [class.dark:text-primary-100]="!s.done">{{ s.label }}</p>
-                <p class="text-caption text-primary-700/70 dark:text-primary-200/60">{{ s.hint }}</p>
-              </div>
-              @if (!s.done) {
-                <button type="button" (click)="go(s.route)"
-                        class="text-xs font-medium text-primary-600 dark:text-primary-300 hover:underline shrink-0">Completar</button>
-              }
-            </li>
-          }
-        </ul>
+        @if (firstPending(); as fp) {
+          <app-button (onClick)="go(fp.route)">{{ fp.label }}</app-button>
+        }
       </div>
     }
 
-    <!-- Compartir la app móvil con el equipo (link estable a la versión vigente) -->
-    <div class="rounded-2xl border border-border bg-surface p-5">
-      <div class="flex items-start justify-between gap-3">
-        <div class="flex items-center gap-3 min-w-0">
-          <span class="h-10 w-10 rounded-lg bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 inline-flex items-center justify-center shrink-0">
-            <lucide-icon [img]="appIcon" [size]="18" />
-          </span>
-          <div class="min-w-0">
-            <h2 class="text-sm font-semibold text-text">App móvil para tu equipo</h2>
-            <p class="text-xs text-text-muted">Comparte el link de descarga: tus empleados instalan la app y entran con la cuenta que les creaste.</p>
-          </div>
+    <!-- App móvil -->
+    <div class="bg-surface-container-lowest rounded-3xl p-6 elev-glow border border-outline-variant/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div class="flex items-center gap-4 min-w-0">
+        <span class="grid h-12 w-12 place-items-center rounded-2xl bg-tertiary-fixed text-tertiary shrink-0"><lucide-icon [img]="appIcon" [size]="20" /></span>
+        <div class="min-w-0">
+          <h3 class="font-headline-md text-headline-md text-on-surface">App móvil para tu equipo</h3>
+          <p class="font-body-md text-body-md text-on-surface-variant">Comparte el link: tus empleados instalan la app y entran con su cuenta.</p>
         </div>
-        <app-button variant="secondary" size="sm" (onClick)="copyAppLink()">Copiar link</app-button>
       </div>
+      <app-button variant="secondary" (onClick)="copyAppLink()">Copiar link</app-button>
     </div>
-
-    <p class="text-xs text-text-soft">
-      Las métricas de operación (citas e ingresos) aparecerán aquí cuando el módulo de agenda esté disponible.
-    </p>
   }
 
-  <!-- Bienvenida (primer ingreso): pasos + llenar más tarde. Tour guiado: a futuro. -->
+  <!-- Bienvenida (primer ingreso) -->
   <app-modal [open]="showWelcome()" title="¡Te damos la bienvenida! 🎉" size="md" (onClose)="closeWelcome()">
     <div class="space-y-4">
       <div class="flex flex-col items-center text-center">
@@ -118,16 +137,16 @@
       </div>
       <ul class="space-y-2">
         @for (s of steps(); track s.label) {
-          <li class="flex items-center gap-3 rounded-lg border border-border p-2.5">
+          <li class="flex items-center gap-3 rounded-xl border border-outline-variant p-2.5">
             <lucide-icon [img]="s.done ? stepDoneIcon : stepTodoIcon" [size]="18" class="shrink-0"
-                         [class.text-primary-500]="s.done" [class.text-text-soft]="!s.done" />
+                         [class.text-primary]="s.done" [class.text-on-surface-variant]="!s.done" />
             <div class="min-w-0 flex-1">
               <p class="text-sm text-text" [class.line-through]="s.done">{{ s.label }}</p>
               <p class="text-caption text-text-muted">{{ s.hint }}</p>
             </div>
             @if (!s.done) {
               <button type="button" (click)="startStep(s.route)"
-                      class="text-xs font-medium text-primary-600 dark:text-primary-300 hover:underline shrink-0">Ir</button>
+                      class="text-xs font-medium text-primary hover:underline shrink-0">Ir</button>
             }
           </li>
         }

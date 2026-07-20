@@ -1,17 +1,72 @@
-<div class="space-y-5">
-  <app-page-header title="Sedes" subtitle="Las ubicaciones físicas de tu negocio.">
+<div class="space-y-8">
+  <!-- Encabezado -->
+  <div class="flex flex-wrap justify-between items-end gap-4">
+    <div>
+      <h2 class="font-display-xl text-display-xl text-on-background tracking-tight">Sedes</h2>
+      <p class="font-body-lg text-body-lg text-on-surface-variant mt-2">Gestiona y monitorea todos tus locales.</p>
+    </div>
     @if (businessId()) {
-      <app-button [icon]="plusIcon" (onClick)="openCreate()">Nueva sede</app-button>
+      <app-button [icon]="plusIcon" size="lg" (onClick)="openCreate()">Nueva sede</app-button>
     }
-  </app-page-header>
+  </div>
 
   @if (loading()) {
-    <app-skeleton [lines]="4" />
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      <app-skeleton variant="block" height="18rem" />
+      <app-skeleton variant="block" height="18rem" />
+      <app-skeleton variant="block" height="18rem" />
+    </div>
   } @else {
     @if (!items().length) {
       <app-form-companion [message]="'companion.sede' | t" />
+    } @else {
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+        @for (b of items(); track b.id) {
+          <article class="group bg-surface-container-lowest rounded-3xl elev-glow overflow-hidden flex flex-col transition-transform hover:-translate-y-1 duration-300">
+            <!-- Banner (placeholder de token: no hay foto real) -->
+            <div class="h-40 relative bg-gradient-to-br from-primary-fixed via-secondary-container to-surface-container">
+              <div class="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_30%_30%,var(--color-primary-fixed-dim),transparent_60%)]"></div>
+              <div class="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-surface-container-lowest/90 backdrop-blur-md flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-primary"></span>
+                <span class="font-label-md text-[12px] text-on-surface font-semibold">{{ b.isMain ? 'Principal' : 'Operativa' }}</span>
+              </div>
+            </div>
+            <!-- Contenido -->
+            <div class="p-6 flex flex-col flex-grow">
+              <div class="flex justify-between items-start mb-4 gap-3">
+                <h3 class="font-headline-md text-headline-md text-on-surface truncate">{{ b.name }}</h3>
+                <button type="button" (click)="openEdit(b)" aria-label="Editar sede"
+                        class="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container-low text-on-surface-variant hover:bg-primary hover:text-on-primary transition-colors shrink-0">
+                  <lucide-icon [img]="arrowIcon" [size]="18" />
+                </button>
+              </div>
+              <div class="space-y-2.5 mb-6">
+                @if (b.addressLine) {
+                  <div class="flex items-start gap-3">
+                    <lucide-icon [img]="pinIcon" [size]="18" class="text-outline mt-0.5 shrink-0" />
+                    <p class="font-body-md text-body-md text-on-surface-variant leading-tight">{{ b.addressLine }}</p>
+                  </div>
+                }
+                @if (b.phone) {
+                  <div class="flex items-center gap-3">
+                    <lucide-icon [img]="phoneIcon" [size]="18" class="text-outline shrink-0" />
+                    <p class="font-body-md text-body-md text-on-surface-variant">{{ b.phone }}</p>
+                  </div>
+                }
+                @if (!b.addressLine && !b.phone) {
+                  <p class="font-body-md text-body-md text-on-surface-variant italic">Sin dirección ni teléfono registrados.</p>
+                }
+              </div>
+              <div class="mt-auto pt-4 border-t border-outline-variant/20 flex items-center justify-between">
+                <button type="button" (click)="askDelete(b)" aria-label="Eliminar sede"
+                        class="text-on-surface-variant hover:text-error transition-colors p-1"><lucide-icon [img]="trashIcon" [size]="18" /></button>
+                <button type="button" (click)="openEdit(b)" class="font-label-md text-[13px] text-primary hover:underline">Ver detalles</button>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
     }
-    <app-data-table [columns]="columns()" [rows]="items()" [actions]="actions()" [loading]="loading()" />
   }
 
   <app-drawer
@@ -40,9 +95,10 @@
       </app-field>
 
       <app-field label="Ubicación" [required]="true"
-                 [error]="tried() && !form().municipalityId ? ('validation.location' | t) : ''"
-                 hint="Busca tu municipio; el departamento y el país se completan solos. El barrio es opcional.">
-        <app-location-picker (change)="onLocation($event)" />
+                 [error]="tried() && !form().municipalityId ? ('validation.location' | t)
+                          : (tried() && !form().neighborhoodId ? 'Selecciona el barrio o vereda.' : '')"
+                 hint="Busca tu municipio; el departamento y el país se completan solos. Luego elige el barrio o vereda.">
+        <app-location-picker [neighborhoodRequired]="true" (locationChange)="onLocation($event)" />
       </app-field>
 
       <app-field label="Dirección">

@@ -40,6 +40,10 @@ export const TENANT_ROUTES: Routes = [
         loadComponent: () => import('./finanzas/compensaciones.component').then(m => m.CompensacionesComponent),
       },
       {
+        path: 'liquidaciones', data: { crumb: 'Liquidaciones' }, canActivate: [requiresBusiness],
+        loadComponent: () => import('./finanzas/liquidaciones.component').then(m => m.LiquidacionesComponent),
+      },
+      {
         path: 'mi-pagina', data: { crumb: 'Mi página' }, canActivate: [requiresBusiness],
         loadComponent: () => import('./pagina/mi-pagina.component').then(m => m.MiPaginaComponent),
       },

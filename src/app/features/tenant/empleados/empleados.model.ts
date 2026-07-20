@@ -11,7 +11,7 @@ export interface EmployeeDetail {
   photoUrl?: string | null;
   branchId: string;
   positionId: string | null;
-  employeeCode?: string | null;
+  specialtyId?: string | null;
   hireDate: string | null;
   terminationDate?: string | null;
   statusId?: string | null;
@@ -22,7 +22,7 @@ export interface EmployeePayload {
   thirdPartyId: string;
   branchId: string;
   positionId: string;
-  employeeCode?: string | null;
+  specialtyId?: string | null;
   hireDate: string;
   terminationDate?: string | null;
   statusId?: string | null;

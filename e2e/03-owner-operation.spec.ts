@@ -104,7 +104,7 @@ test.describe('Operación del dueño (ciclo completo)', () => {
       isMain: true,
     });
     await page.goto('/tenant/sedes');
-    await expect(page.getByRole('cell', { name: 'Sede E2E' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Sede E2E' })).toBeVisible();
 
     // ---------- 5. Empleado: ALTA MÍNIMA (solo cuenta) vía UI ----------
     // El tercero y el registro laboral nacen como shells; el empleado completa
@@ -118,12 +118,13 @@ test.describe('Operación del dueño (ciclo completo)', () => {
     await d3.locator('form input[type="password"]').fill('Password123!');    // contraseña
     await d3.getByRole('button', { name: /Guardar|Save/ }).click();
     await expectToast(page, /Empleado creado/);
-    await expect(page.getByRole('cell', { name: 'Pendiente de completar' })).toBeVisible();
+    // La lista es un grid de tarjetas: el nombre (o su placeholder) es el encabezado.
+    await expect(page.getByRole('heading', { name: 'Pendiente de completar' }).first()).toBeVisible();
 
     // ---------- 6. Dashboard con conteos REALES ----------
     await page.goto('/tenant/dashboard');
     const kpi = (label: string) =>
-      page.locator('button', { hasText: label }).locator('p.text-3xl');
+      page.locator('button', { hasText: label }).locator('h3');
     await expect(kpi('Sedes')).toHaveText('1');
     await expect(kpi('Empleados')).toHaveText('1');
     await expect(kpi('Servicios')).toHaveText('1');

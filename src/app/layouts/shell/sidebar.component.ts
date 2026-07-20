@@ -72,8 +72,8 @@ export class SidebarComponent {
   }
 
   linkClass(depth: number): string {
-    const base = 'flex items-center gap-2 px-2.5 py-1.5 rounded-md text-sm text-text-muted hover:bg-surface-hover hover:text-text transition-colors';
-    return `${base}${depth > 0 ? ' pl-6' : ''}`;
+    const base = 'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors';
+    return `${base}${depth > 0 ? ' pl-7' : ''}`;
   }
 
   goProfile() {

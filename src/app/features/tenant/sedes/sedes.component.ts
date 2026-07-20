@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { map } from 'rxjs';
-import { Plus, Pencil, Trash2 } from 'lucide-angular';
+import { LucideAngularModule, Plus, Pencil, Trash2, ArrowRight, MapPin, Phone } from 'lucide-angular';
 
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
@@ -33,7 +33,7 @@ import { BranchForm, EMPTY_BRANCH_FORM } from './sedes.form';
   selector: 'app-tenant-sedes',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, ButtonComponent, DrawerComponent, DataTableComponent, PageHeaderComponent, SkeletonComponent,
+    CommonModule, FormsModule, LucideAngularModule, ButtonComponent, DrawerComponent, PageHeaderComponent, SkeletonComponent,
     FieldComponent, InputComponent, SwitchComponent, AutocompleteComponent, LocationPickerComponent, FormCompanionComponent, TPipe,
   ],
   templateUrl: './sedes.component.html',
@@ -47,6 +47,10 @@ export class SedesComponent {
   private readonly auth = inject(AuthService);
 
   protected readonly plusIcon = Plus;
+  protected readonly arrowIcon = ArrowRight;
+  protected readonly pinIcon = MapPin;
+  protected readonly phoneIcon = Phone;
+  protected readonly trashIcon = Trash2;
 
   readonly businessId = signal<string | null>(null);
   readonly items = signal<Branch[]>([]);
@@ -62,7 +66,8 @@ export class SedesComponent {
 
   readonly formValid = computed(() => {
     const f = this.form();
-    return !!f.branchTypeId && f.name.trim().length >= 2 && !!f.municipalityId;
+    // Barrio/vereda ahora es obligatorio (ubicación completa hasta el barrio).
+    return !!f.branchTypeId && f.name.trim().length >= 2 && !!f.municipalityId && !!f.neighborhoodId;
   });
 
   readonly columns = computed<ColumnDef<Branch>[]>(() => [
@@ -124,8 +129,8 @@ export class SedesComponent {
   close() { this.open.set(false); this.editingId.set(null); this.tried.set(false); }
 
   onLocation(sel: LocationSelection) {
-    const m = sel.meta?.municipality as any;
-    const n = sel.meta?.neighborhood as any;
+    const m = sel.meta?.municipality as { meta?: { hit?: { municipalityId?: string } } } | null;
+    const n = sel.meta?.neighborhood as { meta?: { hit?: { neighborhoodId?: string } } } | null;
     this.patch('municipalityId', m?.meta?.hit?.municipalityId ?? null);
     this.patch('neighborhoodId', n?.meta?.hit?.neighborhoodId ?? null);
   }
@@ -150,8 +155,19 @@ export class SedesComponent {
     const obs = id ? this.api.update(id, payload) : this.api.create(payload);
     obs.subscribe({
       next: () => { this.toast.success('Sede guardada'); this.saving.set(false); this.close(); this.refresh(businessId); },
-      error: () => this.saving.set(false),
+      // Antes se tragaba el error en silencio (se veía como "no guarda"). Ahora
+      // se muestra el motivo real que devuelve el backend.
+      error: (err) => {
+        this.saving.set(false);
+        this.toast.error('No se pudo guardar la sede', this.backendMessage(err));
+      },
     });
+  }
+
+  /** Extrae el mensaje de error del ApiResponse del backend (o un fallback). */
+  private backendMessage(err: unknown): string {
+    const e = err as { error?: { message?: string }; message?: string };
+    return e?.error?.message || e?.message || 'Revisa los datos e inténtalo de nuevo.';
   }
 
   async askDelete(b: Branch) {

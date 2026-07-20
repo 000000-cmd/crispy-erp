@@ -1,17 +1,17 @@
 import { FormSchema } from '../../../shared/forms/core/types';
 
-/** Estado del formulario de edición laboral (cargo/código/fecha). */
+/** Estado del formulario de edición laboral (cargo/fecha). */
 export interface EmployeeEditForm {
   personName: string;
   positionId: string | null;
-  employeeCode: string;
+  specialtyId: string | null;
   hireDate: string;
 }
 
 export const EMPTY_EMPLOYEE_EDIT_FORM: EmployeeEditForm = {
   personName: '',
   positionId: null,
-  employeeCode: '',
+  specialtyId: null,
   hireDate: '',
 };
 

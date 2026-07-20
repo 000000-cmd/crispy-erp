@@ -1,0 +1,68 @@
+
+    <app-modal [open]="open()" title="Categorías y especialidades" size="lg" (onClose)="onClose.emit()">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Categorías -->
+        <section class="space-y-3">
+          <h4 class="text-sm font-semibold text-text">Categorías</h4>
+          <div class="rounded-lg border border-border divide-y divide-border max-h-64 overflow-y-auto">
+            @for (c of categories(); track c.id) {
+              <div class="flex items-center justify-between gap-2 px-3 py-2">
+                <span class="text-sm text-text truncate">{{ c.name }}</span>
+                <button
+                  type="button"
+                  (click)="removeCategory(c)"
+                  [attr.aria-label]="'Eliminar ' + c.name"
+                  class="shrink-0 h-7 w-7 inline-flex items-center justify-center rounded-md text-text-soft hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors">
+                  <lucide-icon [img]="trashIcon" [size]="14" />
+                </button>
+              </div>
+            } @empty {
+              <p class="px-3 py-4 text-sm text-text-muted text-center">Sin categorías todavía.</p>
+            }
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="flex-1">
+              <app-input
+                placeholder="Nueva categoría"
+                [ngModel]="newCategory()"
+                (ngModelChange)="newCategory.set($event)"
+                (keydown.enter)="addCategory()" />
+            </div>
+            <app-button size="sm" [icon]="plusIcon" (onClick)="addCategory()">Añadir categoría</app-button>
+          </div>
+        </section>
+
+        <!-- Especialidades -->
+        <section class="space-y-3">
+          <h4 class="text-sm font-semibold text-text">Especialidades</h4>
+          <div class="rounded-lg border border-border divide-y divide-border max-h-64 overflow-y-auto">
+            @for (s of specialties(); track s.id) {
+              <div class="flex items-center justify-between gap-2 px-3 py-2">
+                <span class="text-sm text-text truncate">{{ s.name }}</span>
+                <button
+                  type="button"
+                  (click)="removeSpecialty(s)"
+                  [attr.aria-label]="'Eliminar ' + s.name"
+                  class="shrink-0 h-7 w-7 inline-flex items-center justify-center rounded-md text-text-soft hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors">
+                  <lucide-icon [img]="trashIcon" [size]="14" />
+                </button>
+              </div>
+            } @empty {
+              <p class="px-3 py-4 text-sm text-text-muted text-center">Sin especialidades todavía.</p>
+            }
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="flex-1">
+              <app-input
+                placeholder="Nueva especialidad"
+                [ngModel]="newSpecialty()"
+                (ngModelChange)="newSpecialty.set($event)"
+                (keydown.enter)="addSpecialty()" />
+            </div>
+            <app-button size="sm" [icon]="plusIcon" (onClick)="addSpecialty()">Añadir especialidad</app-button>
+          </div>
+        </section>
+
+      </div>
+    </app-modal>

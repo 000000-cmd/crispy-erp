@@ -1,33 +1,128 @@
-<div class="space-y-5">
-  <app-page-header title="Empleados" subtitle="Tu equipo por sede. Sus cuentas entran por la app móvil.">
-    @if (selectedBranchId()) {
-      <app-button [icon]="plusIcon" (onClick)="openCreate()">Nuevo empleado</app-button>
+<div class="space-y-8">
+  <!-- Encabezado -->
+  <div class="flex flex-wrap justify-between items-end gap-4">
+    <div>
+      <h2 class="font-display-xl text-display-xl text-on-background tracking-tight">Empleados</h2>
+      <p class="font-body-lg text-body-lg text-on-surface-variant mt-2 max-w-xl">Gestiona tu equipo por sede. Sus cuentas entran por la app móvil.</p>
+    </div>
+    @if (branches().length) {
+      <div class="flex items-center gap-3 w-full md:w-auto">
+        <div class="w-full md:w-64">
+          <app-autocomplete
+            [options]="branchOptions()"
+            [ngModel]="selectedBranchId()"
+            (ngModelChange)="onBranch($event)"
+            [clearable]="false"
+            placeholder="Selecciona una sede" />
+        </div>
+        <app-button [icon]="plusIcon" size="lg" (onClick)="openCreate()">Nuevo empleado</app-button>
+      </div>
     }
-  </app-page-header>
+  </div>
 
   @if (loading() && !branches().length) {
     <app-skeleton [lines]="4" />
   } @else if (!branches().length) {
-    <div class="rounded-2xl border border-border bg-surface p-6 space-y-3">
-      <h2 class="text-base font-semibold text-text">Aún no tienes sedes</h2>
-      <p class="text-sm text-text-muted">Crea una sede para asignar empleados.</p>
+    <div class="bg-surface-container-lowest rounded-3xl border border-outline-variant/20 p-8 space-y-3 elev-glow max-w-lg">
+      <h3 class="font-headline-md text-headline-md text-on-surface">Aún no tienes sedes</h3>
+      <p class="font-body-md text-body-md text-on-surface-variant">Crea una sede para asignar empleados.</p>
       <a routerLink="/tenant/sedes"><app-button>Ir a sedes</app-button></a>
     </div>
   } @else {
-    <div class="max-w-xs">
-      <app-autocomplete
-        [options]="branchOptions()"
-        [ngModel]="selectedBranchId()"
-        (ngModelChange)="onBranch($event)"
-        [clearable]="false"
-        placeholder="Selecciona una sede" />
+    <!-- Insight (ORB) + resumen -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 relative overflow-hidden bg-surface-container-lowest rounded-3xl p-8 elev-glow flex flex-col md:flex-row items-center gap-8">
+        <div class="absolute -right-16 -top-16 w-56 h-56 bg-primary-fixed rounded-full blur-3xl opacity-40 pointer-events-none"></div>
+        <div class="w-28 h-28 shrink-0 relative z-10"><app-mascot class="block h-full w-full" /></div>
+        <div class="relative z-10 text-center md:text-left">
+          <div class="inline-flex items-center gap-2 bg-primary-fixed px-3 py-1 rounded-full mb-3">
+            <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            <span class="font-label-md text-label-md text-primary font-bold uppercase tracking-wider">Insight del sistema</span>
+          </div>
+          <h3 class="font-headline-lg text-headline-lg text-on-surface mb-2">Tu equipo, siempre a la mano</h3>
+          <p class="font-body-md text-body-md text-on-surface-variant max-w-md">
+            {{ employeeCount() }} {{ employeeCount() === 1 ? 'persona' : 'personas' }} en <span class="font-medium text-on-surface">{{ selectedBranchName() }}</span>.
+            El rendimiento por empleado (citas, calificación) llegará con el módulo de agenda.
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-surface-container-lowest rounded-3xl p-8 elev-glow flex flex-col justify-center gap-4">
+        <h4 class="font-headline-md text-headline-md text-on-surface">Resumen</h4>
+        <div class="flex justify-between items-center">
+          <span class="font-body-md text-body-md text-on-surface-variant">Empleados en esta sede</span>
+          <span class="font-headline-md text-headline-md text-primary">{{ employeeCount() }}</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="font-body-md text-body-md text-on-surface-variant">Sedes</span>
+          <span class="font-headline-md text-headline-md text-on-surface">{{ branches().length }}</span>
+        </div>
+      </div>
     </div>
 
     @if (!items().length && !loading()) {
       <app-form-companion [message]="'companion.empleado' | t" />
-    }
+    } @else {
+      <!-- Grid de empleados -->
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        @for (e of items(); track e.id) {
+          <div class="bg-surface-container-lowest rounded-3xl p-6 elev-glow flex flex-col gap-5 hover:-translate-y-1 transition-transform duration-300">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-center gap-4 min-w-0">
+                @if (assetUrl(e.photoUrl); as photo) {
+                  <img [src]="photo" alt="" class="w-16 h-16 rounded-full object-cover shadow-sm shrink-0" />
+                } @else {
+                  <span class="w-16 h-16 rounded-full bg-primary-fixed text-primary inline-flex items-center justify-center font-headline-md text-headline-md shrink-0">{{ empInitials(e) }}</span>
+                }
+                <div class="min-w-0">
+                  <h4 class="font-headline-md text-headline-md text-on-surface text-[20px] truncate">{{ e.personName?.trim() || 'Pendiente de completar' }}</h4>
+                  <p class="font-body-md text-body-md text-on-surface-variant truncate">{{ (e.positionId && positionName().get(e.positionId)) || 'Cargo pendiente' }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-1 shrink-0">
+                <button type="button" (click)="openEdit(e)" [attr.aria-label]="'Editar empleado'"
+                        class="text-on-surface-variant hover:text-primary transition-colors p-1.5"><lucide-icon [img]="pencilIcon" [size]="18" /></button>
+                <button type="button" (click)="askDelete(e)" [attr.aria-label]="'Eliminar empleado'"
+                        class="text-on-surface-variant hover:text-error transition-colors p-1.5"><lucide-icon [img]="trashIcon" [size]="18" /></button>
+              </div>
+            </div>
 
-    <app-data-table [columns]="columns()" [rows]="items()" [actions]="actions()" [loading]="loading()" />
+            <div class="grid grid-cols-2 gap-3">
+              <div class="bg-surface p-3 rounded-xl border border-surface-container-highest">
+                <p class="font-label-md text-label-md text-on-surface-variant mb-1">Cargo</p>
+                <p class="font-body-md text-body-md text-on-surface font-medium truncate">{{ (e.positionId && positionName().get(e.positionId)) || '—' }}</p>
+              </div>
+              <div class="bg-surface p-3 rounded-xl border border-surface-container-highest">
+                <p class="font-label-md text-label-md text-on-surface-variant mb-1">Especialidad</p>
+                <p class="font-body-md text-body-md text-on-surface font-medium truncate">{{ (e.specialtyId && specialtyName().get(e.specialtyId)) || '—' }}</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 mt-auto flex-wrap">
+              <span class="px-3 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-md text-[12px] inline-flex items-center gap-1">
+                <lucide-icon [img]="pinIcon" [size]="12" /> {{ selectedBranchName() }}
+              </span>
+              <span class="px-3 py-1 rounded-full font-label-md text-[12px] inline-flex items-center gap-1"
+                    [class.bg-primary-fixed]="e.enabled" [class.text-on-primary-fixed-variant]="e.enabled"
+                    [class.bg-surface-container-highest]="!e.enabled" [class.text-on-surface-variant]="!e.enabled">
+                <span class="w-1.5 h-1.5 rounded-full" [class.bg-primary]="e.enabled" [class.bg-on-surface-variant]="!e.enabled"></span>
+                {{ e.enabled ? 'Activo' : 'Inactivo' }}
+              </span>
+            </div>
+          </div>
+        }
+
+        <!-- Añadir empleado -->
+        <button type="button" (click)="openCreate()"
+                class="bg-surface/50 border-2 border-dashed border-outline-variant rounded-3xl p-6 flex flex-col items-center justify-center gap-4 hover:bg-surface-container-lowest hover:border-primary transition-all duration-300 min-h-[260px] group">
+          <span class="w-16 h-16 rounded-full bg-primary-fixed text-primary inline-flex items-center justify-center group-hover:scale-110 transition-transform"><lucide-icon [img]="addIcon" [size]="30" /></span>
+          <div class="text-center">
+            <h4 class="font-headline-md text-headline-md text-on-surface text-[20px] mb-1">Añadir empleado</h4>
+            <p class="font-body-md text-body-md text-on-surface-variant">Invitar nuevo miembro al equipo</p>
+          </div>
+        </button>
+      </div>
+    }
   }
 
   <app-drawer
@@ -41,9 +136,7 @@
     (onClose)="close()">
 
     @if (!editingId()) {
-      <!-- Alta mínima: solo la cuenta. El tercero y el registro laboral nacen
-           vacíos y el empleado completa sus datos desde la app móvil. -->
-      <div class="mb-4 rounded-lg border border-primary-200 dark:border-primary-800 bg-primary-50/60 dark:bg-primary-900/20 px-3 py-2 text-xs text-primary-700 dark:text-primary-200">
+      <div class="mb-4 rounded-xl border border-primary-200 dark:border-primary-800 bg-primary-50/60 dark:bg-primary-900/20 px-3 py-2 text-xs text-primary-700 dark:text-primary-200">
         Sede: <span class="font-semibold">{{ selectedBranchName() }}</span> ·
         Solo creas su cuenta: el empleado entra a la app móvil con este correo y
         contraseña, y allá completa sus datos personales.
@@ -56,7 +149,6 @@
         (submitValue)="onProvisionSubmit($event)"
         (dirtyChange)="dirty.set($event)" />
     } @else {
-      <!-- Edición laboral (la persona y la cuenta no se tocan desde aquí). -->
       <div class="space-y-4">
         <app-field label="Persona" hint="La persona del empleado no se cambia desde aquí.">
           <app-input [value]="editForm().personName" [disabled]="true" />
@@ -71,9 +163,14 @@
             placeholder="Selecciona el cargo" />
         </app-field>
 
-        <app-field label="Código">
-          <app-input [value]="editForm().employeeCode" (valueChange)="patchEdit('employeeCode', $event)" placeholder="Opcional" />
+        <app-field label="Especialidad">
+          <app-autocomplete
+            [options]="specialtyOptions()"
+            [ngModel]="editForm().specialtyId"
+            (ngModelChange)="patchEdit('specialtyId', $event)"
+            placeholder="Selecciona la especialidad" />
         </app-field>
+
         <app-field label="Fecha de ingreso" [required]="true"
                    [error]="editTried() && !editForm().hireDate ? ('validation.hireDate' | t) : ''">
           <app-input type="date" [value]="editForm().hireDate" (valueChange)="patchEdit('hireDate', $event)"

@@ -1,0 +1,206 @@
+<div class="space-y-8">
+
+  <!-- ============ ENCABEZADO + FILTRO DE JERARQUÍA ============ -->
+  <header class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div>
+      <h2 class="font-display-xl text-display-xl text-primary tracking-tight">Liquidación y Cierre</h2>
+      <p class="font-body-lg text-body-lg text-on-surface-variant mt-2 max-w-2xl">
+        Audita y confirma lo devengado para liberar comisiones a tus colaboradores.
+      </p>
+    </div>
+
+    <div class="flex items-center gap-3 bg-surface-container-lowest p-2 rounded-2xl elev-1 border border-outline-variant/30">
+      <lucide-icon [img]="filterIcon" [size]="18" class="ml-2 text-on-surface-variant shrink-0" />
+      <div class="w-56">
+        <app-autocomplete
+          [options]="branchOptions()"
+          [ngModel]="branchFilter()"
+          (ngModelChange)="onBranchFilter($event)"
+          placeholder="Toda la empresa" />
+      </div>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <app-skeleton [lines]="8" />
+  } @else {
+
+    <!-- ============ RESUMEN (BENTO) ============ -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <div class="bg-surface-container-lowest rounded-3xl p-8 elev-1 hover:elev-2 hover:-translate-y-1 transition-all flex flex-col justify-between min-h-[11rem]">
+        <div class="flex items-center justify-between gap-3">
+          <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Pendientes de liquidar</span>
+          <lucide-icon [img]="pendingIcon" [size]="22" class="text-primary shrink-0" />
+        </div>
+        <div>
+          <p class="font-display-xl text-headline-lg text-on-surface font-extrabold tabular-nums">{{ pendingCount() }}</p>
+          <p class="font-label-md text-label-md text-on-surface-variant mt-1">Colaboradores con saldo por cobrar</p>
+        </div>
+      </div>
+
+      <div class="bg-surface-container-lowest rounded-3xl p-8 elev-1 hover:elev-2 hover:-translate-y-1 transition-all flex flex-col justify-between min-h-[11rem]">
+        <div class="flex items-center justify-between gap-3">
+          <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Ya liquidado</span>
+          <lucide-icon [img]="hourglassIcon" [size]="22" class="text-primary shrink-0" />
+        </div>
+        <div>
+          <p class="font-display-xl text-headline-lg text-on-surface font-extrabold tabular-nums">{{ fmt(totalPaid()) }}</p>
+          <p class="font-label-md text-label-md text-on-surface-variant mt-1">Transferido históricamente al equipo</p>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-3xl p-8 elev-glow flex flex-col justify-between min-h-[11rem] relative overflow-hidden">
+        <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+        <div class="relative z-10 flex items-center justify-between gap-3">
+          <span class="font-label-md text-label-md uppercase tracking-wider opacity-80">Saldo a abonar</span>
+          <lucide-icon [img]="walletIcon" [size]="22" class="shrink-0" />
+        </div>
+        <div class="relative z-10">
+          <p class="font-display-xl text-headline-lg font-extrabold tabular-nums">{{ fmt(totalPending()) }}</p>
+          <p class="font-label-md text-label-md mt-1 opacity-90">Disponible para transferencia inmediata</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LISTADO DE APROBACIÓN ============ -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between gap-4 px-1">
+        <h3 class="font-headline-md text-headline-md text-on-surface font-bold">Listado de aprobación</h3>
+        <div class="flex items-center gap-4">
+          <button type="button" (click)="openHistory()"
+                  class="inline-flex items-center gap-2 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors">
+            <lucide-icon [img]="historyIcon" [size]="16" /> Historial
+          </button>
+          @if (pendingCount() > 0) {
+            <button type="button" (click)="settleAll()" [disabled]="settlingId() !== null"
+                    class="inline-flex items-center gap-2 font-label-md text-label-md text-primary font-bold hover:underline disabled:opacity-50">
+              <lucide-icon [img]="checkIcon" [size]="18" /> Liquidar todo
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (rows().length === 0) {
+        <div class="bg-surface-container-lowest rounded-3xl p-10 elev-1 text-center">
+          <p class="font-body-lg text-body-lg text-on-surface font-medium">Aún no hay colaboradores con saldo</p>
+          <p class="font-body-md text-body-md text-on-surface-variant mt-1">
+            Los saldos aparecen aquí en cuanto tu equipo empiece a registrar servicios.
+          </p>
+        </div>
+      } @else {
+        <div class="space-y-4">
+          @for (row of rows(); track row.employeeId) {
+            <article class="bg-surface-container-lowest rounded-3xl p-5 elev-1 hover:elev-2 hover:-translate-y-0.5 transition-all
+                            flex flex-col lg:flex-row lg:items-center gap-6">
+
+              <!-- Persona -->
+              <div class="flex items-center gap-4 flex-1 min-w-0">
+                @if (assetUrl(row.photoUrl); as photo) {
+                  <img [src]="photo" alt="" class="w-14 h-14 rounded-2xl object-cover border border-outline-variant/40 shrink-0" />
+                } @else {
+                  <span class="grid w-14 h-14 shrink-0 place-items-center rounded-2xl bg-primary-fixed text-on-primary-fixed-variant text-lg font-bold">
+                    {{ initials(row.personName) }}
+                  </span>
+                }
+                <div class="min-w-0">
+                  <p class="font-headline-md text-body-lg text-on-surface font-bold truncate">{{ row.personName }}</p>
+                  <p class="font-label-md text-label-md text-on-surface-variant truncate">
+                    {{ row.positionName }} · {{ row.branchName }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Cifras -->
+              <div class="grid grid-cols-2 sm:flex sm:items-center gap-6 sm:gap-10 shrink-0">
+                <div>
+                  <p class="font-label-md text-[11px] text-on-surface-variant uppercase font-bold tracking-widest">Devengado</p>
+                  <p class="font-body-md text-body-md text-on-surface font-semibold tabular-nums">{{ fmt(row.accrued) }}</p>
+                </div>
+                <div>
+                  <p class="font-label-md text-[11px] text-on-surface-variant uppercase font-bold tracking-widest">Por liquidar</p>
+                  <p class="font-body-md text-body-md font-bold tabular-nums"
+                     [class.text-primary]="row.pending > 0" [class.text-on-surface-variant]="row.pending === 0">
+                    {{ fmt(row.pending) }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Acciones -->
+              <div class="flex items-center gap-3 shrink-0">
+                <!-- El desglose servicio a servicio depende del módulo de citas. -->
+                <button type="button" disabled
+                        title="El desglose por servicio llega con el módulo de citas"
+                        class="px-5 py-2.5 rounded-full border-2 border-outline-variant/50 text-on-surface-variant
+                               font-label-md text-label-md opacity-50 cursor-not-allowed">
+                  Ver detalles
+                </button>
+                <button type="button" (click)="settle(row)"
+                        [disabled]="row.pending <= 0 || settlingId() !== null"
+                        class="px-6 py-2.5 rounded-full bg-gradient-to-b from-primary to-primary-container text-on-primary
+                               font-label-md text-label-md font-bold elev-1 hover:elev-2 hover:-translate-y-0.5
+                               transition-all inline-flex items-center gap-2
+                               disabled:opacity-40 disabled:hover:translate-y-0 disabled:cursor-not-allowed">
+                  <lucide-icon [img]="moneyIcon" [size]="16" />
+                  {{ settlingId() === row.employeeId ? 'Procesando…' : 'Confirmar' }}
+                </button>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </section>
+
+    <!-- ============ TRANSPARENCIA / ESTADO DEL MÓDULO ============ -->
+    <section class="bg-surface-container-low rounded-[2rem] p-8 border border-outline-variant/20">
+      <div class="flex flex-col md:flex-row items-start md:items-center gap-8">
+        <div class="w-20 h-20 shrink-0 grid place-items-center rounded-3xl bg-primary-fixed/60">
+          <app-mascot class="w-16 h-16" />
+        </div>
+        <div class="flex-1 min-w-0">
+          <h4 class="font-headline-md text-body-lg text-on-surface font-bold mb-2">Transparencia en el saldo</h4>
+          <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+            Al confirmar, el monto se transfiere desde el balance de la empresa al
+            <strong class="text-on-surface">saldo individual</strong> del colaborador.
+            El proceso es <strong class="text-on-surface">irreversible</strong> y queda registrado en la auditoría de tesorería.
+          </p>
+          @if (awaitingAppointments()) {
+            <p class="mt-3 inline-flex items-start gap-2 rounded-2xl bg-primary-fixed/40 border border-primary/15 px-3 py-2
+                      font-label-md text-label-md text-on-surface-variant">
+              <lucide-icon [img]="infoIcon" [size]="16" class="text-primary mt-0.5 shrink-0" />
+              <span>
+                El devengado se alimenta de los servicios prestados: empezará a sumar cuando entre el módulo de
+                <strong class="text-on-surface">citas</strong>. Hasta entonces verás los saldos en cero.
+              </span>
+            </p>
+          }
+        </div>
+        <button type="button" (click)="openHistory()"
+                class="shrink-0 inline-flex items-center gap-2 font-label-md text-label-md text-primary font-bold hover:underline">
+          Ver historial de liquidaciones <lucide-icon [img]="arrowIcon" [size]="16" />
+        </button>
+      </div>
+    </section>
+  }
+
+  <!-- ============ HISTORIAL (AUDITORÍA) ============ -->
+  <app-modal [open]="showHistory()" title="Historial de liquidaciones" size="lg" (onClose)="showHistory.set(false)">
+    @if (history().length === 0) {
+      <p class="p-4 font-body-md text-body-md text-on-surface-variant">Todavía no se ha confirmado ninguna liquidación.</p>
+    } @else {
+      <ul class="divide-y divide-outline-variant/30 max-h-96 overflow-y-auto">
+        @for (h of history(); track h.id) {
+          <li class="flex items-center justify-between gap-4 py-3">
+            <div class="min-w-0">
+              <p class="font-body-md text-body-md text-on-surface font-medium truncate">{{ personOf(h.employeeId) }}</p>
+              <p class="font-label-md text-label-md text-on-surface-variant">
+                {{ h.settledAt | date:'dd MMM yyyy, HH:mm' }} · saldo previo {{ fmt(h.balanceBefore) }}
+              </p>
+            </div>
+            <span class="font-body-md text-body-md text-primary font-bold tabular-nums shrink-0">{{ fmt(h.amount) }}</span>
+          </li>
+        }
+      </ul>
+    }
+  </app-modal>
+</div>

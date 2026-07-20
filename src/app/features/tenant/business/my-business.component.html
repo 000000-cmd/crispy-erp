@@ -1,52 +1,86 @@
-<div class="space-y-5">
-  <app-page-header title="Mi negocio" subtitle="Datos de tu empresa y sus dominios." />
+<div class="space-y-8">
+  <!-- Encabezado -->
+  <div>
+    <h2 class="font-display-xl text-display-xl text-on-background tracking-tight">Configuración</h2>
+    <p class="font-body-lg text-body-lg text-on-surface-variant mt-2">Gestiona la identidad y los accesos de tu negocio.</p>
+  </div>
 
   @if (loading()) {
-    <app-skeleton [lines]="4" />
+    <app-skeleton [lines]="5" />
   } @else if (business(); as b) {
-    <div class="rounded-lg border border-border bg-surface p-5 space-y-3">
-      <div class="flex items-start justify-between gap-3">
-        <div>
-          <h2 class="text-base font-semibold text-text">{{ b.name }}</h2>
-          @if (b.tradeName) { <p class="text-sm text-text-muted">{{ b.tradeName }}</p> }
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Perfil del negocio -->
+      <div class="lg:col-span-2 bg-surface-container-lowest rounded-3xl p-8 elev-glow border border-outline-variant/20">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-3">
+            <span class="w-11 h-11 rounded-2xl bg-primary-fixed text-primary inline-flex items-center justify-center"><lucide-icon [img]="bizIcon" [size]="20" /></span>
+            <h3 class="font-headline-md text-headline-md text-on-surface">Perfil del Negocio</h3>
+          </div>
+          <app-button variant="secondary" size="sm" [icon]="pencilIcon" (onClick)="openEdit()">Editar</app-button>
         </div>
-        <app-button variant="secondary" (onClick)="openEdit()">Editar</app-button>
-      </div>
-      <div class="grid grid-cols-1 gap-x-4 gap-y-1 text-sm sm:grid-cols-2">
-        @if (b.legalName) { <div><span class="text-text-muted">Razón social:</span> {{ b.legalName }}</div> }
-        @if (b.documentNumber) { <div><span class="text-text-muted">Documento:</span> {{ b.documentNumber }}</div> }
-      </div>
-    </div>
 
-    <!-- Dominios -->
-    <div class="rounded-lg border border-border bg-surface p-5 space-y-3">
-      <h3 class="text-sm font-semibold text-text">Dominios</h3>
-      @if (!domains().length) {
-        <p class="text-sm text-text-muted">Sin dominios. Agrega un slug para tu acceso.</p>
-      } @else {
-        <ul class="divide-y divide-border rounded-lg border border-border">
-          @for (d of domains(); track d.id) {
-            <li class="flex items-center justify-between gap-3 px-3 py-2 text-sm">
-              <span class="flex items-center gap-2 min-w-0">
-                <span class="truncate text-text">{{ d.slug }}<span class="text-text-muted">.tuapp.com</span></span>
-                @if (d.isPrimary) { <app-tag label="Principal" tone="primary" /> }
-                <app-tag [label]="d.isVerified ? 'Verificado' : 'Sin verificar'" [tone]="d.isVerified ? 'success' : 'warning'" />
-              </span>
-              <span class="flex items-center gap-2 shrink-0">
-                @if (!d.isPrimary) { <app-button variant="ghost" size="sm" (onClick)="setPrimary(d)">Principal</app-button> }
-                <app-button variant="ghost" size="sm" (onClick)="removeDomain(d)">Eliminar</app-button>
-              </span>
-            </li>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+          <div>
+            <p class="font-label-md text-label-md text-on-surface-variant mb-1">Nombre del negocio</p>
+            <p class="font-body-lg text-body-lg text-on-surface">{{ b.name }}</p>
+          </div>
+          @if (b.tradeName) {
+            <div>
+              <p class="font-label-md text-label-md text-on-surface-variant mb-1">Nombre comercial</p>
+              <p class="font-body-lg text-body-lg text-on-surface">{{ b.tradeName }}</p>
+            </div>
           }
-        </ul>
-      }
-      <div class="flex items-end gap-2">
-        <div class="flex-1">
-          <app-input [value]="newSlug()" (valueChange)="newSlug.set($event)" placeholder="mi-negocio" suffix=".tuapp.com" />
+          @if (b.legalName) {
+            <div>
+              <p class="font-label-md text-label-md text-on-surface-variant mb-1">Razón social</p>
+              <p class="font-body-lg text-body-lg text-on-surface">{{ b.legalName }}</p>
+            </div>
+          }
+          @if (b.documentNumber) {
+            <div>
+              <p class="font-label-md text-label-md text-on-surface-variant mb-1">Documento</p>
+              <p class="font-body-lg text-body-lg text-on-surface">{{ b.documentNumber }}</p>
+            </div>
+          }
         </div>
-        <app-button (onClick)="addDomain()" [loading]="savingDomain()">Agregar</app-button>
       </div>
-      <p class="text-xs text-text-muted">Sólo minúsculas, números y guiones (3–63 caracteres).</p>
+
+      <!-- Dominios / acceso -->
+      <div class="bg-surface-container-lowest rounded-3xl p-8 elev-glow border border-outline-variant/20 flex flex-col">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-11 h-11 rounded-2xl bg-tertiary-fixed text-tertiary inline-flex items-center justify-center"><lucide-icon [img]="globeIcon" [size]="20" /></span>
+          <h3 class="font-headline-md text-headline-md text-on-surface">Acceso web</h3>
+        </div>
+
+        @if (!domains().length) {
+          <p class="font-body-md text-body-md text-on-surface-variant mb-4">Sin dominios. Agrega un subdominio para tu acceso.</p>
+        } @else {
+          <ul class="space-y-2 mb-4">
+            @for (d of domains(); track d.id) {
+              <li class="flex items-center justify-between gap-2 rounded-xl bg-surface p-3 border border-surface-container-highest">
+                <span class="flex items-center gap-2 min-w-0">
+                  <span class="truncate font-body-md text-body-md text-on-surface">{{ d.slug }}<span class="text-on-surface-variant">.tuapp.com</span></span>
+                  @if (d.isPrimary) { <app-tag label="Principal" tone="primary" /> }
+                </span>
+                <span class="flex items-center gap-1 shrink-0">
+                  @if (!d.isPrimary) { <app-button variant="ghost" size="sm" (onClick)="setPrimary(d)">Principal</app-button> }
+                  <app-button variant="ghost" size="sm" (onClick)="removeDomain(d)">Quitar</app-button>
+                </span>
+              </li>
+            }
+          </ul>
+        }
+
+        <div class="mt-auto space-y-2">
+          <div class="flex items-end gap-2">
+            <div class="flex-1">
+              <app-input [value]="newSlug()" (valueChange)="newSlug.set($event)" placeholder="mi-negocio" suffix=".tuapp.com" />
+            </div>
+            <app-button (onClick)="addDomain()" [loading]="savingDomain()">Agregar</app-button>
+          </div>
+          <p class="font-label-md text-label-md text-on-surface-variant">Sólo minúsculas, números y guiones (3–63).</p>
+        </div>
+      </div>
     </div>
   }
 

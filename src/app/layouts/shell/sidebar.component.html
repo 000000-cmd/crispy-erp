@@ -14,7 +14,7 @@
     >
       <!-- Brand -->
       <div class="h-14 px-3 flex items-center gap-2.5 border-b border-border shrink-0">
-        <div class="h-9 w-9 rounded-lg bg-primary-500 text-white inline-flex items-center justify-center text-sm font-semibold shrink-0 elev-1">{{ brandInitials() }}</div>
+        <div class="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary inline-flex items-center justify-center text-sm font-bold shrink-0 elev-1">{{ brandInitials() }}</div>
         @if (!layout.isCollapsed()) {
           <div class="min-w-0 transition-opacity duration-150">
             <p class="text-sm font-semibold text-text truncate leading-tight">{{ brand() }}</p>
@@ -95,8 +95,8 @@
               <li>
                 <a
                   [routerLink]="item.path"
-                  routerLinkActive="bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-200"
-                  class="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-sm text-text hover:bg-surface-hover"
+                  routerLinkActive="!bg-primary/10 !text-primary font-bold"
+                  class="flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-sm text-on-surface-variant hover:bg-primary-fixed hover:text-primary"
                   (click)="closeFlyout()"
                 >
                   @if (item.icon) { <lucide-icon [img]="item.icon" [size]="14" class="shrink-0 text-text-muted"></lucide-icon> }
@@ -114,7 +114,7 @@
       @if (item.path) {
         <a
           [routerLink]="item.path"
-          routerLinkActive="bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-200 font-medium"
+          routerLinkActive="!bg-primary/10 !text-primary font-bold"
           [class]="linkClass(depth)"
           [title]="layout.isCollapsed() ? lbl(item.label) : ''"
         >
